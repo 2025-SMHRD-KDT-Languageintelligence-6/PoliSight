@@ -12,4 +12,10 @@ public class MemberController {
     public String loginPage() {
         return "login";
     }
+
+    @GetMapping("/setup")
+    public String setupPage() {
+        return "setup"; // templates/setup.html을 반환
+    }
+
 }

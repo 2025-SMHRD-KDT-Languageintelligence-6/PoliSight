@@ -38,40 +38,17 @@
             transition: all 0.3s ease;
         }
 
-        /* --- 로고 스타일 수정 --- */
         .logo-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px; /* 심볼과 텍스트 사이 간격 */
-            margin-bottom: 30px;
-            cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            margin-bottom: 30px; cursor: pointer;
         }
-
-        /* 'P' 심볼 스타일 */
         .logo-symbol {
-            width: 36px;
-            height: 36px;
-            background-color: var(--primary-color);
-            color: white;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 900;
-            font-size: 20px;
-            box-shadow: 0 2px 5px rgba(0,123,255,0.3);
+            width: 36px; height: 36px; background-color: var(--primary-color); color: white;
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 20px; box-shadow: 0 2px 5px rgba(0,123,255,0.3);
         }
+        .logo-text { font-size: 30px; font-weight: 900; color: var(--primary-color); letter-spacing: -1px; }
 
-        /* 텍스트 스타일 */
-        .logo-text {
-            font-size: 30px;
-            font-weight: 900;
-            color: var(--primary-color);
-            letter-spacing: -1px;
-        }
-
-        /* 탭 및 나머지 스타일은 기존과 동일 */
         .tab-menu { display: flex; margin-bottom: 30px; border-bottom: 2px solid #eee; }
         .tab-item { flex: 1; text-align: center; padding: 12px 0; cursor: pointer; color: var(--text-sub); font-weight: 600; font-size: 15px; transition: all 0.3s; }
         .tab-item.active { color: var(--primary-color); border-bottom: 3px solid var(--primary-color); margin-bottom: -2.5px; }
@@ -97,6 +74,15 @@
         .find-desc { font-size: 13px; color: var(--text-sub); margin-bottom: 15px; text-align: center; line-height: 1.6; }
         .divider { margin: 24px 0; border-top: 1px dashed #ddd; position: relative; }
         .divider::after { content: "OR"; position: absolute; top: -9px; left: 50%; transform: translateX(-50%); background: #fff; padding: 0 10px; font-size: 11px; color: #aaa; }
+
+        /* Setup Info Alert Style */
+        .setup-alert {
+            background-color: #f0f7ff; border: 1px solid #cce5ff; color: #004085;
+            padding: 12px; border-radius: 10px; margin-bottom: 20px;
+            font-size: 12px; font-weight: 700; text-align: center;
+            display: none; /* 기본 숨김 */
+            align-items: center; justify-content: center; gap: 6px;
+        }
 
         #signupSection .input-group, #findSection .input-group { margin-bottom: 10px; }
         #signupSection label, #findSection label { margin-bottom: 4px; font-size: 12px; }
@@ -128,6 +114,10 @@
     </section>
 
     <section id="signupSection" class="form-section">
+        <div id="setupInfoMsg" class="setup-alert">
+            <span style="font-size: 14px;">✨</span> 조건 설정 정보를 자동으로 불러왔습니다!
+        </div>
+
         <form id="signupForm" th:action="@{/join}" method="post">
             <div class="input-group"><label>이름 (본명)</label><input type="text" name="userName" placeholder="성함을 입력하세요" required></div>
             <div class="input-group"><label>아이디</label><div class="row"><input type="text" id="regId" name="userId" placeholder="4~15자 (소문자/숫자)" required><button type="button" class="btn-inline" onclick="checkDuplicate()">중복확인</button></div><p id="idError" class="error-msg">형식에 맞지 않는 아이디입니다.</p></div>
@@ -146,20 +136,62 @@
 </div>
 
 <script>
+    // 탭 전환 함수
     function switchTab(type) {
-        const tabs = document.querySelectorAll('.tab-item'); const sections = document.querySelectorAll('.form-section');
-        tabs.forEach(t => t.classList.remove('active')); sections.forEach(s => s.classList.remove('active'));
+        const tabs = document.querySelectorAll('.tab-item');
+        const sections = document.querySelectorAll('.form-section');
+        tabs.forEach(t => t.classList.remove('active'));
+        sections.forEach(s => s.classList.remove('active'));
+
         if(type === 'login') { tabs[0].classList.add('active'); document.getElementById('loginSection').classList.add('active'); }
         else if(type === 'signup') { tabs[1].classList.add('active'); document.getElementById('signupSection').classList.add('active'); }
         else { tabs[2].classList.add('active'); document.getElementById('findSection').classList.add('active'); }
     }
-    const yearS = document.getElementById('year'); const monthS = document.getElementById('month'); const dayS = document.getElementById('day');
+
+    // 생년월일 Select Box 생성
+    const yearS = document.getElementById('year');
+    const monthS = document.getElementById('month');
+    const dayS = document.getElementById('day');
     yearS.add(new Option('년도', '')); monthS.add(new Option('월', '')); dayS.add(new Option('일', ''));
     for(let i=2025; i>=1950; i--) yearS.add(new Option(i+'년', i));
     for(let i=1; i<=12; i++) monthS.add(new Option(i+'월', i));
     for(let i=1; i<=31; i++) dayS.add(new Option(i+'일', i));
+
+    // 페이지 로드 시 실행 (setup.html 데이터 연동 로직)
+    document.addEventListener("DOMContentLoaded", function() {
+        const urlParams = new URLSearchParams(window.location.search);
+
+        // 1. URL 파라미터 확인 (?mode=signup) -> 회원가입 탭 열기
+        if (urlParams.get('mode') === 'signup') {
+            switchTab('signup');
+        }
+
+        // 2. Setup 데이터 확인 및 자동 기입
+        const setupData = localStorage.getItem('userSetupData');
+        if (setupData) {
+            const data = JSON.parse(setupData);
+
+            // 생년월일 데이터가 있고, 형식이 맞다면 (YYYYMMDD)
+            if(data.birthDate && data.birthDate.length === 8) {
+                const y = data.birthDate.substring(0, 4);
+                const m = parseInt(data.birthDate.substring(4, 6)); // '05' -> 5 (Select Value 매칭)
+                const d = parseInt(data.birthDate.substring(6, 8)); // '01' -> 1
+
+                document.getElementById('year').value = y;
+                document.getElementById('month').value = m;
+                document.getElementById('day').value = d;
+
+                // 안내 메시지 표시
+                document.getElementById('setupInfoMsg').style.display = 'flex';
+            }
+            // (옵션) 사용한 데이터는 삭제하거나 유지 (여기서는 유지)
+        }
+    });
+
+    // 기존 유효성 검사 로직
     document.getElementById('regId').addEventListener('input', function() { const regex = /^[a-z0-9]{4,15}$/; document.getElementById('idError').style.display = (this.value === '' || regex.test(this.value)) ? 'none' : 'block'; });
-    const pw = document.getElementById('regPw'); const pwConfirm = document.getElementById('regPwConfirm');
+    const pw = document.getElementById('regPw');
+    const pwConfirm = document.getElementById('regPwConfirm');
     function checkPw() { document.getElementById('pwError').style.display = (pw.value && pwConfirm.value && pw.value !== pwConfirm.value) ? 'block' : 'none'; }
     pw.addEventListener('input', checkPw); pwConfirm.addEventListener('input', checkPw);
     function checkDuplicate() { alert('서버 연결이 필요합니다.'); }

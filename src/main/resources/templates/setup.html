@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PoliSight - 맞춤 조건 설정</title>
+
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --bg-color: #f4f7f9;
+            --card-bg: #ffffff;
+            --text-main: #222;
+        }
+
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--bg-color); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+
+        .setup-container { background: var(--card-bg); width: 100%; max-width: 550px; padding: 40px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.06); overflow: hidden; }
+
+        .progress-bar { display: flex; justify-content: center; margin-bottom: 30px; gap: 8px; }
+        .step-dot { width: 10px; height: 10px; border-radius: 50%; background: #eee; transition: 0.3s; }
+        .step-dot.active { background: var(--primary-color); transform: scale(1.3); }
+        .step-dot.completed { background: var(--primary-color); opacity: 0.5; }
+
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h2 { font-size: 24px; color: var(--text-main); margin-bottom: 8px; font-weight: 800; letter-spacing: -0.5px; }
+        .header p { font-size: 14px; color: #666; line-height: 1.5; word-break: keep-all; }
+        .header .highlight { color: var(--primary-color); font-weight: 700; }
+
+        .step-content { display: none; animation: fadeIn 0.4s ease-out; }
+        .step-content.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title { font-size: 15px; font-weight: 800; color: #333; margin: 20px 0 10px; display: flex; align-items: center; gap: 6px; }
+        .section-title i { color: var(--primary-color); }
+
+        select, .text-input {
+            width: 100%; padding: 14px; border: 1.5px solid #eee; border-radius: 12px;
+            font-size: 15px; font-weight: 500; background: #fafafa; color: #333;
+            transition: 0.2s; outline: none; box-sizing: border-box;
+        }
+
+        .number-input {
+            width: 100%; padding: 14px;
+            padding-right: 50px;
+            border: 1.5px solid #eee; border-radius: 12px;
+            font-size: 15px; font-weight: 700; background: #fafafa; color: #333;
+            transition: 0.2s; outline: none; box-sizing: border-box;
+            text-align: right;
+        }
+
+        select:focus, .text-input:focus, .number-input:focus { border-color: var(--primary-color); background: #fff; }
+
+        .hybrid-container { background: #fcfcfc; padding: 20px; border-radius: 16px; border: 1.5px solid #eee; transition: 0.2s; }
+        .hybrid-container:focus-within { border-color: var(--primary-color); background: #fff; }
+        .hybrid-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .hybrid-input { border: none; background: transparent; font-size: 22px; font-weight: 800; color: #333; text-align: right; width: 140px; outline: none; }
+        .hybrid-unit { font-size: 14px; font-weight: 700; color: #888; }
+        .slider { -webkit-appearance: none; width: 100%; height: 6px; border-radius: 5px; background: #eee; outline: none; display: block; }
+        .slider::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--primary-color); cursor: pointer; border: 3px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.1); transition: transform 0.1s; }
+        .helper-text { font-size: 12px; color: #888; margin-top: 8px; text-align: right; }
+
+        .grid-row { display: flex; gap: 12px; margin-bottom: 15px; }
+        .grid-row > * { flex: 1; }
+
+        .choice-group { display: flex; gap: 10px; width: 100%; }
+        .choice-btn { flex: 1; }
+        .choice-btn input { display: none; }
+        .choice-btn span {
+            display: block; text-align: center; padding: 14px;
+            border: 2px solid #edf2f7; border-radius: 14px;
+            font-size: 15px; font-weight: 700; cursor: pointer; background: #fff; color: #64748b;
+            transition: all 0.2s;
+        }
+        .choice-btn input:checked + span { background: #eef6ff; border-color: var(--primary-color); color: var(--primary-color); box-shadow: 0 4px 10px rgba(37, 99, 235, 0.1); }
+
+        .btn-group { display: flex; gap: 12px; margin-top: 40px; }
+        button { padding: 16px; border-radius: 14px; font-weight: 700; font-size: 16px; cursor: pointer; border: none; transition: 0.2s; }
+        .btn-prev { flex: 1; background: #f1f5f9; color: #64748b; }
+        .btn-prev:hover { background: #e2e8f0; }
+        .btn-next { flex: 2; background: var(--primary-color); color: white; }
+        .btn-next:hover { background: #0069d9; transform: translateY(-1px); }
+
+        .final-actions { display: flex; flex-direction: column; gap: 12px; margin-top: 40px; }
+        .btn-signup-main { width: 100%; background: var(--primary-color); color: white; padding: 18px; font-size: 17px; box-shadow: 0 8px 20px rgba(0, 123, 255, 0.25); display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .btn-signup-main:hover { background: #0062cc; transform: translateY(-2px); }
+        .btn-skip-main { width: 100%; background: #ffffff; color: #555; border: 2px solid #eee; padding: 16px; font-size: 16px; }
+        .btn-skip-main:hover { background: #f9fafb; border-color: #ddd; color: #333; }
+        .btn-skip-link { background: transparent; color: #94a3b8; font-size: 13px; font-weight: 500; margin-top: 20px; width: 100%; border: none; cursor: pointer; text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div class="setup-container">
+    <div class="progress-bar">
+        <div class="step-dot active" id="dot1"></div>
+        <div class="step-dot" id="dot2"></div>
+        <div class="step-dot" id="dot3"></div>
+    </div>
+
+    <div class="step-content active" id="step1">
+        <div class="header">
+            <h2>기본 정보를 알려주세요</h2>
+            <p>정확한 지원 대상 확인을 위해 <br><span class="highlight">나이와 거주지</span> 정보가 필요합니다.</p>
+        </div>
+
+        <div class="section-title"><i class="fa-solid fa-venus-mars"></i> 성별</div>
+        <div class="choice-group">
+            <label class="choice-btn"><input type="radio" name="gender" value="M" onclick="toggleRadio(this)"><span>남성</span></label>
+            <label class="choice-btn"><input type="radio" name="gender" value="F" onclick="toggleRadio(this)"><span>여성</span></label>
+        </div>
+
+        <div class="section-title"><i class="fa-regular fa-calendar"></i> 생년월일</div>
+        <div style="position: relative;">
+            <input type="text" id="birthDate" class="text-input"
+                   placeholder="생년월일 8자리 (예: 19950101)"
+                   maxlength="8"
+                   style="padding-right: 45px;">
+
+            <input type="date" id="hiddenDatePicker"
+                   style="position: absolute; width: 0; height: 0; border: 0; visibility: hidden;">
+
+            <i class="fa-regular fa-calendar"
+               style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #666; cursor: pointer; font-size: 18px;"
+               onclick="document.getElementById('hiddenDatePicker').showPicker()"></i>
+        </div>
+
+        <div class="section-title"><i class="fa-solid fa-location-dot"></i> 거주 지역</div>
+        <div class="grid-row">
+            <select id="regionSi">
+                <option value="">시/도 선택</option>
+                <option value="seoul">서울특별시</option>
+                <option value="gyeonggi">경기도</option>
+            </select>
+            <select id="regionGu">
+                <option value="">시/군/구 선택</option>
+                <option value="gangnam">강남구</option>
+                <option value="mapo">마포구</option>
+            </select>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-prev" style="visibility: hidden;">이전</button>
+            <button class="btn-next" onclick="nextStep(2)">다음으로 <i class="fa-solid fa-arrow-right" style="margin-left:6px;"></i></button>
+        </div>
+        <button class="btn-skip-link" th:onclick="|location.href='@{/policy}'|">조건 설정 건너뛰기</button>
+    </div>
+
+
+    <div class="step-content" id="step2">
+        <div class="header">
+            <h2>생활 정보를 확인해 주세요</h2>
+            <p>결혼, 자녀, 주거 형태에 따라<br><span class="highlight">추가 우대 혜택</span>을 받을 수 있어요.</p>
+        </div>
+
+        <div class="section-title"><i class="fa-solid fa-ring"></i> 결혼 여부</div>
+        <div class="choice-group">
+            <label class="choice-btn"><input type="radio" name="marry" value="N" onclick="toggleRadio(this)"><span>미혼</span></label>
+            <label class="choice-btn"><input type="radio" name="marry" value="Y" onclick="toggleRadio(this)"><span>기혼</span></label>
+        </div>
+
+        <div class="grid-row" style="margin-top: 25px;">
+            <div>
+                <div class="section-title"><i class="fa-solid fa-baby"></i> 자녀 수 (명)</div>
+                <input type="number" id="childCount" min="0" value="0" class="number-input" placeholder="0">
+            </div>
+            <div>
+                <div class="section-title"><i class="fa-solid fa-briefcase"></i> 사업자 여부</div>
+                <div class="choice-group">
+                    <label class="choice-btn"><input type="radio" name="biz" value="N" onclick="toggleRadio(this)"><span>없음</span></label>
+                    <label class="choice-btn"><input type="radio" name="biz" value="Y" onclick="toggleRadio(this)"><span>있음</span></label>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-title"><i class="fa-solid fa-house-chimney"></i> 주택 소유 여부</div>
+        <div class="choice-group">
+            <label class="choice-btn"><input type="radio" name="house" value="N" onclick="toggleRadio(this)"><span>무주택</span></label>
+            <label class="choice-btn"><input type="radio" name="house" value="Y" onclick="toggleRadio(this)"><span>자가 보유</span></label>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-prev" onclick="prevStep(1)">이전</button>
+            <button class="btn-next" onclick="nextStep(3)">다음으로 <i class="fa-solid fa-arrow-right" style="margin-left:6px;"></i></button>
+        </div>
+    </div>
+
+
+    <div class="step-content" id="step3">
+        <div class="header">
+            <h2>경제 상황을 입력해 주세요</h2>
+            <p>소득 기준은 지원금 산정의 핵심입니다.<br>대략적인 금액으로 입력하셔도 됩니다.</p>
+        </div>
+
+        <div class="section-title"><i class="fa-solid fa-coins"></i> 본인 월 소득 (세전)</div>
+        <div class="hybrid-container">
+            <div class="hybrid-top">
+                <span style="font-size: 14px; font-weight: 600; color: #555;">월 평균</span>
+                <div>
+                    <input type="text" id="myIncomeText" class="hybrid-input" value="0" placeholder="0">
+                    <span class="hybrid-unit">만원</span>
+                </div>
+            </div>
+            <input type="range" min="0" max="600" step="10" value="0" class="slider" id="myIncomeSlider">
+            <div class="helper-text" style="color: var(--primary-color); font-weight: 600;">* 0원 입력 시 '미취업'으로 간주</div>
+        </div>
+
+        <div class="section-title" style="margin-top: 25px;"><i class="fa-solid fa-users"></i> 가구원 수 (본인 포함)</div>
+        <div style="position: relative;">
+            <input type="number" id="familyCount" min="1" value="1" class="number-input" placeholder="주민등록등본 기준">
+            <span style="position: absolute; right: 35px; top: 13px; font-weight: 700; color: #888; pointer-events: none;">명</span>
+        </div>
+
+        <div class="section-title" style="margin-top: 25px;"><i class="fa-solid fa-house-user"></i> 가구 합산 월 소득 (세전)</div>
+        <div class="hybrid-container">
+            <div class="hybrid-top">
+                <span style="font-size: 14px; font-weight: 600; color: #555;">월 평균 합산</span>
+                <div>
+                    <input type="text" id="householdIncomeText" class="hybrid-input" value="0" placeholder="0">
+                    <span class="hybrid-unit">만원</span>
+                </div>
+            </div>
+            <input type="range" min="0" max="1000" step="10" value="0" class="slider" id="householdIncomeSlider">
+            <div class="helper-text">* 부모님, 배우자 소득 포함</div>
+        </div>
+
+        <div class="final-actions">
+            <button class="btn-signup-main" onclick="finishSetup('signup')">
+                <span>이 정보로 회원가입하고 혜택받기</span>
+                <i class="fa-solid fa-user-plus"></i>
+            </button>
+
+            <button class="btn-skip-main" onclick="finishSetup('policy')">
+                회원가입 없이 바로 설정완료
+            </button>
+
+            <button class="btn-skip-link" onclick="prevStep(2)" style="margin-top: 5px;">
+                <i class="fa-solid fa-arrow-left"></i> 이전 단계로
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    let currentStep = 1;
+
+    function showStep(step) {
+        document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+        document.getElementById('step' + step).classList.add('active');
+
+        for(let i=1; i<=3; i++) {
+            const dot = document.getElementById('dot'+i);
+            if(i === step) dot.className = 'step-dot active';
+            else if(i < step) dot.className = 'step-dot completed';
+            else dot.className = 'step-dot';
+        }
+        currentStep = step;
+        window.scrollTo(0, 0);
+    }
+
+    function nextStep(step) { showStep(step); }
+    function prevStep(step) { showStep(step); }
+
+    // [수정] 설정 완료 및 페이지 이동 로직 (경고창 제거됨)
+    function finishSetup(destination) {
+        // 1. 데이터 수집
+        const setupData = {
+            gender: document.querySelector('input[name="gender"]:checked')?.value || '',
+            birthDate: document.getElementById('birthDate').value,
+            region: document.getElementById('regionSi').value, // 상세 구현 시 시/군/구 합칠 필요 있음
+            marry: document.querySelector('input[name="marry"]:checked')?.value || 'N',
+            childCount: document.getElementById('childCount').value,
+            biz: document.querySelector('input[name="biz"]:checked')?.value || 'N',
+            house: document.querySelector('input[name="house"]:checked')?.value || 'N',
+            myIncome: document.getElementById('myIncomeText').value,
+            householdIncome: document.getElementById('householdIncomeText').value,
+            familyCount: document.getElementById('familyCount').value
+        };
+
+        // 2. 로컬 스토리지에 저장
+        localStorage.setItem('userSetupData', JSON.stringify(setupData));
+
+        // 3. 목적지에 따라 이동 (alert 삭제)
+        if (destination === 'signup') {
+            location.href = /*[[@{/login(mode='signup')}]]*/ '/login?mode=signup';
+        } else if (destination === 'policy') {
+            location.href = /*[[@{/policy}]]*/ '/policy';
+        }
+    }
+
+    function setupHybridInput(rangeId, textId) {
+        const range = document.getElementById(rangeId);
+        const text = document.getElementById(textId);
+        const formatNumber = (num) => Number(num).toLocaleString();
+        const parseNumber = (str) => Number(str.replace(/,/g, ''));
+
+        range.addEventListener('input', function() { text.value = formatNumber(this.value); });
+        text.addEventListener('input', function() {
+            let val = parseNumber(this.value);
+            if (isNaN(val)) val = 0;
+            range.value = val;
+        });
+        text.addEventListener('blur', function() {
+            let val = parseNumber(this.value);
+            if (isNaN(val)) val = 0;
+            text.value = formatNumber(val);
+            range.value = val;
+        });
+    }
+
+    setupHybridInput('myIncomeSlider', 'myIncomeText');
+    setupHybridInput('householdIncomeSlider', 'householdIncomeText');
+
+    function toggleRadio(el) {
+        if (el.dataset.checked === "true") {
+            el.checked = false;
+            el.dataset.checked = "false";
+        } else {
+            const name = el.name;
+            document.querySelectorAll(`input[name="${name}"]`).forEach(radio => radio.dataset.checked = "false");
+            el.checked = true;
+            el.dataset.checked = "true";
+        }
+    }
+
+    // 달력 선택값 동기화
+    document.getElementById('hiddenDatePicker').addEventListener('change', function() {
+        if(this.value) {
+            const dateStr = this.value.replace(/-/g, '');
+            document.getElementById('birthDate').value = dateStr;
+        }
+    });
+    /*]]>*/
+</script>
+
+</body>
+</html>
