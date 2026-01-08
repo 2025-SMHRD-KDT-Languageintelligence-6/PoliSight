@@ -8,7 +8,7 @@ public class MemberController {
 
     // 1. 로그인 페이지 이동
     // "localhost:8089
-    @GetMapping({"/", "/login"})
+    @GetMapping({"/login"})
     public String loginPage() {
         return "login";
     }
