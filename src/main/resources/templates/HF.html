@@ -12,11 +12,37 @@
                     <span class="text-xl font-bold text-slate-900 tracking-tight">PoliSight</span>
                 </a>
 
-                <div>
-                    <a th:href="@{/login}"
-                       class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-full text-xs font-bold transition shadow-md">
-                        로그인
-                    </a>
+                <div class="flex items-center gap-4">
+
+                    <div th:if="${session.loginMember == null}">
+                        <a th:href="@{/login}"
+                           class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-full text-xs font-bold transition shadow-md">
+                            로그인
+                        </a>
+                    </div>
+
+                    <div th:if="${session.loginMember != null}" class="relative group h-16 flex items-center">
+
+                        <button class="flex items-center gap-1.5 text-slate-700 font-bold text-sm hover:text-blue-600 transition cursor-pointer">
+                            <span th:text="${session.loginMember.memberName} + '님'">사용자님</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="transition-transform group-hover:rotate-180">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                            </svg>
+                        </button>
+
+                        <div class="absolute right-0 top-12 w-40 pt-2 hidden group-hover:block animation-fade-in">
+                            <div class="bg-white border border-slate-100 rounded-xl shadow-xl overflow-hidden">
+                                <a th:href="@{/mypage}" class="block px-4 py-3 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition">
+                                    마이페이지
+                                </a>
+                                <div class="border-t border-slate-100"></div>
+                                <a th:href="@{/logout}" class="block px-4 py-3 text-xs font-medium text-red-500 hover:bg-red-50 transition">
+                                    로그아웃
+                                </a>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
             </div>
         </div>

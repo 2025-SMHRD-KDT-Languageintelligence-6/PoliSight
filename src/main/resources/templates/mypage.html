@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PoliSight - 마이페이지</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; }
+        .scrollbar-hide::-webkit-scrollbar { width: 4px; }
+        .scrollbar-hide::-webkit-scrollbar-track { background: transparent; }
+        .scrollbar-hide::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%;
+            background: #2563EB; cursor: pointer; margin-top: -6px;
+            box-shadow: 0 0 0 3px #fff, 0 0 0 4px rgba(37, 99, 235, 0.3);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 4px; cursor: pointer; background: #E2E8F0; border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen">
+
+<th:block th:replace="~{HF :: header('mypage')}"></th:block>
+
+<main class="flex-grow max-w-7xl mx-auto px-4 py-12 w-full grid lg:grid-cols-12 gap-8">
+
+    <aside class="lg:col-span-3">
+        <div class="sticky top-24 space-y-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm text-center">
+                <div class="w-24 h-24 rounded-full bg-slate-100 mx-auto mb-4 overflow-hidden border-4 border-white shadow-lg">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Profile" class="w-full h-full object-cover">
+                </div>
+                <h2 class="text-xl font-bold text-slate-900 mb-1" th:text="${session.loginMember.memberName}">사용자</h2>
+                <p class="text-sm text-slate-500" th:text="${session.loginMember.email}">user@email.com</p>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <nav class="flex flex-col">
+                    <a href="#conditions" class="px-6 py-4 text-sm font-bold text-slate-700 hover:bg-slate-50 border-l-4 border-blue-600 bg-blue-50/50 flex items-center gap-3">
+                        <i class="fa-solid fa-sliders w-5 text-center"></i> 내 조건 관리
+                    </a>
+                    <a href="#favorites" class="px-6 py-4 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 border-l-4 border-transparent transition flex items-center gap-3">
+                        <i class="fa-solid fa-bookmark w-5 text-center"></i> 즐겨찾기 및 알림
+                    </a>
+                    <a href="#account" class="px-6 py-4 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 border-l-4 border-transparent transition flex items-center gap-3">
+                        <i class="fa-solid fa-user-gear w-5 text-center"></i> 회원정보 수정
+                    </a>
+                    <div class="border-t border-slate-100 my-1"></div>
+                    <a href="/logout" class="px-6 py-4 text-sm font-medium text-red-500 hover:bg-red-50 text-left w-full transition flex items-center gap-3">
+                        <i class="fa-solid fa-right-from-bracket w-5 text-center"></i> 로그아웃
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </aside>
+
+    <section class="lg:col-span-9 space-y-10">
+
+        <div id="conditions" class="scroll-mt-24">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-slate-900">내 조건 관리</h2>
+                <button onclick="openSetupModal()" class="text-lg text-blue-600 font-bold hover:underline transition flex items-center gap-1 group">
+                    <i class="fa-solid fa-pen-to-square group-hover:scale-110 transition-transform"></i> 전체 수정
+                </button>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-blue-100 shadow-sm overflow-hidden">
+                <div class="bg-gradient-to-r from-slate-50 to-white p-6 border-b border-slate-100">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl shadow-inner">
+                            <i class="fa-solid fa-filter"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg text-slate-800">맞춤 정책 필터 데이터</h3>
+                            <p class="text-sm text-slate-500">맞춤 정책 검색을 위한 필터 데이터입니다. 최신 상태를 유지해주세요.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-8 grid md:grid-cols-2 gap-y-8 gap-x-12">
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-400 uppercase">기본 정보</label>
+                        <div class="flex items-center justify-between py-2 border-b border-slate-100">
+                            <span class="text-slate-600">성별 / 나이</span>
+                            <span class="font-bold text-slate-800">남성 / 만 26세</span>
+                        </div>
+                        <div class="flex items-center justify-between py-2 border-b border-slate-100">
+                            <span class="text-slate-600">거주지역</span>
+                            <span class="font-bold text-slate-800">서울특별시 마포구</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-400 uppercase">경제 상황</label>
+                        <div class="flex items-center justify-between py-2 border-b border-slate-100">
+                            <span class="text-slate-600">본인 월 소득</span>
+                            <span class="font-bold text-slate-800">230 만원</span>
+                        </div>
+                        <div class="flex items-center justify-between py-2 border-b border-slate-100">
+                            <span class="text-slate-600">가구 월 소득</span>
+                            <span class="font-bold text-slate-800">540 만원 (4인)</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-400 uppercase">가구 및 직업</label>
+                        <div class="flex items-center justify-between py-2 border-b border-slate-100">
+                            <span class="text-slate-600">결혼 / 자녀</span>
+                            <span class="font-bold text-slate-800">미혼 / 0명</span>
+                        </div>
+                        <div class="flex items-center justify-between py-2 border-b border-slate-100">
+                            <span class="text-slate-600">주택 보유</span>
+                            <span class="font-bold text-blue-600">무주택 (월세)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr class="border-slate-200">
+
+        <div id="favorites" class="scroll-mt-24">
+            <h2 class="text-2xl font-bold text-slate-900 mb-6">즐겨찾기 및 알림 관리</h2>
+            <div class="bg-slate-50 p-8 rounded-xl text-center border border-slate-200 border-dashed text-slate-400">
+                <i class="fa-regular fa-bookmark text-2xl mb-2"></i>
+                <p class="text-sm">즐겨찾기한 정책이 여기에 표시됩니다.</p>
+            </div>
+        </div>
+
+        <hr class="border-slate-200">
+
+        <div id="account" class="scroll-mt-24">
+            <h2 class="text-2xl font-bold text-slate-900 mb-6">회원정보 수정</h2>
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
+                <form action="/updateMember" method="post" class="space-y-6">
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">이름 (본명)</label>
+                            <input type="text" name="userName" th:value="${session.loginMember.memberName}"
+                                   class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm font-medium">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">이메일 (아이디)</label>
+                            <input type="email" name="email" th:value="${session.loginMember.email}" readonly
+                                   class="w-full p-3 rounded-xl border border-slate-200 bg-slate-100 text-slate-500 cursor-not-allowed text-sm font-medium">
+                            <p class="text-xs text-slate-400 mt-1">* 이메일은 변경할 수 없습니다.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">생년월일</label>
+                            <input type="text" th:value="${session.loginMember.birthDate}" readonly
+                                   class="w-full p-3 rounded-xl border border-slate-200 bg-slate-100 text-slate-500 cursor-not-allowed text-sm font-medium">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">새 비밀번호 변경</label>
+                            <input type="password" name="newPassword" placeholder="변경할 경우에만 입력하세요"
+                                   class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm font-medium">
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end pt-4">
+                        <button type="submit" class="px-6 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-black transition text-sm">
+                            정보 수정 저장
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </section>
+</main>
+
+<th:block th:replace="~{HF :: footer}"></th:block>
+
+<div id="setup-modal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeSetupModal()"></div>
+
+    <div class="fixed inset-0 z-10 overflow-y-auto">
+        <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+            <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 w-full max-w-lg border border-slate-200">
+
+                <div class="bg-white px-6 py-5 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10">
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-900">맞춤 조건 설정</h3>
+                        <p class="text-xs text-slate-500 mt-1">정책 검색 필터에 자동 적용될 정보를 수정합니다.</p>
+                    </div>
+                    <button type="button" onclick="closeSetupModal()" class="text-slate-400 hover:text-slate-600 transition p-2 bg-slate-50 rounded-full">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <div class="p-6 space-y-8 max-h-[70vh] overflow-y-auto custom-scroll">
+
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-800 mb-3">성별</h4>
+                            <div class="flex bg-slate-100 p-1 rounded-xl">
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" name="modal-gender" value="M" class="peer sr-only" checked>
+                                    <span class="block text-center py-2 text-sm font-bold text-slate-500 rounded-lg peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm transition-all">남성</span>
+                                </label>
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" name="modal-gender" value="F" class="peer sr-only">
+                                    <span class="block text-center py-2 text-sm font-bold text-slate-500 rounded-lg peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm transition-all">여성</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-800 mb-3">결혼 여부</h4>
+                            <div class="flex bg-slate-100 p-1 rounded-xl">
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" name="modal-marry" value="N" class="peer sr-only" checked>
+                                    <span class="block text-center py-2 text-sm font-bold text-slate-500 rounded-lg peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm transition-all">미혼</span>
+                                </label>
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" name="modal-marry" value="Y" class="peer sr-only">
+                                    <span class="block text-center py-2 text-sm font-bold text-slate-500 rounded-lg peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm transition-all">기혼</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+                            📍 거주 지역 <span class="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded font-bold">지역별 혜택 매칭</span>
+                        </h4>
+                        <div class="grid grid-cols-2 gap-3">
+                            <select class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm font-medium">
+                                <option value="">시/도 선택</option>
+                                <option selected>서울특별시</option>
+                                <option>경기도</option>
+                            </select>
+                            <select class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm font-medium">
+                                <option value="">시/군/구 선택</option>
+                                <option selected>마포구</option>
+                                <option>강남구</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-800 mb-3">💰 본인 월 소득 (세전)</h4>
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <div class="flex items-center justify-between mb-2">
+                                <input type="text" id="modalMyIncomeText" value="2,400" class="w-full bg-transparent font-bold text-slate-800 text-lg focus:outline-none text-right pr-2">
+                                <span class="text-sm font-bold text-slate-500">만원</span>
+                            </div>
+                            <input type="range" min="0" max="600" step="10" value="240" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" id="modalMyIncomeSlider">
+                            <p class="text-[10px] text-blue-500 mt-2 text-right font-medium">* 0원 시 미취업 간주</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-800 mb-3">🏠 가구 합산 월 소득 (세전)</h4>
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <div class="flex items-center justify-between mb-2">
+                                <input type="text" id="modalHhIncomeText" value="5,400" class="w-full bg-transparent font-bold text-slate-800 text-lg focus:outline-none text-right pr-2">
+                                <span class="text-sm font-bold text-slate-500">만원</span>
+                            </div>
+                            <input type="range" min="0" max="1000" step="10" value="540" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" id="modalHhIncomeSlider">
+                            <p class="text-[10px] text-slate-400 mt-2 text-right font-medium">* 부모님 소득 포함</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-800 mb-3">가구원 수 (본인 포함)</h4>
+                        <div class="relative">
+                            <input type="number" min="1" value="1" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm font-bold">
+                            <span class="absolute right-4 top-3.5 text-sm font-bold text-slate-400">명</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-800 mb-3">추가 확인 사항</h4>
+                        <div class="flex gap-3">
+                            <label class="flex-1 cursor-pointer relative group">
+                                <input type="checkbox" name="modal-biz" class="peer sr-only">
+                                <div class="py-3 px-4 border-2 border-slate-100 rounded-xl text-center font-bold text-slate-500 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-600 transition-all">
+                                    사업자 여부
+                                </div>
+                                <i class="fa-solid fa-check absolute top-1 right-2 text-blue-600 opacity-0 peer-checked:opacity-100 transition-opacity text-xs"></i>
+                            </label>
+                            <label class="flex-1 cursor-pointer relative group">
+                                <input type="checkbox" name="modal-child" class="peer sr-only">
+                                <div class="py-3 px-4 border-2 border-slate-100 rounded-xl text-center font-bold text-slate-500 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-600 transition-all">
+                                    자녀 있음
+                                </div>
+                                <i class="fa-solid fa-check absolute top-1 right-2 text-blue-600 opacity-0 peer-checked:opacity-100 transition-opacity text-xs"></i>
+                            </label>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="bg-slate-50 px-6 py-4 flex justify-end gap-3 border-t border-slate-100 sticky bottom-0 z-10">
+                    <button type="button" onclick="closeSetupModal()" class="px-5 py-3 rounded-xl border border-slate-300 bg-white font-bold text-slate-600 hover:bg-slate-50 transition text-sm">취소</button>
+                    <button type="button" onclick="saveAndClose()" class="px-5 py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200 text-sm">변경사항 저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openSetupModal() {
+        const modal = document.getElementById('setup-modal');
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.querySelector('div[class*="backdrop-blur-sm"]').classList.remove('opacity-0');
+            modal.querySelector('div[class*="transform"]').classList.remove('scale-95', 'opacity-0');
+        }, 10);
+    }
+
+    function closeSetupModal() {
+        const modal = document.getElementById('setup-modal');
+        modal.classList.add('hidden');
+    }
+
+    function saveAndClose() {
+        alert("조건이 성공적으로 수정되었습니다.");
+        closeSetupModal();
+    }
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key === "Escape") closeSetupModal();
+    });
+
+    const mySlider = document.getElementById('modalMyIncomeSlider');
+    const myText = document.getElementById('modalMyIncomeText');
+
+    mySlider.addEventListener('input', function() {
+        myText.value = Number(this.value).toLocaleString();
+    });
+    myText.addEventListener('input', function() {
+        let val = Number(this.value.replace(/,/g, ''));
+        if(isNaN(val)) val = 0;
+        mySlider.value = val;
+    });
+
+    const hhSlider = document.getElementById('modalHhIncomeSlider');
+    const hhText = document.getElementById('modalHhIncomeText');
+
+    hhSlider.addEventListener('input', function() {
+        hhText.value = Number(this.value).toLocaleString();
+    });
+    hhText.addEventListener('input', function() {
+        let val = Number(this.value.replace(/,/g, ''));
+        if(isNaN(val)) val = 0;
+        hhSlider.value = val;
+    });
+</script>
+
+</body>
+</html>
