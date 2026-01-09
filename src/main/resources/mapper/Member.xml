@@ -5,9 +5,33 @@
 
 <mapper namespace="com.simpol.polisight.mapper.MemberMapper">
 
-    <!-- 테스트용: DB 연결 확인 (원하면) -->
-    <select id="selectNow" resultType="string">
-        SELECT NOW()
+    <insert id="insertMember" parameterType="com.simpol.polisight.dto.MemberDto">
+        INSERT INTO member (
+        email,
+        passwordHash,
+        memberName,
+        birthDate,
+        createdAt,
+        updatedAt
+        ) VALUES (
+        #{email},
+        #{passwordHash},
+        #{memberName},
+        #{birthDate},
+        NOW(),
+        NOW()
+        )
+    </insert>
+
+    <select id="selectMemberByEmail" parameterType="string" resultType="com.simpol.polisight.dto.MemberDto">
+        SELECT
+        memberIdx,
+        email,
+        passwordHash,
+        memberName,
+        birthDate
+        FROM member
+        WHERE email = #{email}
     </select>
 
 </mapper>
