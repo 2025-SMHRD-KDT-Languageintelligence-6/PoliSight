@@ -7,31 +7,26 @@
 
     <insert id="insertMember" parameterType="com.simpol.polisight.dto.MemberDto">
         INSERT INTO member (
-        email,
-        passwordHash,
-        memberName,
-        birthDate,
-        createdAt,
-        updatedAt
+        email, passwordHash, memberName, birthDate, createdAt, updatedAt
         ) VALUES (
-        #{email},
-        #{passwordHash},
-        #{memberName},
-        #{birthDate},
-        NOW(),
-        NOW()
+        #{email}, #{passwordHash}, #{memberName}, #{birthDate}, NOW(), NOW()
         )
     </insert>
 
     <select id="selectMemberByEmail" parameterType="string" resultType="com.simpol.polisight.dto.MemberDto">
-        SELECT
-        memberIdx,
-        email,
-        passwordHash,
-        memberName,
-        birthDate
-        FROM member
-        WHERE email = #{email}
+        SELECT * FROM member WHERE email = #{email}
     </select>
+
+    <update id="updateMember" parameterType="com.simpol.polisight.dto.MemberDto">
+        UPDATE member
+        SET
+        memberName = #{memberName},
+        birthDate = #{birthDate},
+        updatedAt = NOW()
+        <if test="passwordHash != null and passwordHash != ''">
+            , passwordHash = #{passwordHash}
+        </if>
+        WHERE email = #{email}
+    </update>
 
 </mapper>

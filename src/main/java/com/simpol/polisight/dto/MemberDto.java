@@ -4,24 +4,23 @@ import lombok.Data;
 
 @Data
 public class MemberDto {
-    // [DB 컬럼과 1:1 매칭되는 필드]
-    private Long memberIdx;       // PK
-    private String email;         // 이메일 (Form name="email"과 일치)
-    private String passwordHash;  // DB 컬럼: 비밀번호
-    private String memberName;    // DB 컬럼: 이름
-    private String birthDate;     // DB 컬럼: 생년월일 (YYYY-MM-DD)
+    // [DB 컬럼]
+    private Long memberIdx;
+    private String email;
+    private String passwordHash;
+    private String memberName;
+    private String birthDate; // YYYY-MM-DD 형식
 
-    // 그 외 DB 컬럼들 (필요시 사용, 현재는 null로 들어감)
-    private String province;
-    private String city;
-    private String gender;
-    // ... 나머지 컬럼 생략 (필요할 때 추가)
+    // [HTML Form 입력값]
+    private String userPw;    // 회원가입 시 사용
+    private String userName;  // 회원가입/수정 시 사용 (Form name="userName")
 
-    // [HTML Form에서만 넘어오는 입력값 (DB 컬럼 아님)]
-    private String userPw;        // Form name="userPw"
-    private String userName;      // Form name="userName"
+    // [회원가입용 분할 날짜]
+    private String birthYear;
+    private String birthMonth;
+    private String birthDay;
 
-    private String birthYear;     // Form name="birthYear"
-    private String birthMonth;    // Form name="birthMonth"
-    private String birthDay;      // Form name="birthDay"
+    // [회원수정용 추가 필드]
+    private String currentPw; // 현재 비밀번호 확인용
+    private String newPw;     // 변경할 새 비밀번호
 }

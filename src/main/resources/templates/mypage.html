@@ -28,6 +28,10 @@
         input[type=range]::-webkit-slider-runnable-track {
             width: 100%; height: 4px; cursor: pointer; background: #E2E8F0; border-radius: 2px;
         }
+        /* 비밀번호 불일치 및 에러 시 테두리 붉게 표시 */
+        .border-red-500 { border-color: #ef4444 !important; }
+        .text-red-500 { color: #ef4444 !important; }
+        .hidden { display: none; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen">
@@ -39,8 +43,8 @@
     <aside class="lg:col-span-3">
         <div class="sticky top-24 space-y-6">
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm text-center">
-                <div class="w-24 h-24 rounded-full bg-slate-100 mx-auto mb-4 overflow-hidden border-4 border-white shadow-lg">
-                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Profile" class="w-full h-full object-cover">
+                <div class="w-24 h-24 rounded-full bg-slate-200 mx-auto mb-4 overflow-hidden border-4 border-white shadow-lg flex items-center justify-center">
+                    <i class="fa-solid fa-user text-4xl text-slate-400"></i>
                 </div>
                 <h2 class="text-xl font-bold text-slate-900 mb-1" th:text="${session.loginMember.memberName}">사용자</h2>
                 <p class="text-sm text-slate-500" th:text="${session.loginMember.email}">user@email.com</p>
@@ -56,10 +60,6 @@
                     </a>
                     <a href="#account" class="px-6 py-4 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 border-l-4 border-transparent transition flex items-center gap-3">
                         <i class="fa-solid fa-user-gear w-5 text-center"></i> 회원정보 수정
-                    </a>
-                    <div class="border-t border-slate-100 my-1"></div>
-                    <a href="/logout" class="px-6 py-4 text-sm font-medium text-red-500 hover:bg-red-50 text-left w-full transition flex items-center gap-3">
-                        <i class="fa-solid fa-right-from-bracket w-5 text-center"></i> 로그아웃
                     </a>
                 </nav>
             </div>
@@ -101,30 +101,6 @@
                             <span class="font-bold text-slate-800">서울특별시 마포구</span>
                         </div>
                     </div>
-
-                    <div class="space-y-1">
-                        <label class="text-xs font-bold text-slate-400 uppercase">경제 상황</label>
-                        <div class="flex items-center justify-between py-2 border-b border-slate-100">
-                            <span class="text-slate-600">본인 월 소득</span>
-                            <span class="font-bold text-slate-800">230 만원</span>
-                        </div>
-                        <div class="flex items-center justify-between py-2 border-b border-slate-100">
-                            <span class="text-slate-600">가구 월 소득</span>
-                            <span class="font-bold text-slate-800">540 만원 (4인)</span>
-                        </div>
-                    </div>
-
-                    <div class="space-y-1">
-                        <label class="text-xs font-bold text-slate-400 uppercase">가구 및 직업</label>
-                        <div class="flex items-center justify-between py-2 border-b border-slate-100">
-                            <span class="text-slate-600">결혼 / 자녀</span>
-                            <span class="font-bold text-slate-800">미혼 / 0명</span>
-                        </div>
-                        <div class="flex items-center justify-between py-2 border-b border-slate-100">
-                            <span class="text-slate-600">주택 보유</span>
-                            <span class="font-bold text-blue-600">무주택 (월세)</span>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -144,36 +120,67 @@
         <div id="account" class="scroll-mt-24">
             <h2 class="text-2xl font-bold text-slate-900 mb-6">회원정보 수정</h2>
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
-                <form action="/updateMember" method="post" class="space-y-6">
-                    <div class="grid md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">이름 (본명)</label>
-                            <input type="text" name="userName" th:value="${session.loginMember.memberName}"
-                                   class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm font-medium">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">이메일 (아이디)</label>
-                            <input type="email" name="email" th:value="${session.loginMember.email}" readonly
-                                   class="w-full p-3 rounded-xl border border-slate-200 bg-slate-100 text-slate-500 cursor-not-allowed text-sm font-medium">
-                            <p class="text-xs text-slate-400 mt-1">* 이메일은 변경할 수 없습니다.</p>
-                        </div>
-                    </div>
+                <form action="/updateMember" method="post" class="space-y-8" onsubmit="return validateForm()">
 
-                    <div class="grid md:grid-cols-2 gap-6">
+                    <div class="space-y-6">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">이름 (본명)</label>
+                                <input type="text" name="userName" th:value="${session.loginMember.memberName}"
+                                       class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">이메일 (아이디)</label>
+                                <input type="email" name="email" th:value="${session.loginMember.email}" readonly
+                                       class="w-full p-3 rounded-xl border border-slate-200 bg-slate-100 text-slate-500 cursor-not-allowed text-sm font-medium">
+                                <p class="text-xs text-slate-400 mt-1">* 이메일은 변경할 수 없습니다.</p>
+                            </div>
+                        </div>
+
                         <div>
                             <label class="block text-sm font-bold text-slate-700 mb-2">생년월일</label>
-                            <input type="text" th:value="${session.loginMember.birthDate}" readonly
-                                   class="w-full p-3 rounded-xl border border-slate-200 bg-slate-100 text-slate-500 cursor-not-allowed text-sm font-medium">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">새 비밀번호 변경</label>
-                            <input type="password" name="newPassword" placeholder="변경할 경우에만 입력하세요"
-                                   class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm font-medium">
+
+                            <input type="hidden" id="originBirthDate" th:value="${session.loginMember.birthDate}">
+
+                            <div class="flex gap-2">
+                                <select id="year" name="birthYear" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm font-medium"></select>
+                                <select id="month" name="birthMonth" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm font-medium"></select>
+                                <select id="day" name="birthDay" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm font-medium"></select>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="flex justify-end pt-4">
-                        <button type="submit" class="px-6 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-black transition text-sm">
+                    <div class="border-t border-slate-100"></div>
+
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800 mb-4">비밀번호 변경</h3>
+                        <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 mb-1">기존 비밀번호</label>
+                                <input type="password" name="currentPw" placeholder="현재 비밀번호를 입력해 주세요"
+                                       class="w-full p-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
+                            </div>
+
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1">새 비밀번호</label>
+                                    <input type="password" id="newPw" name="newPw" placeholder="6~20자 (영문/숫자/특수문자 포함)"
+                                           class="w-full p-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
+                                    <p id="pwRuleError" class="text-xs text-red-500 mt-1 hidden">* 영문/숫자/특수문자 포함 6~20자로 입력해 주세요.</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1">새 비밀번호 확인</label>
+                                    <input type="password" id="newPwConfirm" placeholder="새로운 비밀번호 확인"
+                                           class="w-full p-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
+                                    <p id="pwMatchMsg" class="text-xs text-red-500 mt-1 hidden">* 비밀번호가 일치하지 않습니다.</p>
+                                </div>
+                            </div>
+                            <p class="text-[11px] text-slate-400">* 비밀번호를 변경하지 않으려면 비워두세요.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end pt-2">
+                        <button type="submit" class="px-6 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-black transition text-sm shadow-md">
                             정보 수정 저장
                         </button>
                     </div>
@@ -188,11 +195,9 @@
 
 <div id="setup-modal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeSetupModal()"></div>
-
     <div class="fixed inset-0 z-10 overflow-y-auto">
         <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
             <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 w-full max-w-lg border border-slate-200">
-
                 <div class="bg-white px-6 py-5 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10">
                     <div>
                         <h3 class="text-xl font-bold text-slate-900">맞춤 조건 설정</h3>
@@ -202,9 +207,7 @@
                         <i class="fa-solid fa-xmark text-lg"></i>
                     </button>
                 </div>
-
                 <div class="p-6 space-y-8 max-h-[70vh] overflow-y-auto custom-scroll">
-
                     <div class="grid grid-cols-2 gap-6">
                         <div>
                             <h4 class="text-sm font-bold text-slate-800 mb-3">성별</h4>
@@ -233,79 +236,7 @@
                             </div>
                         </div>
                     </div>
-
-                    <div>
-                        <h4 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
-                            📍 거주 지역 <span class="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded font-bold">지역별 혜택 매칭</span>
-                        </h4>
-                        <div class="grid grid-cols-2 gap-3">
-                            <select class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm font-medium">
-                                <option value="">시/도 선택</option>
-                                <option selected>서울특별시</option>
-                                <option>경기도</option>
-                            </select>
-                            <select class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm font-medium">
-                                <option value="">시/군/구 선택</option>
-                                <option selected>마포구</option>
-                                <option>강남구</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h4 class="text-sm font-bold text-slate-800 mb-3">💰 본인 월 소득 (세전)</h4>
-                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                            <div class="flex items-center justify-between mb-2">
-                                <input type="text" id="modalMyIncomeText" value="2,400" class="w-full bg-transparent font-bold text-slate-800 text-lg focus:outline-none text-right pr-2">
-                                <span class="text-sm font-bold text-slate-500">만원</span>
-                            </div>
-                            <input type="range" min="0" max="600" step="10" value="240" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" id="modalMyIncomeSlider">
-                            <p class="text-[10px] text-blue-500 mt-2 text-right font-medium">* 0원 시 미취업 간주</p>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h4 class="text-sm font-bold text-slate-800 mb-3">🏠 가구 합산 월 소득 (세전)</h4>
-                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                            <div class="flex items-center justify-between mb-2">
-                                <input type="text" id="modalHhIncomeText" value="5,400" class="w-full bg-transparent font-bold text-slate-800 text-lg focus:outline-none text-right pr-2">
-                                <span class="text-sm font-bold text-slate-500">만원</span>
-                            </div>
-                            <input type="range" min="0" max="1000" step="10" value="540" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" id="modalHhIncomeSlider">
-                            <p class="text-[10px] text-slate-400 mt-2 text-right font-medium">* 부모님 소득 포함</p>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h4 class="text-sm font-bold text-slate-800 mb-3">가구원 수 (본인 포함)</h4>
-                        <div class="relative">
-                            <input type="number" min="1" value="1" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm font-bold">
-                            <span class="absolute right-4 top-3.5 text-sm font-bold text-slate-400">명</span>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h4 class="text-sm font-bold text-slate-800 mb-3">추가 확인 사항</h4>
-                        <div class="flex gap-3">
-                            <label class="flex-1 cursor-pointer relative group">
-                                <input type="checkbox" name="modal-biz" class="peer sr-only">
-                                <div class="py-3 px-4 border-2 border-slate-100 rounded-xl text-center font-bold text-slate-500 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-600 transition-all">
-                                    사업자 여부
-                                </div>
-                                <i class="fa-solid fa-check absolute top-1 right-2 text-blue-600 opacity-0 peer-checked:opacity-100 transition-opacity text-xs"></i>
-                            </label>
-                            <label class="flex-1 cursor-pointer relative group">
-                                <input type="checkbox" name="modal-child" class="peer sr-only">
-                                <div class="py-3 px-4 border-2 border-slate-100 rounded-xl text-center font-bold text-slate-500 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-600 transition-all">
-                                    자녀 있음
-                                </div>
-                                <i class="fa-solid fa-check absolute top-1 right-2 text-blue-600 opacity-0 peer-checked:opacity-100 transition-opacity text-xs"></i>
-                            </label>
-                        </div>
-                    </div>
-
                 </div>
-
                 <div class="bg-slate-50 px-6 py-4 flex justify-end gap-3 border-t border-slate-100 sticky bottom-0 z-10">
                     <button type="button" onclick="closeSetupModal()" class="px-5 py-3 rounded-xl border border-slate-300 bg-white font-bold text-slate-600 hover:bg-slate-50 transition text-sm">취소</button>
                     <button type="button" onclick="saveAndClose()" class="px-5 py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200 text-sm">변경사항 저장</button>
@@ -316,6 +247,113 @@
 </div>
 
 <script>
+    /* ================= 초기화 로직 (생년월일 세팅) ================= */
+    document.addEventListener("DOMContentLoaded", function() {
+        // 1. Select 박스 옵션 생성
+        const yearS = document.getElementById('year');
+        const monthS = document.getElementById('month');
+        const dayS = document.getElementById('day');
+
+        yearS.add(new Option('년도', ''));
+        monthS.add(new Option('월', ''));
+        dayS.add(new Option('일', ''));
+
+        for(let i=2025; i>=1950; i--) yearS.add(new Option(i+'년', i));
+        for(let i=1; i<=12; i++) monthS.add(new Option(i+'월', i));
+        for(let i=1; i<=31; i++) dayS.add(new Option(i+'일', i));
+
+        // 2. DB에 저장된 값 파싱하여 선택 (format: YYYY-MM-DD or YYYYMMDD)
+        const originDate = document.getElementById('originBirthDate').value; // hidden value
+        if(originDate && originDate.length >= 8) {
+            // 구분자 제거하고 숫자만 추출
+            const cleanDate = originDate.replace(/[^0-9]/g, '');
+            if(cleanDate.length === 8) {
+                const y = cleanDate.substring(0, 4);
+                const m = parseInt(cleanDate.substring(4, 6)); // '01' -> 1
+                const d = parseInt(cleanDate.substring(6, 8)); // '01' -> 1
+
+                yearS.value = y;
+                monthS.value = m;
+                dayS.value = d;
+            }
+        }
+    });
+
+    /* ================= 비밀번호 실시간 유효성 검사 ================= */
+    const newPw = document.getElementById('newPw');
+    const newPwConfirm = document.getElementById('newPwConfirm');
+    const pwMatchMsg = document.getElementById('pwMatchMsg');
+    const pwRuleError = document.getElementById('pwRuleError');
+
+    // 1. 규칙 검사
+    function checkPwValidation() {
+        const val = newPw.value;
+        // 정규식: 영문, 숫자, 특수문자 포함 6~20자
+        const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{6,20}$/;
+
+        if(val.length > 0 && !regex.test(val)) {
+            pwRuleError.classList.remove('hidden');
+            newPw.classList.add('border-red-500');
+        } else {
+            pwRuleError.classList.add('hidden');
+            newPw.classList.remove('border-red-500');
+        }
+        // 내용 변경 시 일치 여부도 재확인
+        checkPasswordMatch();
+    }
+
+    // 2. 일치 검사
+    function checkPasswordMatch() {
+        // 확인란이 비어있으면 에러 안 띄움
+        if (newPwConfirm.value.length === 0) {
+            pwMatchMsg.classList.add('hidden');
+            newPwConfirm.classList.remove('border-red-500');
+            return;
+        }
+
+        if (newPw.value !== newPwConfirm.value) {
+            pwMatchMsg.classList.remove('hidden');
+            newPwConfirm.classList.add('border-red-500');
+        } else {
+            pwMatchMsg.classList.add('hidden');
+            newPwConfirm.classList.remove('border-red-500');
+        }
+    }
+
+    newPw.addEventListener('input', checkPwValidation);
+    newPwConfirm.addEventListener('input', checkPasswordMatch);
+
+    /* ================= 폼 제출 시 최종 검증 ================= */
+    function validateForm() {
+        // 새 비밀번호를 입력했는데
+        if(newPw.value.length > 0) {
+            // 1. 규칙 위반 시 차단
+            const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{6,20}$/;
+            if (!regex.test(newPw.value)) {
+                alert('비밀번호 형식이 올바르지 않습니다.');
+                newPw.focus();
+                return false;
+            }
+
+            // 2. 확인란과 다르다면 차단
+            if(newPw.value !== newPwConfirm.value) {
+                alert('새 비밀번호가 일치하지 않습니다.');
+                newPwConfirm.focus();
+                return false;
+            }
+
+            // 3. 기존 비밀번호가 비어있다면 차단
+            const currentPw = document.querySelector('input[name="currentPw"]');
+            if(currentPw.value.length === 0) {
+                alert('비밀번호를 변경하려면 기존 비밀번호를 입력해야 합니다.');
+                currentPw.focus();
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /* ================= 모달 및 기타 로직 (기존 유지) ================= */
     function openSetupModal() {
         const modal = document.getElementById('setup-modal');
         modal.classList.remove('hidden');
@@ -339,29 +377,14 @@
         if (event.key === "Escape") closeSetupModal();
     });
 
+    // 슬라이더 동기화
     const mySlider = document.getElementById('modalMyIncomeSlider');
     const myText = document.getElementById('modalMyIncomeText');
-
-    mySlider.addEventListener('input', function() {
-        myText.value = Number(this.value).toLocaleString();
-    });
-    myText.addEventListener('input', function() {
-        let val = Number(this.value.replace(/,/g, ''));
-        if(isNaN(val)) val = 0;
-        mySlider.value = val;
-    });
+    mySlider.addEventListener('input', function() { myText.value = Number(this.value).toLocaleString(); });
 
     const hhSlider = document.getElementById('modalHhIncomeSlider');
     const hhText = document.getElementById('modalHhIncomeText');
-
-    hhSlider.addEventListener('input', function() {
-        hhText.value = Number(this.value).toLocaleString();
-    });
-    hhText.addEventListener('input', function() {
-        let val = Number(this.value.replace(/,/g, ''));
-        if(isNaN(val)) val = 0;
-        hhSlider.value = val;
-    });
+    hhSlider.addEventListener('input', function() { hhText.value = Number(this.value).toLocaleString(); });
 </script>
 
 </body>

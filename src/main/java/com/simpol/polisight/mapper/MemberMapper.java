@@ -10,4 +10,12 @@ public interface MemberMapper {
 
     // 로그인 (이메일로 조회)
     MemberDto selectMemberByEmail(String email);
+
+    // MemberMapper.java
+    void updateMember(MemberDto memberDto);
+
+
+
+
 }
+
