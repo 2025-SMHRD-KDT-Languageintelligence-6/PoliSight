@@ -14,7 +14,7 @@
             --bg-gradient: linear-gradient(135deg, #f4f7f9 0%, #e9eff5 100%);
             --text-main: #222;
             --text-sub: #666;
-            --error-color: #e74c3c;
+            --error-color: #e74c3c; /* 빨간색 경고 */
             --input-bg: #fdfdfd;
         }
 
@@ -57,7 +57,7 @@
         .form-section.active { display: block; animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .input-group { margin-bottom: 16px; }
+        .input-group { margin-bottom: 18px; position: relative; }
         label { display: block; font-size: 13px; font-weight: 800; margin-bottom: 8px; color: var(--text-main); }
         input, select { width: 100%; padding: 14px 16px; border: 1px solid #e1e1e1; border-radius: 12px; font-size: 14px; font-weight: 500; box-sizing: border-box; background: var(--input-bg); transition: all 0.2s; color: var(--text-main); }
         input::placeholder { color: #aaa; font-weight: 400; }
@@ -66,28 +66,31 @@
         .row { display: flex; gap: 8px; }
         .btn-inline { background: #444; color: white; border: none; border-radius: 10px; padding: 0 14px; cursor: pointer; font-size: 12px; font-weight: 600; white-space: nowrap; }
         .helper-text { font-size: 11px; color: #888; margin-top: 5px; line-height: 1.4; }
-        .error-msg { color: var(--error-color); font-size: 11px; margin-top: 5px; display: none; }
+
+        /* 에러 메시지 스타일 강화 */
+        .error-msg {
+            color: var(--error-color);
+            font-size: 12px;
+            margin-top: 6px;
+            display: none; /* 기본 숨김 */
+            font-weight: 500;
+        }
 
         .submit-btn { width: 100%; padding: 16px; background: var(--primary-color); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; box-shadow: 0 6px 15px rgba(0,123,255,0.2); transition: all 0.2s; }
         .submit-btn:hover { background: var(--primary-hover); transform: translateY(-2px); }
 
-        .find-desc { font-size: 13px; color: var(--text-sub); margin-bottom: 15px; text-align: center; line-height: 1.6; }
-        .divider { margin: 24px 0; border-top: 1px dashed #ddd; position: relative; }
-        .divider::after { content: "OR"; position: absolute; top: -9px; left: 50%; transform: translateX(-50%); background: #fff; padding: 0 10px; font-size: 11px; color: #aaa; }
+        .find-desc { font-size: 13px; color: var(--text-sub); margin-bottom: 20px; text-align: center; line-height: 1.6; }
 
-        /* Setup Info Alert Style */
         .setup-alert {
             background-color: #f0f7ff; border: 1px solid #cce5ff; color: #004085;
             padding: 12px; border-radius: 10px; margin-bottom: 20px;
             font-size: 12px; font-weight: 700; text-align: center;
-            display: none; /* 기본 숨김 */
+            display: none;
             align-items: center; justify-content: center; gap: 6px;
         }
 
-        #signupSection .input-group, #findSection .input-group { margin-bottom: 10px; }
-        #signupSection label, #findSection label { margin-bottom: 4px; font-size: 12px; }
-        #signupSection input, #signupSection select, #findSection input { padding: 10px 12px; font-size: 13px; border-radius: 8px; }
-        #signupSection .submit-btn, #findSection .submit-btn { padding: 14px; font-size: 15px; margin-top: 5px; }
+        /* 비활성화된 버튼 스타일 */
+        button:disabled { background: #ccc; cursor: not-allowed; color: #666; box-shadow: none; }
     </style>
 </head>
 <body>
@@ -101,14 +104,21 @@
     <div class="tab-menu">
         <div class="tab-item active" onclick="switchTab('login')">로그인</div>
         <div class="tab-item" onclick="switchTab('signup')">회원가입</div>
-        <div class="tab-item" onclick="switchTab('find')">계정찾기</div>
+        <div class="tab-item" onclick="switchTab('find')">비밀번호 찾기</div>
     </div>
 
     <section id="loginSection" class="form-section active">
         <form th:action="@{/login}" method="post">
-            <div class="input-group"><label>아이디</label><input type="text" name="userId" placeholder="아이디를 입력해 주세요"></div>
-            <div class="input-group"><label>비밀번호</label><input type="password" name="userPw" placeholder="비밀번호를 입력해 주세요"></div>
-            <div th:if="${param.error}" class="error-msg" style="display:block; text-align:center; margin-bottom:10px;">아이디 또는 비밀번호가 잘못되었습니다.</div>
+            <div class="input-group">
+                <label>이메일</label>
+                <input type="email" name="email" id="loginEmail" placeholder="이메일을 입력해 주세요" required>
+                <p id="loginEmailError" class="error-msg">* 존재하지 않는 이메일이거나 형식이 올바르지 않습니다.</p>
+            </div>
+            <div class="input-group">
+                <label>비밀번호</label>
+                <input type="password" name="userPw" id="loginPw" placeholder="비밀번호를 입력해 주세요" required>
+                <p id="loginPwError" class="error-msg" th:if="${param.error}" style="display:block;">* 이메일 또는 비밀번호가 일치하지 않습니다.</p>
+            </div>
             <button class="submit-btn" type="submit">로그인</button>
         </form>
     </section>
@@ -119,36 +129,102 @@
         </div>
 
         <form id="signupForm" th:action="@{/join}" method="post">
-            <div class="input-group"><label>이름 (본명)</label><input type="text" name="userName" placeholder="성함을 입력하세요" required></div>
-            <div class="input-group"><label>아이디</label><div class="row"><input type="text" id="regId" name="userId" placeholder="4~15자 (소문자/숫자)" required><button type="button" class="btn-inline" onclick="checkDuplicate()">중복확인</button></div><p id="idError" class="error-msg">형식에 맞지 않는 아이디입니다.</p></div>
-            <div class="input-group"><label>비밀번호</label><input type="password" id="regPw" name="userPw" placeholder="6~20자 (특수문자 포함)" required><input type="password" id="regPwConfirm" placeholder="비밀번호 확인" style="margin-top: 6px;" required><p id="pwError" class="error-msg">비밀번호가 일치하지 않습니다.</p></div>
-            <div class="input-group"><label>이메일</label><div class="row"><input type="email" id="regEmail" name="email" placeholder="auth@polisight.com" required><button type="button" class="btn-inline">인증요청</button></div></div>
-            <div class="input-group"><label>생년월일</label><div class="row"><select id="year" name="birthYear"></select><select id="month" name="birthMonth"></select><select id="day" name="birthDay"></select></div></div>
+
+            <div class="input-group">
+                <label>이메일</label>
+                <div class="row">
+                    <input type="email" id="regEmail" name="email" placeholder="auth@polisight.com" required>
+                    <button type="button" id="btnReqAuth" class="btn-inline" onclick="requestEmailAuth()">인증요청</button>
+                </div>
+                <p id="regEmailError" class="error-msg">* 이미 가입된 이메일입니다.</p>
+
+                <div id="authCodeArea" class="row" style="display: none; margin-top: 8px;">
+                    <input type="text" id="authCode" placeholder="인증번호 6자리" maxlength="6" style="letter-spacing: 2px;">
+                    <button type="button" class="btn-inline" onclick="verifyCode()">확인</button>
+                </div>
+                <div id="authTimer" class="helper-text" style="display: none; color: #007bff;">남은 시간 5:00</div>
+                <p id="authCodeError" class="error-msg">* 인증번호가 일치하지 않습니다.</p>
+            </div>
+
+            <div class="input-group">
+                <label>비밀번호</label>
+                <input type="password" id="regPw" name="userPw" placeholder="6~20자 (영문/숫자/특수문자 포함)" required>
+                <p id="pwRuleError" class="error-msg">* 비밀번호 형식이 올바르지 않습니다 (6~20자 특수문자 포함).</p>
+
+                <input type="password" id="regPwConfirm" placeholder="비밀번호 확인" style="margin-top: 8px;" required>
+                <p id="pwMatchError" class="error-msg">* 비밀번호가 서로 일치하지 않습니다.</p>
+            </div>
+
+            <div class="input-group">
+                <label>이름 (본명)</label>
+                <input type="text" name="userName" placeholder="성함을 입력하세요" required>
+            </div>
+
+            <div class="input-group">
+                <label>생년월일</label>
+                <div class="row">
+                    <select id="year" name="birthYear"></select>
+                    <select id="month" name="birthMonth"></select>
+                    <select id="day" name="birthDay"></select>
+                </div>
+            </div>
+
             <button type="submit" class="submit-btn">가입 완료</button>
         </form>
     </section>
 
     <section id="findSection" class="form-section">
-        <div class="find-group"><p class="find-desc" style="margin-bottom: 10px;"><strong>아이디 찾기</strong></p><div class="input-group"><label>이름</label><input type="text" placeholder="성함을 입력하세요"></div><div class="input-group"><label>이메일 주소</label><input type="email" placeholder="이메일을 입력하세요"></div><button class="submit-btn" style="background: #444; box-shadow: none;">아이디 찾기</button></div>
-        <div class="divider"></div>
-        <div class="find-group"><p class="find-desc" style="margin-bottom: 10px;"><strong>비밀번호 재설정</strong></p><div class="input-group"><label>아이디</label><input type="text" placeholder="아이디를 입력하세요"></div><div class="input-group"><label>이메일 주소</label><input type="email" placeholder="이메일을 입력하세요"></div><button class="submit-btn">재설정 링크 발송</button></div>
+        <div class="find-group">
+            <p class="find-desc">
+                가입하신 <strong>이메일 주소</strong>를 입력해 주세요.<br>
+                비밀번호 재설정 링크를 발송해 드립니다.
+            </p>
+            <div class="input-group">
+                <label>이메일 주소</label>
+                <input type="email" id="findEmail" placeholder="이메일을 입력하세요" required>
+                <p id="findEmailError" class="error-msg">* 등록되지 않은 이메일 주소입니다.</p>
+            </div>
+            <button class="submit-btn" onclick="sendResetLink()">재설정 링크 발송</button>
+        </div>
     </section>
 </div>
 
 <script>
-    // 탭 전환 함수
+    /* ================= 전역 변수 ================= */
+    let timerInterval = null; // 타이머 인터벌 저장 변수
+
+    /* ================= 공통 기능 ================= */
+    // 탭 전환
     function switchTab(type) {
         const tabs = document.querySelectorAll('.tab-item');
         const sections = document.querySelectorAll('.form-section');
         tabs.forEach(t => t.classList.remove('active'));
         sections.forEach(s => s.classList.remove('active'));
 
-        if(type === 'login') { tabs[0].classList.add('active'); document.getElementById('loginSection').classList.add('active'); }
-        else if(type === 'signup') { tabs[1].classList.add('active'); document.getElementById('signupSection').classList.add('active'); }
-        else { tabs[2].classList.add('active'); document.getElementById('findSection').classList.add('active'); }
+        if(type === 'login') {
+            tabs[0].classList.add('active');
+            document.getElementById('loginSection').classList.add('active');
+        } else if(type === 'signup') {
+            tabs[1].classList.add('active');
+            document.getElementById('signupSection').classList.add('active');
+        } else {
+            tabs[2].classList.add('active');
+            document.getElementById('findSection').classList.add('active');
+        }
     }
 
-    // 생년월일 Select Box 생성
+    // 에러 메시지 제어 함수 (ID, 메시지 내용, 표시여부)
+    function toggleError(elementId, show, message = '') {
+        const el = document.getElementById(elementId);
+        if(el) {
+            el.style.display = show ? 'block' : 'none';
+            if(message) el.innerText = '* ' + message;
+        }
+    }
+
+    /* ================= 회원가입 로직 ================= */
+
+    // 생년월일 초기화
     const yearS = document.getElementById('year');
     const monthS = document.getElementById('month');
     const dayS = document.getElementById('day');
@@ -157,44 +233,171 @@
     for(let i=1; i<=12; i++) monthS.add(new Option(i+'월', i));
     for(let i=1; i<=31; i++) dayS.add(new Option(i+'일', i));
 
-    // 페이지 로드 시 실행 (setup.html 데이터 연동 로직)
+    // [핵심] 타이머 작동 로직 함수
+    function startAuthTimer(duration) {
+        let timer = duration, minutes, seconds;
+        const display = document.getElementById('authTimer');
+        const authCodeInput = document.getElementById('authCode');
+
+        // 기존 타이머가 돌고 있다면 정지
+        if (timerInterval) clearInterval(timerInterval);
+
+        // 초기 텍스트 설정
+        display.style.color = '#007bff';
+        authCodeInput.disabled = false;
+
+        // 1초마다 실행되는 인터벌
+        timerInterval = setInterval(function () {
+            minutes = parseInt(timer / 60, 10);
+            seconds = parseInt(timer % 60, 10);
+
+            // 한 자리수일 때 앞에 0 붙이기 (예: 5초 -> 05)
+            seconds = seconds < 10 ? "0" + seconds : seconds;
+
+            display.textContent = "남은 시간 " + minutes + ":" + seconds;
+
+            // 타이머 종료 시 (0초 미만이 될 때)
+            if (--timer < 0) {
+                clearInterval(timerInterval);
+                display.textContent = "시간 초과 (재요청 해주세요)";
+                display.style.color = "var(--error-color)"; // 빨간색 처리
+                authCodeInput.disabled = true; // 입력창 비활성화
+                authCodeInput.value = ''; // 입력값 초기화
+                // 필요 시 인증 확인 버튼도 비활성화 가능
+            }
+        }, 1000);
+    }
+
+    // 이메일 인증 요청 버튼 클릭
+    function requestEmailAuth() {
+        const emailInput = document.getElementById('regEmail');
+        const authArea = document.getElementById('authCodeArea');
+        const authTimer = document.getElementById('authTimer');
+        const btnReq = document.getElementById('btnReqAuth');
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        // 1. 이메일 형식 검사
+        if(!emailInput.value || !emailRegex.test(emailInput.value)) {
+            toggleError('regEmailError', true, '올바른 이메일 형식을 입력해 주세요.');
+            emailInput.focus();
+            return;
+        }
+
+        // TODO: 서버 중복 체크 로직 (가상 시나리오)
+        if(emailInput.value === 'test@test.com') {
+            toggleError('regEmailError', true, '이미 가입된 이메일입니다.');
+            return;
+        } else {
+            toggleError('regEmailError', false); // 에러 해제
+        }
+
+        // 2. 인증 UI 활성화
+        alert('인증번호가 발송되었습니다. 이메일을 확인해 주세요.');
+        authArea.style.display = 'flex';
+        authTimer.style.display = 'block';
+        btnReq.textContent = '재전송';
+
+        // 3. 타이머 시작 (5분 = 300초)
+        startAuthTimer(300);
+
+        // 포커스 이동
+        document.getElementById('authCode').focus();
+    }
+
+    // 인증번호 확인
+    function verifyCode() {
+        const codeInput = document.getElementById('authCode');
+
+        // TODO: 서버 인증번호 검증 로직 (가상 시나리오: 123456 정답)
+        if(codeInput.value === '123456') {
+            alert('인증이 완료되었습니다.');
+            toggleError('authCodeError', false);
+
+            // 타이머 정지
+            clearInterval(timerInterval);
+
+            // 인증 완료 처리
+            document.getElementById('regEmail').readOnly = true;
+            document.getElementById('btnReqAuth').disabled = true;
+            document.getElementById('btnReqAuth').textContent = '인증됨';
+            document.getElementById('authCodeArea').style.display = 'none';
+            document.getElementById('authTimer').style.display = 'none';
+        } else {
+            // 인증 실패 시 에러 메시지
+            toggleError('authCodeError', true, '인증번호가 일치하지 않습니다.');
+        }
+    }
+
+    // 비밀번호 실시간 유효성 검사
+    const pw = document.getElementById('regPw');
+    const pwConfirm = document.getElementById('regPwConfirm');
+
+    function checkPwValidation() {
+        const val = pw.value;
+        // 정규식: 영문, 숫자, 특수문자 포함 6~20자
+        const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{6,20}$/;
+
+        if(val.length > 0 && !regex.test(val)) {
+            toggleError('pwRuleError', true, '영문/숫자/특수문자 포함 6~20자로 입력해 주세요.');
+        } else {
+            toggleError('pwRuleError', false);
+        }
+        checkPwMatch(); // 내용 변경 시 일치 여부도 재확인
+    }
+
+    function checkPwMatch() {
+        if(pwConfirm.value.length > 0 && pw.value !== pwConfirm.value) {
+            toggleError('pwMatchError', true, '비밀번호가 서로 일치하지 않습니다.');
+        } else {
+            toggleError('pwMatchError', false);
+        }
+    }
+
+    pw.addEventListener('input', checkPwValidation);
+    pwConfirm.addEventListener('input', checkPwMatch);
+
+    /* ================= 비밀번호 찾기 로직 ================= */
+    function sendResetLink() {
+        const email = document.getElementById('findEmail').value;
+        if(!email) {
+            toggleError('findEmailError', true, '이메일을 입력해 주세요.');
+            return;
+        }
+
+        // 가상 시나리오
+        if(email === 'nothing@test.com') {
+            toggleError('findEmailError', true, '등록되지 않은 이메일입니다.');
+        } else {
+            toggleError('findEmailError', false);
+            alert('재설정 링크가 이메일로 발송되었습니다.');
+        }
+    }
+
+    /* ================= 초기화 ================= */
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
 
-        // 1. URL 파라미터 확인 (?mode=signup) -> 회원가입 탭 열기
+        // URL 파라미터 체크 (?mode=signup)
         if (urlParams.get('mode') === 'signup') {
             switchTab('signup');
         }
 
-        // 2. Setup 데이터 확인 및 자동 기입
+        // Setup 데이터 연동
         const setupData = localStorage.getItem('userSetupData');
         if (setupData) {
             const data = JSON.parse(setupData);
-
-            // 생년월일 데이터가 있고, 형식이 맞다면 (YYYYMMDD)
             if(data.birthDate && data.birthDate.length === 8) {
                 const y = data.birthDate.substring(0, 4);
-                const m = parseInt(data.birthDate.substring(4, 6)); // '05' -> 5 (Select Value 매칭)
-                const d = parseInt(data.birthDate.substring(6, 8)); // '01' -> 1
+                const m = parseInt(data.birthDate.substring(4, 6));
+                const d = parseInt(data.birthDate.substring(6, 8));
 
                 document.getElementById('year').value = y;
                 document.getElementById('month').value = m;
                 document.getElementById('day').value = d;
-
-                // 안내 메시지 표시
                 document.getElementById('setupInfoMsg').style.display = 'flex';
             }
-            // (옵션) 사용한 데이터는 삭제하거나 유지 (여기서는 유지)
         }
     });
-
-    // 기존 유효성 검사 로직
-    document.getElementById('regId').addEventListener('input', function() { const regex = /^[a-z0-9]{4,15}$/; document.getElementById('idError').style.display = (this.value === '' || regex.test(this.value)) ? 'none' : 'block'; });
-    const pw = document.getElementById('regPw');
-    const pwConfirm = document.getElementById('regPwConfirm');
-    function checkPw() { document.getElementById('pwError').style.display = (pw.value && pwConfirm.value && pw.value !== pwConfirm.value) ? 'block' : 'none'; }
-    pw.addEventListener('input', checkPw); pwConfirm.addEventListener('input', checkPw);
-    function checkDuplicate() { alert('서버 연결이 필요합니다.'); }
 </script>
 
 </body>
