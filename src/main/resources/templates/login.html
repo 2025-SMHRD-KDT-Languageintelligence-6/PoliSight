@@ -14,7 +14,7 @@
             --bg-gradient: linear-gradient(135deg, #f4f7f9 0%, #e9eff5 100%);
             --text-main: #222;
             --text-sub: #666;
-            --error-color: #e74c3c; /* 빨간색 경고 */
+            --error-color: #e74c3c;
             --input-bg: #fdfdfd;
         }
 
@@ -67,12 +67,11 @@
         .btn-inline { background: #444; color: white; border: none; border-radius: 10px; padding: 0 14px; cursor: pointer; font-size: 12px; font-weight: 600; white-space: nowrap; }
         .helper-text { font-size: 11px; color: #888; margin-top: 5px; line-height: 1.4; }
 
-        /* 에러 메시지 스타일 강화 */
         .error-msg {
             color: var(--error-color);
             font-size: 12px;
             margin-top: 6px;
-            display: none; /* 기본 숨김 */
+            display: none;
             font-weight: 500;
         }
 
@@ -89,7 +88,6 @@
             align-items: center; justify-content: center; gap: 6px;
         }
 
-        /* 비활성화된 버튼 스타일 */
         button:disabled { background: #ccc; cursor: not-allowed; color: #666; box-shadow: none; }
     </style>
 </head>
@@ -108,16 +106,18 @@
     </div>
 
     <section id="loginSection" class="form-section active">
-        <form th:action="@{/login}" method="post">
+        <form id="loginForm" th:action="@{/login}" method="post">
             <div class="input-group">
                 <label>이메일</label>
                 <input type="email" name="email" id="loginEmail" placeholder="이메일을 입력해 주세요" required>
-                <p id="loginEmailError" class="error-msg">* 존재하지 않는 이메일이거나 형식이 올바르지 않습니다.</p>
+
+                <p id="loginFormatError" class="error-msg">* 이메일 형식이 올바르지 않습니다.</p>
+
+                <p id="loginError" class="error-msg" th:if="${param.error}" style="display:block;">* 이메일 또는 비밀번호가 일치하지 않습니다.</p>
             </div>
             <div class="input-group">
                 <label>비밀번호</label>
                 <input type="password" name="userPw" id="loginPw" placeholder="비밀번호를 입력해 주세요" required>
-                <p id="loginPwError" class="error-msg" th:if="${param.error}" style="display:block;">* 이메일 또는 비밀번호가 일치하지 않습니다.</p>
             </div>
             <button class="submit-btn" type="submit">로그인</button>
         </form>
@@ -129,7 +129,6 @@
         </div>
 
         <form id="signupForm" th:action="@{/join}" method="post">
-
             <div class="input-group">
                 <label>이메일</label>
                 <div class="row">
@@ -191,10 +190,9 @@
 
 <script>
     /* ================= 전역 변수 ================= */
-    let timerInterval = null; // 타이머 인터벌 저장 변수
+    let timerInterval = null;
 
     /* ================= 공통 기능 ================= */
-    // 탭 전환
     function switchTab(type) {
         const tabs = document.querySelectorAll('.tab-item');
         const sections = document.querySelectorAll('.form-section');
@@ -213,7 +211,6 @@
         }
     }
 
-    // 에러 메시지 제어 함수 (ID, 메시지 내용, 표시여부)
     function toggleError(elementId, show, message = '') {
         const el = document.getElementById(elementId);
         if(el) {
@@ -222,9 +219,66 @@
         }
     }
 
-    /* ================= 회원가입 로직 ================= */
+    /* ================= 로그인 및 초기화 로직 ================= */
 
-    // 생년월일 초기화
+    document.addEventListener("DOMContentLoaded", function() {
+        const urlParams = new URLSearchParams(window.location.search);
+
+        // 1. 회원가입 모드 체크
+        if (urlParams.get('mode') === 'signup') {
+            switchTab('signup');
+        }
+
+        // 2. 로그인 에러 시 이메일 복구
+        if (urlParams.has('error')) {
+            const savedEmail = localStorage.getItem('lastLoginEmail');
+            if(savedEmail) {
+                document.getElementById('loginEmail').value = savedEmail;
+            }
+        }
+
+        // 3. Setup 데이터 연동
+        const setupData = localStorage.getItem('userSetupData');
+        if (setupData) {
+            const data = JSON.parse(setupData);
+            if(data.birthDate && data.birthDate.length === 8) {
+                const y = data.birthDate.substring(0, 4);
+                const m = parseInt(data.birthDate.substring(4, 6));
+                const d = parseInt(data.birthDate.substring(6, 8));
+                document.getElementById('year').value = y;
+                document.getElementById('month').value = m;
+                document.getElementById('day').value = d;
+                document.getElementById('setupInfoMsg').style.display = 'flex';
+            }
+        }
+    });
+
+    // 4. 로그인 폼 제출 시 이메일 저장
+    const loginForm = document.getElementById('loginForm');
+    if(loginForm) {
+        loginForm.addEventListener('submit', function() {
+            const emailVal = document.getElementById('loginEmail').value;
+            localStorage.setItem('lastLoginEmail', emailVal);
+        });
+    }
+
+    // 5. [추가] 로그인 입력창 실시간 형식 검사
+    const loginEmailInput = document.getElementById('loginEmail');
+    if(loginEmailInput) {
+        loginEmailInput.addEventListener('input', function() {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            // 값이 있고 형식이 안 맞으면 에러 표시
+            if(this.value.length > 0 && !emailRegex.test(this.value)) {
+                toggleError('loginFormatError', true);
+            } else {
+                toggleError('loginFormatError', false);
+            }
+        });
+    }
+
+
+    /* ================= 회원가입 로직 (기존 유지) ================= */
     const yearS = document.getElementById('year');
     const monthS = document.getElementById('month');
     const dayS = document.getElementById('day');
@@ -233,171 +287,91 @@
     for(let i=1; i<=12; i++) monthS.add(new Option(i+'월', i));
     for(let i=1; i<=31; i++) dayS.add(new Option(i+'일', i));
 
-    // [핵심] 타이머 작동 로직 함수
     function startAuthTimer(duration) {
         let timer = duration, minutes, seconds;
         const display = document.getElementById('authTimer');
         const authCodeInput = document.getElementById('authCode');
-
-        // 기존 타이머가 돌고 있다면 정지
         if (timerInterval) clearInterval(timerInterval);
-
-        // 초기 텍스트 설정
         display.style.color = '#007bff';
         authCodeInput.disabled = false;
-
-        // 1초마다 실행되는 인터벌
         timerInterval = setInterval(function () {
             minutes = parseInt(timer / 60, 10);
             seconds = parseInt(timer % 60, 10);
-
-            // 한 자리수일 때 앞에 0 붙이기 (예: 5초 -> 05)
             seconds = seconds < 10 ? "0" + seconds : seconds;
-
             display.textContent = "남은 시간 " + minutes + ":" + seconds;
-
-            // 타이머 종료 시 (0초 미만이 될 때)
             if (--timer < 0) {
                 clearInterval(timerInterval);
                 display.textContent = "시간 초과 (재요청 해주세요)";
-                display.style.color = "var(--error-color)"; // 빨간색 처리
-                authCodeInput.disabled = true; // 입력창 비활성화
-                authCodeInput.value = ''; // 입력값 초기화
-                // 필요 시 인증 확인 버튼도 비활성화 가능
+                display.style.color = "var(--error-color)";
+                authCodeInput.disabled = true;
+                authCodeInput.value = '';
             }
         }, 1000);
     }
 
-    // 이메일 인증 요청 버튼 클릭
     function requestEmailAuth() {
         const emailInput = document.getElementById('regEmail');
         const authArea = document.getElementById('authCodeArea');
         const authTimer = document.getElementById('authTimer');
         const btnReq = document.getElementById('btnReqAuth');
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-        // 1. 이메일 형식 검사
         if(!emailInput.value || !emailRegex.test(emailInput.value)) {
             toggleError('regEmailError', true, '올바른 이메일 형식을 입력해 주세요.');
             emailInput.focus();
             return;
         }
-
-        // TODO: 서버 중복 체크 로직 (가상 시나리오)
         if(emailInput.value === 'test@test.com') {
             toggleError('regEmailError', true, '이미 가입된 이메일입니다.');
             return;
         } else {
-            toggleError('regEmailError', false); // 에러 해제
+            toggleError('regEmailError', false);
         }
-
-        // 2. 인증 UI 활성화
         alert('인증번호가 발송되었습니다. 이메일을 확인해 주세요.');
         authArea.style.display = 'flex';
         authTimer.style.display = 'block';
         btnReq.textContent = '재전송';
-
-        // 3. 타이머 시작 (5분 = 300초)
         startAuthTimer(300);
-
-        // 포커스 이동
         document.getElementById('authCode').focus();
     }
 
-    // 인증번호 확인
     function verifyCode() {
         const codeInput = document.getElementById('authCode');
-
-        // TODO: 서버 인증번호 검증 로직 (가상 시나리오: 123456 정답)
         if(codeInput.value === '123456') {
             alert('인증이 완료되었습니다.');
             toggleError('authCodeError', false);
-
-            // 타이머 정지
             clearInterval(timerInterval);
-
-            // 인증 완료 처리
             document.getElementById('regEmail').readOnly = true;
             document.getElementById('btnReqAuth').disabled = true;
             document.getElementById('btnReqAuth').textContent = '인증됨';
             document.getElementById('authCodeArea').style.display = 'none';
             document.getElementById('authTimer').style.display = 'none';
         } else {
-            // 인증 실패 시 에러 메시지
             toggleError('authCodeError', true, '인증번호가 일치하지 않습니다.');
         }
     }
 
-    // 비밀번호 실시간 유효성 검사
     const pw = document.getElementById('regPw');
     const pwConfirm = document.getElementById('regPwConfirm');
-
     function checkPwValidation() {
         const val = pw.value;
-        // 정규식: 영문, 숫자, 특수문자 포함 6~20자
         const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{6,20}$/;
-
-        if(val.length > 0 && !regex.test(val)) {
-            toggleError('pwRuleError', true, '영문/숫자/특수문자 포함 6~20자로 입력해 주세요.');
-        } else {
-            toggleError('pwRuleError', false);
-        }
-        checkPwMatch(); // 내용 변경 시 일치 여부도 재확인
+        if(val.length > 0 && !regex.test(val)) toggleError('pwRuleError', true, '영문/숫자/특수문자 포함 6~20자로 입력해 주세요.');
+        else toggleError('pwRuleError', false);
+        checkPwMatch();
     }
-
     function checkPwMatch() {
-        if(pwConfirm.value.length > 0 && pw.value !== pwConfirm.value) {
-            toggleError('pwMatchError', true, '비밀번호가 서로 일치하지 않습니다.');
-        } else {
-            toggleError('pwMatchError', false);
-        }
+        if(pwConfirm.value.length > 0 && pw.value !== pwConfirm.value) toggleError('pwMatchError', true, '비밀번호가 서로 일치하지 않습니다.');
+        else toggleError('pwMatchError', false);
     }
-
     pw.addEventListener('input', checkPwValidation);
     pwConfirm.addEventListener('input', checkPwMatch);
 
-    /* ================= 비밀번호 찾기 로직 ================= */
     function sendResetLink() {
         const email = document.getElementById('findEmail').value;
-        if(!email) {
-            toggleError('findEmailError', true, '이메일을 입력해 주세요.');
-            return;
-        }
-
-        // 가상 시나리오
-        if(email === 'nothing@test.com') {
-            toggleError('findEmailError', true, '등록되지 않은 이메일입니다.');
-        } else {
-            toggleError('findEmailError', false);
-            alert('재설정 링크가 이메일로 발송되었습니다.');
-        }
+        if(!email) { toggleError('findEmailError', true, '이메일을 입력해 주세요.'); return; }
+        if(email === 'nothing@test.com') toggleError('findEmailError', true, '등록되지 않은 이메일입니다.');
+        else { toggleError('findEmailError', false); alert('재설정 링크가 이메일로 발송되었습니다.'); }
     }
-
-    /* ================= 초기화 ================= */
-    document.addEventListener("DOMContentLoaded", function() {
-        const urlParams = new URLSearchParams(window.location.search);
-
-        // URL 파라미터 체크 (?mode=signup)
-        if (urlParams.get('mode') === 'signup') {
-            switchTab('signup');
-        }
-
-        // Setup 데이터 연동
-        const setupData = localStorage.getItem('userSetupData');
-        if (setupData) {
-            const data = JSON.parse(setupData);
-            if(data.birthDate && data.birthDate.length === 8) {
-                const y = data.birthDate.substring(0, 4);
-                const m = parseInt(data.birthDate.substring(4, 6));
-                const d = parseInt(data.birthDate.substring(6, 8));
-
-                document.getElementById('year').value = y;
-                document.getElementById('month').value = m;
-                document.getElementById('day').value = d;
-                document.getElementById('setupInfoMsg').style.display = 'flex';
-            }
-        }
-    });
 </script>
 
 </body>
