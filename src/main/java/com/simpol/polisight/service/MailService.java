@@ -33,7 +33,7 @@ public class MailService {
 
         try {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            helper.setFrom(SENDER_EMAIL);
+            helper.setFrom(SENDER_EMAIL, "PoliSight");
             helper.setTo(mail);
             helper.setSubject("[PoliSight] 회원가입 인증번호");
             String body = "";
@@ -44,7 +44,7 @@ public class MailService {
 
             javaMailSender.send(message);
 
-        } catch (MessagingException e) {
+        } catch (MessagingException | java.io.UnsupportedEncodingException e) {
             e.printStackTrace();
         }
 
