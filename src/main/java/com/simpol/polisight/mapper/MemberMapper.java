@@ -14,6 +14,9 @@ public interface MemberMapper {
     // MemberMapper.java
     void updateMember(MemberDto memberDto);
 
+    // [추가] 이메일로 회원 수 조회
+    int countByEmail(String email);
+
 
 
 

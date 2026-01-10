@@ -93,4 +93,10 @@ public class MemberService {
     private String combineDate(String y, String m, String d) {
         return String.format("%s-%02d-%02d", y, Integer.parseInt(m), Integer.parseInt(d));
     }
+
+    // [추가] 이메일 중복 체크 메소드
+    public boolean checkEmailDuplicate(String email) {
+        // memberMapper에서 이메일 개수를 세어 0보다 크면 true(중복), 아니면 false 리턴
+        return memberMapper.countByEmail(email) > 0;
+    }
 }

@@ -192,6 +192,9 @@
     /* ================= 전역 변수 ================= */
     let timerInterval = null;
 
+    // 이메일 인증이 완료되었는지 확인하는 상태 변수
+    let isEmailVerified = false;
+
     /* ================= 공통 기능 ================= */
     function switchTab(type) {
         const tabs = document.querySelectorAll('.tab-item');
@@ -251,6 +254,19 @@
                 document.getElementById('setupInfoMsg').style.display = 'flex';
             }
         }
+
+        // 회원가입 폼 제출 시 인증 여부 강제 확인 (인증 안되면 가입 불가)
+        const signupForm = document.getElementById('signupForm');
+        if(signupForm) {
+            signupForm.addEventListener('submit', function(e) {
+                if (!isEmailVerified) {
+                    e.preventDefault(); // 폼 제출 중단
+                    alert('이메일 인증을 완료해 주세요.');
+                    document.getElementById('regEmail').focus();
+                }
+            });
+        }
+
     });
 
     // 4. 로그인 폼 제출 시 이메일 저장
@@ -292,6 +308,10 @@
         const display = document.getElementById('authTimer');
         const authCodeInput = document.getElementById('authCode');
         if (timerInterval) clearInterval(timerInterval);
+
+        // 타이머
+        display.style.display = 'block';
+
         display.style.color = '#007bff';
         authCodeInput.disabled = false;
         timerInterval = setInterval(function () {
@@ -320,34 +340,94 @@
             emailInput.focus();
             return;
         }
-        if(emailInput.value === 'test@test.com') {
-            toggleError('regEmailError', true, '이미 가입된 이메일입니다.');
-            return;
-        } else {
-            toggleError('regEmailError', false);
-        }
-        alert('인증번호가 발송되었습니다. 이메일을 확인해 주세요.');
-        authArea.style.display = 'flex';
-        authTimer.style.display = 'block';
-        btnReq.textContent = '재전송';
-        startAuthTimer(300);
-        document.getElementById('authCode').focus();
+        // 로딩 UI 처리
+        btnReq.disabled = true;
+        btnReq.textContent = '확인중..';
+
+        // 서버로 요청
+        fetch('/mail/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'mail=' + encodeURIComponent(emailInput.value)
+        })
+        .then(response => response.text())
+        .then(data => {
+            // [수정] 서버 응답값에 따라 분기 처리
+            if (data === 'duplicate') {
+                // 1. 중복된 이메일인 경우
+                toggleError('regEmailError', true, '이미 가입된 이메일입니다.');
+                btnReq.disabled = false;
+                btnReq.textContent = '인증요청';
+                emailInput.focus();
+
+            } else if (data === 'success') {
+                // 2. 발송 성공한 경우
+                alert('인증번호가 발송되었습니다. 이메일을 확인해 주세요.');
+                toggleError('regEmailError', false); // 에러 메시지 숨김
+
+                authArea.style.display = 'flex';
+                btnReq.textContent = '재전송';
+                btnReq.disabled = false;
+
+                startAuthTimer(300);
+                document.getElementById('authCode').focus();
+
+            } else {
+                // 3. 그 외 실패 (메일 서버 오류 등)
+                alert('메일 발송 실패: 잠시 후 다시 시도해 주세요.');
+                btnReq.disabled = false;
+                btnReq.textContent = '인증요청';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('서버 연결 오류입니다.');
+            btnReq.disabled = false;
+            btnReq.textContent = '인증요청';
+        });
     }
 
+    // [수정] 인증코드 확인 (가짜 로직 제거 -> 서버 검증으로 변경)
     function verifyCode() {
         const codeInput = document.getElementById('authCode');
-        if(codeInput.value === '123456') {
-            alert('인증이 완료되었습니다.');
-            toggleError('authCodeError', false);
-            clearInterval(timerInterval);
-            document.getElementById('regEmail').readOnly = true;
-            document.getElementById('btnReqAuth').disabled = true;
-            document.getElementById('btnReqAuth').textContent = '인증됨';
-            document.getElementById('authCodeArea').style.display = 'none';
-            document.getElementById('authTimer').style.display = 'none';
-        } else {
-            toggleError('authCodeError', true, '인증번호가 일치하지 않습니다.');
+        const code = codeInput.value;
+
+        if(code.length !== 6) {
+            toggleError('authCodeError', true, '인증번호 6자리를 입력해 주세요.');
+            return;
         }
+
+        // [추가] 서버로 인증번호 확인 요청 (AJAX)
+        fetch('/mail/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'code=' + encodeURIComponent(code)
+        })
+        .then(response => response.text())
+        .then(data => {
+            if (data === 'ok') {
+                alert('인증이 완료되었습니다.');
+                toggleError('authCodeError', false);
+                clearInterval(timerInterval);
+
+                // UI 잠금 및 인증 완료 처리
+                document.getElementById('regEmail').readOnly = true;
+                document.getElementById('btnReqAuth').disabled = true;
+                document.getElementById('btnReqAuth').textContent = '인증됨';
+                document.getElementById('authCodeArea').style.display = 'none';
+                document.getElementById('authTimer').style.display = 'none';
+
+                // [중요] 인증 상태 true로 변경 (이제 회원가입 버튼 동작함)
+                isEmailVerified = true;
+            } else {
+                toggleError('authCodeError', true, '인증번호가 일치하지 않습니다.');
+                isEmailVerified = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('인증 확인 중 오류가 발생했습니다.');
+        });
     }
 
     const pw = document.getElementById('regPw');

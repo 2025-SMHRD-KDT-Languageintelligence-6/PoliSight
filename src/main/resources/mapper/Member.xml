@@ -29,4 +29,8 @@
         WHERE email = #{email}
     </update>
 
+    <select id="countByEmail" parameterType="String" resultType="int">
+        SELECT COUNT(*)
+        FROM member  WHERE email = #{email} </select>
+
 </mapper>
