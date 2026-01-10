@@ -25,6 +25,10 @@ repositories {
 }
 
 dependencies {
+
+    // SMTP
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect'
