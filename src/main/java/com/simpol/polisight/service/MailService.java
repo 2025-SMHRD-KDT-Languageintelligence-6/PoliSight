@@ -50,4 +50,33 @@ public class MailService {
 
         return authNum; // 생성된 번호를 컨트롤러로 리턴
     }
+
+    // 비밀번호 재설정 링크 발송
+    public void sendResetMail(String mail, String token) {
+        MimeMessage message = javaMailSender.createMimeMessage();
+
+        try {
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(SENDER_EMAIL, "PoliSight");
+            helper.setTo(mail.trim());
+            helper.setSubject("[PoliSight] 비밀번호 재설정 링크");
+
+            // 내 서버 포트가 8089라고 가정 (변경 필요시 수정)
+            String resetLink = "http://localhost:8089/user/reset-pw?token=" + token;
+
+            String body = "";
+            body += "<h3>비밀번호 재설정</h3>";
+            body += "<p>아래 링크를 클릭하여 비밀번호를 재설정하세요.</p>";
+            body += "<a href='" + resetLink + "'>비밀번호 변경하기</a>";
+            body += "<p>이 링크는 10분간 유효합니다.</p>";
+
+            helper.setText(body, true);
+
+            javaMailSender.send(message);
+
+        } catch (MessagingException | java.io.UnsupportedEncodingException e) {
+            e.printStackTrace();
+            throw new RuntimeException("메일 발송 실패", e);
+        }
+    }
 }

@@ -31,6 +31,11 @@
 
     <select id="countByEmail" parameterType="String" resultType="int">
         SELECT COUNT(*)
-        FROM member  WHERE email = #{email} </select>
+        FROM member  WHERE email = #{email}
+    </select>
+
+    <update id="updatePassword">
+        UPDATE member SET passwordHash = #{passwordHash} WHERE email = #{email}
+    </update>
 
 </mapper>

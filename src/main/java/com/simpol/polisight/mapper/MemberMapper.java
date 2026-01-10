@@ -2,6 +2,7 @@ package com.simpol.polisight.mapper;
 
 import com.simpol.polisight.dto.MemberDto;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface MemberMapper {
@@ -18,7 +19,6 @@ public interface MemberMapper {
     int countByEmail(String email);
 
 
-
-
+    void updatePassword(@Param("email") String email, @Param("passwordHash") String encodedPw);
 }
 

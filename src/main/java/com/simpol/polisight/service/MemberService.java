@@ -2,18 +2,26 @@ package com.simpol.polisight.service;
 
 import com.simpol.polisight.dto.MemberDto;
 import com.simpol.polisight.mapper.MemberMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class MemberService {
 
-    @Autowired
-    private MemberMapper memberMapper;
+    private final MemberMapper memberMapper;
+
+    // [추가] 암호화 기계 주입
+    private final PasswordEncoder passwordEncoder;
 
     // 1. 회원가입
     public void join(MemberDto dto) {
-        dto.setPasswordHash(dto.getUserPw());
+        // 비밀번호 암호화 (Encode)
+        String rawPw = dto.getUserPw();
+        String encodedPw = passwordEncoder.encode(rawPw);
+        dto.setPasswordHash(encodedPw); // 암호화된 비밀번호로 교체
         dto.setMemberName(dto.getUserName());
 
         // [날짜 조합] 년/월/일이 모두 있을 때만 조합 (안전 장치 추가)
@@ -31,7 +39,7 @@ public class MemberService {
     // 2. 로그인
     public MemberDto login(String email, String inputPw) {
         MemberDto member = memberMapper.selectMemberByEmail(email);
-        if (member != null && member.getPasswordHash().equals(inputPw)) {
+        if (member != null && passwordEncoder.matches(inputPw, member.getPasswordHash())) {
             return member;
         }
         return null;
@@ -63,11 +71,13 @@ public class MemberService {
         // (4) 비밀번호 변경 로직
         if (dto.getNewPw() != null && !dto.getNewPw().trim().isEmpty()) {
             // 기존 비번 확인
-            if (!dbMember.getPasswordHash().equals(dto.getCurrentPw())) {
+            if (!passwordEncoder.matches(dto.getCurrentPw(), dbMember.getPasswordHash())) {
                 throw new IllegalArgumentException("기존 비밀번호가 일치하지 않습니다.");
             }
-            // 새 비번 설정
-            dto.setPasswordHash(dto.getNewPw());
+
+            // 새 비밀번호 암호화해서 저장
+            String encodedNewPw = passwordEncoder.encode(dto.getNewPw());
+            dto.setPasswordHash(encodedNewPw);
         } else {
             // 변경 안 함 (XML에서 null check로 제외됨)
             dto.setPasswordHash(null);
@@ -78,6 +88,18 @@ public class MemberService {
 
         // (6) 세션 갱신용 최신 정보 반환
         return memberMapper.selectMemberByEmail(dto.getEmail());
+    }
+
+    // 비밀번호 재설정 (비밀번호 찾기 이메일 링크용)
+    public void updatePassword(String email, String newPw) {
+        // 새 비밀번호 암호화
+        String encodedPw = passwordEncoder.encode(newPw);
+
+        // DB 업데이트 (Mapper에 이 기능을 하는 쿼리가 있어야 합니다)
+        // memberMapper.updatePassword(email, encodedPw);
+        // -> 만약 updatePassword 메소드가 없다면 아래처럼 기존 updateMember를 활용하거나 새로 만들어야 합니다.
+        // 여기서는 Mapper에 updatePassword(String email, String password)가 있다고 가정합니다.
+        memberMapper.updatePassword(email, encodedPw);
     }
 
     // --- 유틸리티 메서드 (중복 제거용) ---

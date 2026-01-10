@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -88,4 +89,39 @@ public class MemberController {
 
     @GetMapping("/setup")
     public String setupPage() { return "setup"; }
+
+    // 1. 이메일 링크를 클릭했을 때 페이지 보여주기
+    @GetMapping("/user/reset-pw")
+    public String resetPwPage(@RequestParam("token") String token, Model model) {
+        // 토큰 검증: 저장소에 없는 토큰이면 에러 페이지나 홈으로 튕기기
+        if (!MailController.resetTokenStore.containsKey(token)) {
+            return "redirect:/?error=invalid_token"; // 홈으로 리다이렉트
+        }
+
+        // HTML에 토큰을 전달 (나중에 POST 할 때 쓰려고)
+        model.addAttribute("token", token);
+        return "reset_pw"; // reset_pw.html 열기
+    }
+
+    // 2. 실제 비밀번호 변경 요청 처리
+    @PostMapping("/user/update-pw")
+    public String updatePwProcess(@RequestParam("token") String token,
+                                  @RequestParam("newPw") String newPw) {
+
+        // 토큰으로 이메일 찾기
+        String email = MailController.resetTokenStore.get(token);
+
+        if (email == null) {
+            return "redirect:/?error=session_expired";
+        }
+
+        // DB 비밀번호 업데이트
+        memberService.updatePassword(email, newPw);
+
+        // 사용한 토큰 삭제 (재사용 방지)
+        MailController.resetTokenStore.remove(token);
+
+        // 로그인 페이지로 이동 (성공 메시지 전달)
+        return "redirect:/?message=pw_changed";
+    }
 }

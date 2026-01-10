@@ -447,10 +447,53 @@
     pwConfirm.addEventListener('input', checkPwMatch);
 
     function sendResetLink() {
-        const email = document.getElementById('findEmail').value;
-        if(!email) { toggleError('findEmailError', true, '이메일을 입력해 주세요.'); return; }
-        if(email === 'nothing@test.com') toggleError('findEmailError', true, '등록되지 않은 이메일입니다.');
-        else { toggleError('findEmailError', false); alert('재설정 링크가 이메일로 발송되었습니다.'); }
+        const emailInput = document.getElementById('findEmail');
+        const email = emailInput.value;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        // 유효성 검사
+        if(!email) {
+            toggleError('findEmailError', true, '이메일을 입력해 주세요.');
+            emailInput.focus();
+            return;
+        }
+        if(!emailRegex.test(email)) {
+            toggleError('findEmailError', true, '올바른 이메일 형식을 입력해 주세요.');
+            return;
+        }
+
+        // 버튼 텍스트 변경 (로딩 효과)
+        const btn = document.querySelector('#findSection .submit-btn');
+        const originalText = btn.innerText;
+        btn.innerText = '전송중...';
+        btn.disabled = true;
+
+        // 서버로 전송
+        fetch('/mail/send-reset', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'mail=' + encodeURIComponent(email)
+        })
+        .then(response => response.text())
+        .then(data => {
+            btn.innerText = originalText;
+            btn.disabled = false;
+
+            if (data === 'success') {
+                alert('재설정 링크가 이메일로 발송되었습니다!\n메일함을 확인해 주세요.');
+                toggleError('findEmailError', false);
+            } else if (data === 'not_found') {
+                toggleError('findEmailError', true, '등록되지 않은 이메일 주소입니다.');
+            } else {
+                alert('오류가 발생했습니다. 다시 시도해 주세요.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('서버 연결 오류입니다.');
+            btn.innerText = originalText;
+            btn.disabled = false;
+        });
     }
 </script>
 
