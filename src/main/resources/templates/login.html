@@ -124,22 +124,21 @@
 
         <!-- 구글 로그인 -->
         <div style="margin-top: 20px;">
-            <a href="/oauth2/authorization/google" style="text-decoration: none;">
+            <a href="/oauth2/authorization/google" style="text-decoration: none; display: block;">
                 <div style="
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: white;
-            border: 1px solid #dadce0;
-            border-radius: 4px;
-            padding: 0 12px;
-            height: 48px;
-            width: 100%; /* 너비 조절 필요시 여기 수정 (예: 300px) */
-            max-width: 400px;
-            cursor: pointer;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-            transition: background-color 0.2s;
-        " onmouseover="this.style.backgroundColor='#f8f9fa'" onmouseout="this.style.backgroundColor='white'">
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background-color: white;
+                border: 1px solid #dadce0;
+                border-radius: 4px; /* 파란 버튼과 곡률 통일 */
+                height: 48px;       /* 파란 버튼과 높이 통일 */
+                width: 100%;        /* ★ 핵심: 부모 컨테이너에 꽉 차게 */
+                box-sizing: border-box;
+                cursor: pointer;
+                box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+                transition: background-color 0.2s;
+            " onmouseover="this.style.backgroundColor='#f8f9fa'" onmouseout="this.style.backgroundColor='white'">
 
                     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="18px" height="18px" viewBox="0 0 48 48" style="margin-right: 12px;">
                         <g>
@@ -151,21 +150,16 @@
                         </g>
                     </svg>
 
-                    <span style="
-                font-family: 'Roboto', sans-serif;
-                font-weight: 500;
-                color: #3c4043;
-                font-size: 16px;
-            ">
-                Google 계정으로 로그인
-            </span>
+                    <span style="font-family: 'Roboto', sans-serif; font-weight: 500; color: #3c4043; font-size: 16px;">
+                    Google 계정으로 로그인
+                </span>
                 </div>
             </a>
         </div>
 
         <!-- 카카오 로그인 -->
         <div style="margin-top: 10px;">
-            <a href="/oauth2/authorization/kakao" style="text-decoration: none;">
+            <a href="/oauth2/authorization/kakao" style="text-decoration: none; display: block;">
                 <div style="
                 display: flex;
                 align-items: center;
@@ -173,24 +167,19 @@
                 background-color: #FEE500;
                 border: 1px solid #FEE500;
                 border-radius: 4px;
-                padding: 0 12px;
                 height: 48px;
-                width: 100%;
+                width: 100%;        /* ★ 핵심: 부모 컨테이너에 꽉 차게 */
+                box-sizing: border-box;
                 cursor: pointer;
                 box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+                transition: background-color 0.2s;
             " onmouseover="this.style.backgroundColor='#fdd835'" onmouseout="this.style.backgroundColor='#FEE500'">
 
                     <svg viewBox="0 0 32 32" width="20" height="20" style="margin-right: 12px;">
                         <path fill="#000000" d="M16 4C9.923 4 5 8.24 5 13.47c0 3.32 1.97 6.27 5.04 7.97-.24.89-.87 3.23-.99 3.73-.16.59.22.58.46.42.19-.13 3.03-2.06 4.25-2.88.4.06.81.09 1.24.09 6.077 0 11-4.23 11-9.47S22.077 4 16 4z"/>
                     </svg>
 
-                    <span style="
-                    font-family: sans-serif;
-                    font-weight: 500;
-                    color: #000000;
-                    font-size: 16px;
-                    opacity: 0.85;
-                ">
+                    <span style="font-family: sans-serif; font-weight: 500; color: #000000; font-size: 16px; opacity: 0.85;">
                     카카오 계정으로 로그인
                 </span>
                 </div>
