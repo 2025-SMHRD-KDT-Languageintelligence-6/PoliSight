@@ -26,6 +26,9 @@ repositories {
 
 dependencies {
 
+    // 카카오 구글 로그인
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
     // 암호화
     implementation 'org.springframework.security:spring-security-crypto'
 
