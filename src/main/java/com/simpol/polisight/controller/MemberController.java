@@ -121,7 +121,14 @@ public class MemberController {
         // 사용한 토큰 삭제 (재사용 방지)
         MailController.resetTokenStore.remove(token);
 
-        // 로그인 페이지로 이동 (성공 메시지 전달)
-        return "redirect:/?message=pw_changed";
+        // 처리가 끝나면 '성공 전용 페이지'로 리다이렉트 (새로고침 문제 해결!)
+        return "redirect:/user/pw-success";
     }
+
+    // 성공 페이지 화면 보여주기
+    @GetMapping("/user/pw-success")
+    public String successPage() {
+        return "pw_success";
+    }
+
 }
