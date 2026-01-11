@@ -23,36 +23,62 @@ public class OAuth2UserCustomService extends DefaultOAuth2UserService {
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        // 1. 구글 정보 가져오기
+        // 1. 소셜 로그인 API에서 정보 가져오기
         OAuth2User oAuth2User = super.loadUser(userRequest);
         Map<String, Object> attributes = oAuth2User.getAttributes();
 
-        String email = (String) attributes.get("email");
-        String name = (String) attributes.get("name");
+        // 2. 어떤 소셜 로그인인지 확인 (google vs kakao)
+        String registrationId = userRequest.getClientRegistration().getRegistrationId();
 
-        // 2. DB 조회
+        String email = "";
+        String name = "";
+
+        // 3. 소셜 별로 데이터 꺼내는 방법 분기 처리
+        if ("google".equals(registrationId)) {
+            // [구글]
+            email = (String) attributes.get("email");
+            name = (String) attributes.get("name");
+
+        } else if ("kakao".equals(registrationId)) {
+            // [카카오] 변경됨: 닉네임(profile) 대신 실명(name) 가져오기
+            Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
+
+            // 1. 이메일
+            email = (String) kakaoAccount.get("email");
+
+            // 2. 이름 (name)
+            name = (String) kakaoAccount.get("name");
+        }
+
+        System.out.println("[" + registrationId + "] 로그인 시도: " + email);
+
+        // 4. DB 조회 (기존 로직과 동일)
         MemberDto member = memberMapper.selectMemberByEmail(email);
 
-        // 3. 없으면 자동 가입
+        // 5. 없으면 자동 가입
         if (member == null) {
             MemberDto newMember = new MemberDto();
             newMember.setEmail(email);
-
-            // ★ 수정됨: 구글 이름을 memberName에 넣음
-            newMember.setMemberName(name);
-
-            // ★ 수정됨: 랜덤 비밀번호를 passwordHash에 넣음
-            newMember.setPasswordHash(UUID.randomUUID().toString());
-
-            // birthDate는 DTO에서 비워두면 자동으로 null로 들어감
+            newMember.setMemberName(name); // 이름 저장
+            newMember.setPasswordHash(UUID.randomUUID().toString()); // 랜덤 비번
+            // newMember.setBirthDate(null); // 생일은 비워둠
 
             memberMapper.insertMember(newMember);
-            System.out.println("구글 신규 회원가입 완료: " + email);
+            System.out.println("신규 소셜 회원 가입 완료 (" + registrationId + ")");
         }
+
+        // 6. 리턴 (수정된 만능 코드)
+
+        // 구글은 "sub"이나 "email", 카카오는 "id"...
+        // 이걸 일일이 적지 말고, 설정 파일에서 알아서 가져오게 시킵니다.
+        String userNameAttributeName = userRequest.getClientRegistration()
+                .getProviderDetails()
+                .getUserInfoEndpoint()
+                .getUserNameAttributeName();
 
         return new DefaultOAuth2User(
                 Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
                 attributes,
-                "email");
+                userNameAttributeName);
     }
 }
