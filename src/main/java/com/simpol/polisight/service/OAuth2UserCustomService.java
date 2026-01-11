@@ -23,6 +23,8 @@ public class OAuth2UserCustomService extends DefaultOAuth2UserService {
     private MemberMapper memberMapper;
 
     @Override
+    // 강제 형변환 경고 무시
+    @SuppressWarnings("unchecked")
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         // 1. 소셜 로그인 API에서 정보 가져오기
         OAuth2User oAuth2User = super.loadUser(userRequest);
