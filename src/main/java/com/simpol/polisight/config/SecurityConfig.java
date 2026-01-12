@@ -2,11 +2,15 @@ package com.simpol.polisight.config;
 
 import com.simpol.polisight.dto.MemberDto;
 import com.simpol.polisight.mapper.MemberMapper;
+import com.simpol.polisight.service.MemberService;
 import com.simpol.polisight.service.OAuth2UserCustomService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
@@ -15,34 +19,52 @@ public class SecurityConfig {
 
     private final OAuth2UserCustomService oAuth2UserCustomService;
     private final MemberMapper memberMapper;
+    private final PasswordEncoder passwordEncoder; // ★ 생성자 주입을 위해 추가
 
-    public SecurityConfig(OAuth2UserCustomService oAuth2UserCustomService, MemberMapper memberMapper) {
+    // 생성자에 passwordEncoder를 추가하여 PasswordConfig에서 만든 빈을 가져옵니다.
+    public SecurityConfig(OAuth2UserCustomService oAuth2UserCustomService,
+                          MemberMapper memberMapper,
+                          PasswordEncoder passwordEncoder) {
         this.oAuth2UserCustomService = oAuth2UserCustomService;
         this.memberMapper = memberMapper;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    // ★ 이미지에서 빨간 줄 떴던 부분: 인증 매니저 설정
+    @Bean
+    public AuthenticationManager authenticationManager(HttpSecurity http,
+                                                       MemberService memberService) throws Exception {
+        AuthenticationManagerBuilder authenticationManagerBuilder =
+                http.getSharedObject(AuthenticationManagerBuilder.class);
+
+        authenticationManagerBuilder
+                .userDetailsService(memberService) // DB에서 유저 찾는 서비스 연결
+                .passwordEncoder(passwordEncoder); // 비밀번호 암호화 도구 연결
+
+        return authenticationManagerBuilder.build();
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // CSRF 비활성화
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // [수정] "/setup"을 포함하여 비회원 접근 허용 경로 설정
                         .requestMatchers(
-                                "/", "/login", "/join",           // 1. 기본 진입점
-                                "/css/**", "/js/**", "/images/**", // 2. 정적 리소스
-                                "/mail/**",  // 3. 이메일 인증 관련
-                                "/user/**",  // 4. 비밀번호 찾기 등 회원 관련 API
-
-                                // 5. 서비스 핵심 페이지 (비회원 체험용)
-                                "/policy",
-                                "/simulation",
-                                "/setup"      // ★ [추가됨] 조건 설정 페이지 허용
+                                "/", "/login", "/join",
+                                "/css/**", "/js/**", "/images/**",
+                                "/mail/**", "/user/**",
+                                "/policy", "/simulation", "/setup"
                         ).permitAll()
-
-                        // 그 외 모든 요청은 로그인 필요
                         .anyRequest().authenticated()
                 )
-                // 소셜 로그인 설정
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .loginProcessingUrl("/login")
+                        .usernameParameter("email")   // 아이디 파라미터명
+                        .passwordParameter("userPw")  // 비밀번호 파라미터명
+                        .successHandler(successHandler())
+                        .permitAll()
+                )
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/login")
                         .userInfoEndpoint(userInfo -> userInfo
@@ -54,20 +76,16 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // 소셜 로그인 성공 시 실행되는 핸들러 (세션 처리 등)
     @Bean
     public AuthenticationSuccessHandler successHandler() {
         return (request, response, authentication) -> {
             String email = authentication.getName();
-
-            // DB에서 회원 정보 조회
             MemberDto member = memberMapper.selectMemberByEmail(email);
 
-            // 세션에 로그인 회원 정보 저장 (키: loginMember)
-            HttpSession session = request.getSession();
-            session.setAttribute("loginMember", member);
-
-            // 메인 페이지로 리다이렉트
+            if (member != null) {
+                HttpSession session = request.getSession();
+                session.setAttribute("loginMember", member);
+            }
             response.sendRedirect("/");
         };
     }
