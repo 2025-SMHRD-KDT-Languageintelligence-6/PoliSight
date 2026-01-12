@@ -24,22 +24,25 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // CSRF 비활성화 (개발 중 편의를 위해)
+                .csrf(csrf -> csrf.disable()) // CSRF 비활성화
                 .authorizeHttpRequests(auth -> auth
-                        // [핵심] 와일드카드(**)를 사용해서 그룹으로 허용합니다.
+                        // [수정] "/setup"을 포함하여 비회원 접근 허용 경로 설정
                         .requestMatchers(
-                                "/", "/login", "/join",           // 1. 기본 로그인/가입
-                                "/css/**", "/js/**", "/images/**", // 2. 정적 파일 전체
+                                "/", "/login", "/join",           // 1. 기본 진입점
+                                "/css/**", "/js/**", "/images/**", // 2. 정적 리소스
+                                "/mail/**",  // 3. 이메일 인증 관련
+                                "/user/**",  // 4. 비밀번호 찾기 등 회원 관련 API
 
-                                "/mail/**",  // ★ 메일 관련 모든 주소 프리패스 (send, verify, send-reset 등)
-                                "/user/**",  // ★ 비번 찾기 관련 모든 주소 프리패스 (reset-pw, update-pw 등)
-
-                                "/policy", "/simulation" // ★ 정책/시뮬레이션 페이지
+                                // 5. 서비스 핵심 페이지 (비회원 체험용)
+                                "/policy",
+                                "/simulation",
+                                "/setup"      // ★ [추가됨] 조건 설정 페이지 허용
                         ).permitAll()
 
-                        // 나머지는 로그인해야 접근 가능 (마이페이지 등)
+                        // 그 외 모든 요청은 로그인 필요
                         .anyRequest().authenticated()
                 )
+                // 소셜 로그인 설정
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/login")
                         .userInfoEndpoint(userInfo -> userInfo
@@ -47,21 +50,24 @@ public class SecurityConfig {
                         )
                         .successHandler(successHandler())
                 );
+
         return http.build();
     }
 
+    // 소셜 로그인 성공 시 실행되는 핸들러 (세션 처리 등)
     @Bean
     public AuthenticationSuccessHandler successHandler() {
         return (request, response, authentication) -> {
             String email = authentication.getName();
 
-            // DB 조회
+            // DB에서 회원 정보 조회
             MemberDto member = memberMapper.selectMemberByEmail(email);
 
-            // 세션 저장 (loginMember)
+            // 세션에 로그인 회원 정보 저장 (키: loginMember)
             HttpSession session = request.getSession();
             session.setAttribute("loginMember", member);
 
+            // 메인 페이지로 리다이렉트
             response.sendRedirect("/");
         };
     }

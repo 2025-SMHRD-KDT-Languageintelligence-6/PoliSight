@@ -270,13 +270,12 @@
     function nextStep(step) { showStep(step); }
     function prevStep(step) { showStep(step); }
 
-    // [수정] 설정 완료 및 페이지 이동 로직 (경고창 제거됨)
     function finishSetup(destination) {
-        // 1. 데이터 수집
+        // 1. 데이터 수집 (생년월일 등 '조건' 정보를 모두 수집합니다)
         const setupData = {
             gender: document.querySelector('input[name="gender"]:checked')?.value || '',
-            birthDate: document.getElementById('birthDate').value,
-            region: document.getElementById('regionSi').value, // 상세 구현 시 시/군/구 합칠 필요 있음
+            birthDate: document.getElementById('birthDate').value, // [중요] 정책 조건용 생년월일 (회원가입용 아님)
+            region: document.getElementById('regionSi').value,
             marry: document.querySelector('input[name="marry"]:checked')?.value || 'N',
             childCount: document.getElementById('childCount').value,
             biz: document.querySelector('input[name="biz"]:checked')?.value || 'N',
@@ -287,12 +286,16 @@
         };
 
         // 2. 로컬 스토리지에 저장
+        // 이 데이터는 로그인 페이지가 아니라, 로그인 후 '메인 페이지' 또는 '마이페이지'에서
+        // 자동으로 감지하여 DB에 저장(UserCondition)하는 로직을 위해 존재합니다.
         localStorage.setItem('userSetupData', JSON.stringify(setupData));
 
-        // 3. 목적지에 따라 이동 (alert 삭제)
+        // 3. 페이지 이동
         if (destination === 'signup') {
+            // 회원가입 화면으로 이동 (가입 시 생년월일을 묻지 않음. 가입 후 DB에 조건 저장 필요)
             location.href = /*[[@{/login(mode='signup')}]]*/ '/login?mode=signup';
         } else if (destination === 'policy') {
+            // 비회원 상태로 정책 추천 페이지로 이동
             location.href = /*[[@{/policy}]]*/ '/policy';
         }
     }

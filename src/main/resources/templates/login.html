@@ -58,7 +58,9 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .input-group { margin-bottom: 18px; position: relative; }
+
         label { display: block; font-size: 13px; font-weight: 800; margin-bottom: 8px; color: var(--text-main); }
+
         input, select { width: 100%; padding: 14px 16px; border: 1px solid #e1e1e1; border-radius: 12px; font-size: 14px; font-weight: 500; box-sizing: border-box; background: var(--input-bg); transition: all 0.2s; color: var(--text-main); }
         input::placeholder { color: #aaa; font-weight: 400; }
         input:focus { border-color: var(--primary-color); outline: none; box-shadow: 0 0 0 3px rgba(0,123,255,0.1); background: #fff; }
@@ -69,7 +71,7 @@
 
         .error-msg {
             color: var(--error-color);
-            font-size: 12px;
+            font-size: 13px;
             margin-top: 6px;
             display: none;
             font-weight: 500;
@@ -79,14 +81,6 @@
         .submit-btn:hover { background: var(--primary-hover); transform: translateY(-2px); }
 
         .find-desc { font-size: 13px; color: var(--text-sub); margin-bottom: 20px; text-align: center; line-height: 1.6; }
-
-        .setup-alert {
-            background-color: #f0f7ff; border: 1px solid #cce5ff; color: #004085;
-            padding: 12px; border-radius: 10px; margin-bottom: 20px;
-            font-size: 12px; font-weight: 700; text-align: center;
-            display: none;
-            align-items: center; justify-content: center; gap: 6px;
-        }
 
         button:disabled { background: #ccc; cursor: not-allowed; color: #666; box-shadow: none; }
     </style>
@@ -122,7 +116,6 @@
             <button class="submit-btn" type="submit">로그인</button>
         </form>
 
-        <!-- 구글 로그인 -->
         <div style="margin-top: 20px;">
             <a href="/oauth2/authorization/google" style="text-decoration: none; display: block;">
                 <div style="
@@ -131,9 +124,9 @@
                 justify-content: center;
                 background-color: white;
                 border: 1px solid #dadce0;
-                border-radius: 4px; /* 파란 버튼과 곡률 통일 */
-                height: 48px;       /* 파란 버튼과 높이 통일 */
-                width: 100%;        /* ★ 핵심: 부모 컨테이너에 꽉 차게 */
+                border-radius: 4px;
+                height: 48px;
+                width: 100%;
                 box-sizing: border-box;
                 cursor: pointer;
                 box-shadow: 0 1px 2px rgba(0,0,0,0.1);
@@ -157,7 +150,6 @@
             </a>
         </div>
 
-        <!-- 카카오 로그인 -->
         <div style="margin-top: 10px;">
             <a href="/oauth2/authorization/kakao" style="text-decoration: none; display: block;">
                 <div style="
@@ -168,7 +160,7 @@
                 border: 1px solid #FEE500;
                 border-radius: 4px;
                 height: 48px;
-                width: 100%;        /* ★ 핵심: 부모 컨테이너에 꽉 차게 */
+                width: 100%;
                 box-sizing: border-box;
                 cursor: pointer;
                 box-shadow: 0 1px 2px rgba(0,0,0,0.1);
@@ -188,10 +180,6 @@
     </section>
 
     <section id="signupSection" class="form-section">
-        <div id="setupInfoMsg" class="setup-alert">
-            <span style="font-size: 14px;">✨</span> 조건 설정 정보를 자동으로 불러왔습니다!
-        </div>
-
         <form id="signupForm" th:action="@{/join}" method="post">
             <div class="input-group">
                 <label>이메일</label>
@@ -223,15 +211,6 @@
                 <input type="text" name="userName" placeholder="성함을 입력하세요" required>
             </div>
 
-            <div class="input-group">
-                <label>생년월일</label>
-                <div class="row">
-                    <select id="year" name="birthYear"></select>
-                    <select id="month" name="birthMonth"></select>
-                    <select id="day" name="birthDay"></select>
-                </div>
-            </div>
-
             <button type="submit" class="submit-btn">가입 완료</button>
         </form>
     </section>
@@ -255,8 +234,6 @@
 <script>
     /* ================= 전역 변수 ================= */
     let timerInterval = null;
-
-    // 이메일 인증이 완료되었는지 확인하는 상태 변수
     let isEmailVerified = false;
 
     /* ================= 공통 기능 ================= */
@@ -291,12 +268,10 @@
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
 
-        // 1. 회원가입 모드 체크
         if (urlParams.get('mode') === 'signup') {
             switchTab('signup');
         }
 
-        // 2. 로그인 에러 시 이메일 복구
         if (urlParams.has('error')) {
             const savedEmail = localStorage.getItem('lastLoginEmail');
             if(savedEmail) {
@@ -304,36 +279,20 @@
             }
         }
 
-        // 3. Setup 데이터 연동
-        const setupData = localStorage.getItem('userSetupData');
-        if (setupData) {
-            const data = JSON.parse(setupData);
-            if(data.birthDate && data.birthDate.length === 8) {
-                const y = data.birthDate.substring(0, 4);
-                const m = parseInt(data.birthDate.substring(4, 6));
-                const d = parseInt(data.birthDate.substring(6, 8));
-                document.getElementById('year').value = y;
-                document.getElementById('month').value = m;
-                document.getElementById('day').value = d;
-                document.getElementById('setupInfoMsg').style.display = 'flex';
-            }
-        }
+        // [삭제] setupData(생년월일 등) 연동 로직 완전히 삭제됨
 
-        // 회원가입 폼 제출 시 인증 여부 강제 확인 (인증 안되면 가입 불가)
         const signupForm = document.getElementById('signupForm');
         if(signupForm) {
             signupForm.addEventListener('submit', function(e) {
                 if (!isEmailVerified) {
-                    e.preventDefault(); // 폼 제출 중단
+                    e.preventDefault();
                     alert('이메일 인증을 완료해 주세요.');
                     document.getElementById('regEmail').focus();
                 }
             });
         }
-
     });
 
-    // 4. 로그인 폼 제출 시 이메일 저장
     const loginForm = document.getElementById('loginForm');
     if(loginForm) {
         loginForm.addEventListener('submit', function() {
@@ -342,13 +301,10 @@
         });
     }
 
-    // 5. [추가] 로그인 입력창 실시간 형식 검사
     const loginEmailInput = document.getElementById('loginEmail');
     if(loginEmailInput) {
         loginEmailInput.addEventListener('input', function() {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-            // 값이 있고 형식이 안 맞으면 에러 표시
             if(this.value.length > 0 && !emailRegex.test(this.value)) {
                 toggleError('loginFormatError', true);
             } else {
@@ -357,15 +313,7 @@
         });
     }
 
-
-    /* ================= 회원가입 로직 (기존 유지) ================= */
-    const yearS = document.getElementById('year');
-    const monthS = document.getElementById('month');
-    const dayS = document.getElementById('day');
-    yearS.add(new Option('년도', '')); monthS.add(new Option('월', '')); dayS.add(new Option('일', ''));
-    for(let i=2025; i>=1950; i--) yearS.add(new Option(i+'년', i));
-    for(let i=1; i<=12; i++) monthS.add(new Option(i+'월', i));
-    for(let i=1; i<=31; i++) dayS.add(new Option(i+'일', i));
+    /* ================= 회원가입 로직 ================= */
 
     function startAuthTimer(duration) {
         let timer = duration, minutes, seconds;
@@ -373,9 +321,7 @@
         const authCodeInput = document.getElementById('authCode');
         if (timerInterval) clearInterval(timerInterval);
 
-        // 타이머
         display.style.display = 'block';
-
         display.style.color = '#007bff';
         authCodeInput.disabled = false;
         timerInterval = setInterval(function () {
@@ -396,7 +342,6 @@
     function requestEmailAuth() {
         const emailInput = document.getElementById('regEmail');
         const authArea = document.getElementById('authCodeArea');
-        const authTimer = document.getElementById('authTimer');
         const btnReq = document.getElementById('btnReqAuth');
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if(!emailInput.value || !emailRegex.test(emailInput.value)) {
@@ -404,11 +349,9 @@
             emailInput.focus();
             return;
         }
-        // 로딩 UI 처리
         btnReq.disabled = true;
         btnReq.textContent = '확인중..';
 
-        // 서버로 요청
         fetch('/mail/send', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -416,28 +359,20 @@
         })
         .then(response => response.text())
         .then(data => {
-            // [수정] 서버 응답값에 따라 분기 처리
             if (data === 'duplicate') {
-                // 1. 중복된 이메일인 경우
                 toggleError('regEmailError', true, '이미 가입된 이메일입니다.');
                 btnReq.disabled = false;
                 btnReq.textContent = '인증요청';
                 emailInput.focus();
-
             } else if (data === 'success') {
-                // 2. 발송 성공한 경우
                 alert('인증번호가 발송되었습니다. 이메일을 확인해 주세요.');
-                toggleError('regEmailError', false); // 에러 메시지 숨김
-
+                toggleError('regEmailError', false);
                 authArea.style.display = 'flex';
                 btnReq.textContent = '재전송';
                 btnReq.disabled = false;
-
                 startAuthTimer(300);
                 document.getElementById('authCode').focus();
-
             } else {
-                // 3. 그 외 실패 (메일 서버 오류 등)
                 alert('메일 발송 실패: 잠시 후 다시 시도해 주세요.');
                 btnReq.disabled = false;
                 btnReq.textContent = '인증요청';
@@ -451,7 +386,6 @@
         });
     }
 
-    // [수정] 인증코드 확인 (가짜 로직 제거 -> 서버 검증으로 변경)
     function verifyCode() {
         const codeInput = document.getElementById('authCode');
         const code = codeInput.value;
@@ -461,7 +395,6 @@
             return;
         }
 
-        // [추가] 서버로 인증번호 확인 요청 (AJAX)
         fetch('/mail/verify', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -473,15 +406,11 @@
                 alert('인증이 완료되었습니다.');
                 toggleError('authCodeError', false);
                 clearInterval(timerInterval);
-
-                // UI 잠금 및 인증 완료 처리
                 document.getElementById('regEmail').readOnly = true;
                 document.getElementById('btnReqAuth').disabled = true;
                 document.getElementById('btnReqAuth').textContent = '인증됨';
                 document.getElementById('authCodeArea').style.display = 'none';
                 document.getElementById('authTimer').style.display = 'none';
-
-                // [중요] 인증 상태 true로 변경 (이제 회원가입 버튼 동작함)
                 isEmailVerified = true;
             } else {
                 toggleError('authCodeError', true, '인증번호가 일치하지 않습니다.');
@@ -515,7 +444,6 @@
         const email = emailInput.value;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        // 유효성 검사
         if(!email) {
             toggleError('findEmailError', true, '이메일을 입력해 주세요.');
             emailInput.focus();
@@ -526,13 +454,11 @@
             return;
         }
 
-        // 버튼 텍스트 변경 (로딩 효과)
         const btn = document.querySelector('#findSection .submit-btn');
         const originalText = btn.innerText;
         btn.innerText = '전송중...';
         btn.disabled = true;
 
-        // 서버로 전송
         fetch('/mail/send-reset', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -542,15 +468,11 @@
         .then(data => {
             btn.innerText = originalText;
             btn.disabled = false;
-
             if (data === 'success') {
                 alert('재설정 링크가 이메일로 발송되었습니다!\n메일함을 확인해 주세요.');
                 toggleError('findEmailError', false);
             } else if (data === 'not_found') {
                 toggleError('findEmailError', true, '등록되지 않은 이메일 주소입니다.');
-            } else if (data.startsWith('social_user')) {
-                const provider = data.split(':')[1]; // "kakao" 또는 "google" 추출
-                toggleError('findEmailError', true, "[" + provider + "] 소셜 가입 계정입니다. (소셜 로그인 이용)");
             } else {
                 alert('오류가 발생했습니다. 다시 시도해 주세요.');
             }
