@@ -33,6 +33,8 @@ public class MemberService {
             dto.setBirthDate(null);
         }
 
+        dto.setProvider("PoliSight");
+
         memberMapper.insertMember(dto);
     }
 
@@ -120,5 +122,9 @@ public class MemberService {
     public boolean checkEmailDuplicate(String email) {
         // memberMapper에서 이메일 개수를 세어 0보다 크면 true(중복), 아니면 false 리턴
         return memberMapper.countByEmail(email) > 0;
+    }
+
+    public MemberDto getMemberByEmail(String email) {
+        return memberMapper.selectMemberByEmail(email);
     }
 }

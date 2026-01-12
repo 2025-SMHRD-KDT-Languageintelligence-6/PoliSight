@@ -58,6 +58,7 @@ public class OAuth2UserCustomService extends DefaultOAuth2UserService {
             member.setEmail(email);
             member.setMemberName(name);
             member.setPasswordHash(UUID.randomUUID().toString());
+            member.setProvider(registrationId);
 
             try {
                 memberMapper.insertMember(member);

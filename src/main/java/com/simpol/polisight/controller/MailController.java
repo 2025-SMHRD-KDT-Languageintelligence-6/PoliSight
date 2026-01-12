@@ -1,6 +1,7 @@
 // [컨트롤러] MailController (변경된 전체)
 package com.simpol.polisight.controller;
 
+import com.simpol.polisight.dto.MemberDto;
 import com.simpol.polisight.service.MailService;
 import com.simpol.polisight.service.MemberService;
 import jakarta.servlet.http.HttpSession;
@@ -77,9 +78,17 @@ public class MailController {
     @PostMapping("/mail/send-reset")
     public String sendResetLink(@RequestParam("mail") String mail) {
 
+        MemberDto member = memberService.getMemberByEmail(mail);
+
         // 가입된 이메일인지 확인
-        if (!memberService.checkEmailDuplicate(mail)) {
+        if (member == null) {
             return "not_found";
+        }
+
+        String provider = member.getProvider();
+
+        if (provider != null && !provider.equals("PoliSight")) {
+            return "social_user:" + provider; // 예: "social_user:kakao"
         }
 
         // 토큰 생성

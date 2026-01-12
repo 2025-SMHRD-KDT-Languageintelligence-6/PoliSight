@@ -10,6 +10,7 @@ public class MemberDto {
     private String passwordHash;
     private String memberName;
     private String birthDate; // YYYY-MM-DD 형식
+    private String provider;
 
     // [HTML Form 입력값]
     private String userPw;    // 회원가입 시 사용

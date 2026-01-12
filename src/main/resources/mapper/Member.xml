@@ -7,9 +7,9 @@
 
     <insert id="insertMember" parameterType="com.simpol.polisight.dto.MemberDto">
         INSERT INTO member (
-        email, passwordHash, memberName, birthDate, createdAt, updatedAt
+        email, passwordHash, memberName, birthDate, provider, createdAt, updatedAt
         ) VALUES (
-        #{email}, #{passwordHash}, #{memberName}, #{birthDate}, NOW(), NOW()
+        #{email}, #{passwordHash}, #{memberName}, #{birthDate}, #{provider}, NOW(), NOW()
         )
     </insert>
 
