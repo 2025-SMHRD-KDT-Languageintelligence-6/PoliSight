@@ -1,3 +1,4 @@
+// [컨트롤러] MemberController (변경된 전체)
 package com.simpol.polisight.controller;
 
 import com.simpol.polisight.dto.MemberDto;
@@ -56,27 +57,22 @@ public class MemberController {
         return "mypage";
     }
 
-    // [추가됨] 회원 정보 수정 처리
     @PostMapping("/updateMember")
     public String updateMemberProcess(MemberDto memberDto, HttpSession session, HttpServletResponse response) throws IOException {
 
         try {
-            // 서비스 호출
             MemberDto updatedMember = memberService.updateMember(memberDto);
 
             if (updatedMember != null) {
-                // 성공 시 세션 정보 갱신 (중요: 이걸 안 하면 로그아웃 했다 들어와야 바뀜)
                 session.setAttribute("loginMember", updatedMember);
 
-                // 알림창 띄우고 마이페이지로 이동
                 response.setContentType("text/html; charset=UTF-8");
                 PrintWriter out = response.getWriter();
                 out.println("<script>alert('회원 정보가 수정되었습니다.'); location.href='/mypage';</script>");
                 out.flush();
-                return null; // 위에서 직접 응답을 보냈으므로 null 반환
+                return null;
             }
         } catch (IllegalArgumentException e) {
-            // 비밀번호 불일치 예외 처리
             response.setContentType("text/html; charset=UTF-8");
             PrintWriter out = response.getWriter();
             out.println("<script>alert('" + e.getMessage() + "'); history.back();</script>");
@@ -90,27 +86,31 @@ public class MemberController {
     @GetMapping("/setup")
     public String setupPage() { return "setup"; }
 
-    // 1. 이메일 링크를 클릭했을 때 페이지 보여주기
+    // 1. 이메일 링크 클릭 → 비밀번호 변경 페이지
     @GetMapping("/user/reset-pw")
     public String resetPwPage(@RequestParam("token") String token, Model model) {
-        // 토큰 검증: 저장소에 없는 토큰이면 에러 페이지나 홈으로 튕기기
-        if (!MailController.resetTokenStore.containsKey(token)) {
-            return "redirect:/?error=invalid_token"; // 홈으로 리다이렉트
+
+        // ===== [변경] 만료/무효 토큰이면 메인으로 =====
+        if (!MailController.isResetTokenValid(token)) {
+            return "redirect:/?error=invalid_or_expired_token";
         }
 
-        // HTML에 토큰을 전달 (나중에 POST 할 때 쓰려고)
         model.addAttribute("token", token);
-        return "reset_pw"; // reset_pw.html 열기
+        return "reset_pw";
     }
 
-    // 2. 실제 비밀번호 변경 요청 처리
+    // 2. 실제 비밀번호 변경 처리
     @PostMapping("/user/update-pw")
     public String updatePwProcess(@RequestParam("token") String token,
                                   @RequestParam("newPw") String newPw) {
 
-        // 토큰으로 이메일 찾기
-        String email = MailController.resetTokenStore.get(token);
+        // ===== [추가] 여기서도 한 번 더 만료 체크(중요) =====
+        if (!MailController.isResetTokenValid(token)) {
+            return "redirect:/?error=invalid_or_expired_token";
+        }
 
+        // 토큰으로 이메일 찾기
+        String email = MailController.getEmailByToken(token);
         if (email == null) {
             return "redirect:/?error=session_expired";
         }
@@ -118,17 +118,14 @@ public class MemberController {
         // DB 비밀번호 업데이트
         memberService.updatePassword(email, newPw);
 
-        // 사용한 토큰 삭제 (재사용 방지)
+        // 사용한 토큰 삭제(재사용 방지)
         MailController.resetTokenStore.remove(token);
 
-        // 처리가 끝나면 '성공 전용 페이지'로 리다이렉트 (새로고침 문제 해결!)
         return "redirect:/user/pw-success";
     }
 
-    // 성공 페이지 화면 보여주기
     @GetMapping("/user/pw-success")
     public String successPage() {
         return "pw_success";
     }
-
 }
