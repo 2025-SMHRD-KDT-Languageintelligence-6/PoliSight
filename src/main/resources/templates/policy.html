@@ -495,60 +495,101 @@
         }
     });
 
-    // --- 5. 폼 채우기 함수 ---
+    // --- 5. [수정됨] DB 데이터 폼 채우기 함수 ---
     function populateForm(data) {
         if (!data) return;
 
-        // ★ [디버깅용] DB에서 가져온 데이터를 브라우저 콘솔(F12)에 출력
-        console.log("DB에서 가져온 데이터:", data);
+        console.log("DB 데이터 매핑 시작:", data);
 
-        // (타이밍 문제 방지용) 지역 먼저 처리
-        const siValue = data.regionSi || data.region;
-        const guValue = data.regionGu || data.subRegion;
+        // 1. 지역 (province -> regionSi, city -> regionGu)
+        // DB에서 regionSi, regionGu로 들어오고 있으니 그대로 사용
+        if(data.regionSi) {
+            document.getElementById('regionSi').value = data.regionSi;
+            updateRegionGu(); // 시/도에 맞는 구/군 목록 생성
 
-        if(siValue) {
-            document.getElementById('regionSi').value = siValue;
-            updateRegionGu(); // 구 목록 생성
-            // 약간의 딜레이 후 구 선택 (DOM 반영 대기)
-            if(guValue) setTimeout(() => document.getElementById('regionGu').value = guValue, 0);
+            if(data.regionGu) {
+                // 목록 생성 시간 확보를 위해 약간의 딜레이 후 선택
+                setTimeout(() => {
+                    document.getElementById('regionGu').value = data.regionGu;
+                }, 10);
+            }
         }
 
-        // 나머지 필드들
+        // 2. 생년월일 (1989-01-07 -> 19890107 변환)
+        if(data.birthDate) {
+            // 하이픈(-)을 제거해서 8자리 숫자로 만듦
+            const cleanDate = data.birthDate.replace(/-/g, '');
+            document.getElementById('birthDate').value = cleanDate;
+        }
+
+        // 3. 성별 (M -> male)
         if(data.gender) {
-            const radio = document.querySelector(`input[name="gender"][value="${data.gender === 'M' ? 'male' : 'female'}"]`);
-            if(radio) radio.checked = true;
-        }
-        if(data.birthDate) document.getElementById('birthDate').value = data.birthDate;
-
-        if(data.educationLevel) document.getElementById('educationLevel').value = data.educationLevel;
-        if(data.employmentStatus) document.getElementById('employmentStatus').value = data.employmentStatus;
-
-        // 사업자 체크박스
-        const isBiz = (data.isBusinessOwner === true || data.isBusinessOwner === "true" || data.businessOwner === "Y");
-        if (isBiz) document.getElementById('bizCheck').checked = true;
-
-        if(data.marry) {
-            const radio = document.querySelector(`input[name="marry"][value="${data.marry}"]`);
-            if(radio) radio.checked = true;
-        }
-        if(data.childCount != null) document.getElementById('childCount').value = data.childCount;
-        if(data.familyCount != null) document.getElementById('family-count').value = data.familyCount;
-
-        if(data.house) {
-            const radio = document.querySelector(`input[name="house"][value="${data.house}"]`);
+            const val = (data.gender === 'M') ? 'male' : 'female';
+            const radio = document.querySelector(`input[name="gender"][value="${val}"]`);
             if(radio) radio.checked = true;
         }
 
-        // 소득
-        const myInc = data.income || data.myIncome;
-        if(myInc != null) {
-            document.getElementById('my_income_text').value = myInc;
-            document.getElementById('my_income_range').value = myInc;
+        // 4. 학력 (숫자 4 -> 문자열 매핑)
+        // DB: 4 -> HTML: "UNIV_GRAD" (대학교 졸업)
+        // [주의] DB의 코드값(1,2,3,4...)과 아래 매핑이 일치해야 합니다.
+        const eduMap = {
+            1: 'UNDER_HIGH_SCHOOL', // 고졸 미만
+            2: 'HIGH_SCHOOL',       // 고졸
+            3: 'UNIV_ATTENDING',    // 대학교 재학
+            4: 'UNIV_GRAD',         // 대학교 졸업
+            5: 'MASTER_PHD'         // 석박사
+        };
+        // 숫자(data.educationLevel)로 문자를 찾아서 선택
+        const eduVal = eduMap[data.educationLevel] || "";
+        if(eduVal) document.getElementById('educationLevel').value = eduVal;
+
+
+        // 5. 고용 상태 (숫자 1 -> 문자열 매핑)
+        // DB: 1 -> HTML: "EMPLOYED" (직장인)
+        const jobMap = {
+            0: 'UNEMPLOYED',    // 미취업
+            1: 'EMPLOYED',      // 직장인
+            2: 'SELF_EMPLOYED', // 자영업
+            3: 'STUDENT'        // 학생
+        };
+        const jobVal = jobMap[data.employmentStatus] || "";
+        if(jobVal) document.getElementById('employmentStatus').value = jobVal;
+
+
+        // 6. 사업자 여부 (isBusinessOwner: false)
+        if (data.isBusinessOwner === true) {
+            document.getElementById('bizCheck').checked = true;
         }
-        const houseInc = data.householdIncome;
-        if(houseInc != null) {
-            document.getElementById('household_income_text').value = houseInc;
-            document.getElementById('household_income_range').value = houseInc;
+
+        // 7. 결혼 여부 (married: false -> 'N')
+        const marryVal = (data.married === true) ? 'Y' : 'N';
+        const marryRadio = document.querySelector(`input[name="marry"][value="${marryVal}"]`);
+        if(marryRadio) marryRadio.checked = true;
+
+        // 8. 자녀 수 (child -> childCount)
+        if(data.child != null) document.getElementById('childCount').value = data.child;
+
+        // 9. 가구원 수 (familySize -> family-count)
+        if(data.familySize != null) document.getElementById('family-count').value = data.familySize;
+
+        // 10. 주택 소유 (home: false -> 'N')
+        const houseVal = (data.home === true) ? 'Y' : 'N';
+        const houseRadio = document.querySelector(`input[name="house"][value="${houseVal}"]`);
+        if(houseRadio) houseRadio.checked = true;
+
+        // 11. 소득 (2300000 -> 230 만원 변환)
+        // DB에는 원 단위(230만원 = 2,300,000)로 저장된 것 같습니다.
+        // 화면은 '만원' 단위이므로 10,000으로 나누어줍니다.
+        if(data.personalIncome != null) {
+            const incomeManWon = Math.floor(data.personalIncome / 10000); // 만원 단위 절사
+            document.getElementById('my_income_text').value = incomeManWon;
+            document.getElementById('my_income_range').value = incomeManWon;
+        }
+
+        if(data.familyIncome != null) {
+            const familyIncomeManWon = Math.floor(data.familyIncome / 10000);
+            document.getElementById('household_income_text').value = familyIncomeManWon;
+            document.getElementById('household_income_range').value = familyIncomeManWon;
         }
     }
 
