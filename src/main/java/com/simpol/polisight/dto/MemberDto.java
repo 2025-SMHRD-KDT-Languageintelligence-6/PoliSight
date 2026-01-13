@@ -9,8 +9,23 @@ public class MemberDto {
     private String email;
     private String passwordHash;
     private String memberName;
-    private String birthDate; // YYYY-MM-DD 형식
     private String provider;
+
+    private String province;
+    private String city;
+
+    private String gender;
+    private String birthDate;// YYYY-MM-DD 형식
+
+    private Long personalIncome;
+    private Long familyIncome;
+    private int familySize;
+
+    private int eduLevelCode;
+    private int empStatusCode;
+    private boolean married;
+    private int child;
+    private boolean home;
 
     // [HTML Form 입력값]
     private String userPw;    // 회원가입 시 사용
