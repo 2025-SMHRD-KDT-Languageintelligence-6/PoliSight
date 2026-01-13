@@ -41,7 +41,8 @@ public class OAuth2UserCustomService extends DefaultOAuth2UserService {
         } else if ("kakao".equals(registrationId)) {
             Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
             email = (String) kakaoAccount.get("email");
-            name = (String) kakaoAccount.get("name");
+            Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
+            name = (String) profile.get("nickname");
 
             // 데이터 없을 경우 방어 코드
             if (email == null) email = String.valueOf(attributes.get("id")) + "@kakao.com";
