@@ -86,7 +86,7 @@ public class SecurityConfig {
                 HttpSession session = request.getSession();
                 session.setAttribute("loginMember", member);
             }
-            response.sendRedirect("/");
+            response.sendRedirect("/policy");
         };
     }
 }
