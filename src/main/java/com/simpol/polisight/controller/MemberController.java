@@ -25,19 +25,6 @@ public class MemberController {
         return "redirect:/login";
     }
 
-    @PostMapping("/login")
-    public String loginProcess(@RequestParam("email") String email,
-                               @RequestParam("userPw") String userPw,
-                               HttpSession session) {
-        MemberDto loginMember = memberService.login(email, userPw);
-        if (loginMember != null) {
-            session.setAttribute("loginMember", loginMember);
-            return "redirect:/policy";
-        } else {
-            return "redirect:/login?error=true";
-        }
-    }
-
     @GetMapping("/logout")
     public String logout(HttpSession session) {
         session.invalidate();
