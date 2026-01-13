@@ -263,15 +263,19 @@
         }
     }
 
-    /* ================= 로그인 및 초기화 로직 ================= */
+    /* ================= 로그인 및 초기화 로직 (통합) ================= */
 
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
 
+        // 1. URL 파라미터 체크 -> 회원가입 탭 열기
+        // (이 코드가 가장 먼저 실행되어야 회원가입 화면이 보입니다)
         if (urlParams.get('mode') === 'signup') {
+            console.log("회원가입 모드 감지: 탭을 전환합니다.");
             switchTab('signup');
         }
 
+        // 2. 로그인 실패 시 이메일 복원
         if (urlParams.has('error')) {
             const savedEmail = localStorage.getItem('lastLoginEmail');
             if(savedEmail) {
@@ -279,15 +283,97 @@
             }
         }
 
-        // [삭제] setupData(생년월일 등) 연동 로직 완전히 삭제됨
-
+        // 3. 셋업 데이터(sessionStorage) -> 회원가입 폼 주입 로직
+        const setupDataJson = sessionStorage.getItem('userSetupData');
         const signupForm = document.getElementById('signupForm');
+
+        if (setupDataJson && signupForm) {
+            console.log("셋업 데이터 발견! DB 컬럼명에 맞춰 주입합니다.");
+
+            try {
+                const data = JSON.parse(setupDataJson);
+
+                // [헬퍼 함수] hidden input 생성 및 폼 추가
+                const addHiddenInfo = (name, value) => {
+                    if(value === undefined || value === null || value === '') return;
+
+                    let input = signupForm.querySelector(`input[name="${name}"]`);
+                    if (!input) {
+                        input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = name;
+                        signupForm.appendChild(input);
+                    }
+                    input.value = value;
+                };
+
+                // --- 매핑 시작 ---
+
+                // 1. 지역 정보
+                addHiddenInfo('province', data.region);
+                addHiddenInfo('city', data.subRegion);
+
+                // 2. 성별
+                addHiddenInfo('gender', data.gender);
+
+                // 3. 생년월일 처리 (복잡한 변환 삭제 -> 그냥 숫자만 보냄)
+                if (data.birthDate) {
+                    // "1995-01-01"이든 "19950101"이든 숫자만 남겨서 보냄 -> "19950101"
+                    let cleanDate = String(data.birthDate).replace(/[^0-9]/g, '');
+                    addHiddenInfo('birthDate', cleanDate);
+                }
+
+                // 4. 소득 (문자열 안전 변환 후 계산)
+                if(data.myIncome) {
+                    const val = String(data.myIncome).replace(/,/g, '');
+                    addHiddenInfo('personalIncome', parseInt(val) * 10000);
+                }
+                if(data.householdIncome) {
+                    const val = String(data.householdIncome).replace(/,/g, '');
+                    addHiddenInfo('familyIncome', parseInt(val) * 10000);
+                }
+
+                // 5. 가구 정보
+                addHiddenInfo('familySize', data.familyCount);
+                addHiddenInfo('child', data.childCount);
+
+                // 6. 학력 코드
+                const eduMap = {
+                    'UNDER_HIGH_SCHOOL': 1, 'HIGH_SCHOOL': 2,
+                    'UNIV_ATTENDING': 3, 'UNIV_GRAD': 4, 'MASTER_PHD': 5
+                };
+                if(data.educationLevel) addHiddenInfo('eduLevelCode', eduMap[data.educationLevel] || 0);
+
+                // 7. 고용 상태 코드
+                const empMap = {
+                    'UNEMPLOYED': 1,    // 미취업
+                    'EMPLOYED': 2,      // 직장인
+                    'SELF_EMPLOYED': 3, // 자영업
+                    'STUDENT': 4        // 학생
+                };
+                if(data.employmentStatus) addHiddenInfo('empStatusCode', empMap[data.employmentStatus] || 0);
+
+                // 8. 결혼/주택/사업자 (boolean)
+                addHiddenInfo('married', data.marry === 'Y');
+                addHiddenInfo('home', data.house === 'Y');
+                addHiddenInfo('businessRegistered', data.isBusinessOwner);
+
+            } catch (e) {
+                console.error("데이터 매핑 중 오류 발생:", e);
+                // 오류가 나도 탭 전환은 이미 위에서 수행되었으므로 안전함
+            }
+        }
+
+        // 4. 이벤트 리스너 등록 (기존 코드 유지)
         if(signupForm) {
             signupForm.addEventListener('submit', function(e) {
                 if (!isEmailVerified) {
                     e.preventDefault();
                     alert('이메일 인증을 완료해 주세요.');
                     document.getElementById('regEmail').focus();
+                } else {
+                    // (선택) 회원가입 성공 시 임시 데이터 삭제
+                    sessionStorage.removeItem('userSetupData');
                 }
             });
         }

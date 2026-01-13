@@ -7,10 +7,15 @@
 
     <insert id="insertMember" parameterType="com.simpol.polisight.dto.MemberDto">
         INSERT INTO member (
-        email, passwordHash, memberName, birthDate, provider, gender, createdAt, updatedAt
+        email, passwordHash, memberName, birthDate, provider, gender,
+        province, city, personalIncome, familyIncome, familySize, child,
+        eduLevelCode, empStatusCode, married, home, businessRegistered,
+        createdAt, updatedAt
         ) VALUES (
-        #{email}, #{passwordHash}, #{memberName}, #{birthDate}, #{provider}, #{gender}, NOW(), NOW()
-        )
+        #{email}, #{passwordHash}, #{memberName}, #{birthDate}, #{provider}, #{gender},
+        #{province}, #{city}, #{personalIncome}, #{familyIncome}, #{familySize}, #{child},
+        #{eduLevelCode}, #{empStatusCode}, #{married}, #{home}, #{businessRegistered},
+        NOW(), NOW() )
     </insert>
 
     <select id="selectMemberByEmail" parameterType="string" resultType="com.simpol.polisight.dto.MemberDto">

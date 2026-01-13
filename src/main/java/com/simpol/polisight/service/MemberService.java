@@ -38,10 +38,30 @@ public class MemberService implements UserDetailsService {
         dto.setPasswordHash(encodedPw);
         dto.setMemberName(dto.getUserName());
 
+        // ▼▼▼ [수정된 날짜 처리 로직] ▼▼▼
+
+        // case 1: 년/월/일이 따로 들어온 경우 (기존 로직 유지)
         if (isValidDateInput(dto)) {
             String combinedDate = combineDate(dto.getBirthYear(), dto.getBirthMonth(), dto.getBirthDay());
             dto.setBirthDate(combinedDate);
-        } else {
+        }
+        // case 2: 'birthDate' 필드에 8자리 숫자 문자열("19950101")이 들어온 경우 (회원가입 시)
+        else if (dto.getBirthDate() != null) {
+            // 숫자만 추출
+            String rawDate = dto.getBirthDate().replaceAll("[^0-9]", "");
+
+            if (rawDate.length() == 8) {
+                // "19950101" -> "1995-01-01" 로 변환하여 저장
+                String formattedDate = String.format("%s-%s-%s",
+                        rawDate.substring(0, 4),
+                        rawDate.substring(4, 6),
+                        rawDate.substring(6, 8));
+                dto.setBirthDate(formattedDate);
+            }
+            // 길이가 8이 아니거나 비어있으면 null 혹은 그대로 둠
+        }
+        // case 3: 아무것도 없으면 null
+        else {
             dto.setBirthDate(null);
         }
 
