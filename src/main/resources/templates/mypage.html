@@ -21,7 +21,6 @@
         .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
         .custom-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
 
-        /* 슬라이더 스타일 */
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%;
             background: #2563EB; cursor: pointer; margin-top: -6px;
@@ -31,7 +30,6 @@
             width: 100%; height: 4px; cursor: pointer; background: #E2E8F0; border-radius: 2px;
         }
 
-        /* Select 화살표 커스텀 */
         .custom-select {
             appearance: none;
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
@@ -41,10 +39,15 @@
             padding-right: 30px;
         }
 
-        /* 유효성 검사 에러 스타일 */
         .border-red-500 { border-color: #ef4444 !important; }
         .text-red-500 { color: #ef4444 !important; }
         .hidden { display: none; }
+
+        /* 모달 애니메이션 */
+        .modal-enter { animation: fadeIn 0.2s ease-out forwards; }
+        .modal-leave { animation: fadeOut 0.2s ease-in forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes fadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.95); } }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen">
@@ -62,7 +65,7 @@
 
                 <div class="flex items-center justify-center gap-2 mb-1">
                     <h2 class="text-xl font-bold text-slate-900" th:text="${session.loginMember.memberName}">사용자</h2>
-                    <button type="button" onclick="changeName()" class="text-slate-400 hover:text-blue-600 transition p-1" title="이름 변경">
+                    <button type="button" onclick="openNameChangeModal()" class="text-slate-400 hover:text-blue-600 transition p-1" title="이름 변경">
                         <i class="fa-solid fa-arrows-rotate text-sm"></i>
                     </button>
                 </div>
@@ -87,7 +90,6 @@
     </aside>
 
     <section class="lg:col-span-9 space-y-10">
-
         <div id="conditions" class="scroll-mt-24">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-slate-900">내 조건 관리</h2>
@@ -95,20 +97,16 @@
                     <i class="fa-solid fa-pen-to-square group-hover:scale-110 transition-transform"></i> 전체 수정
                 </button>
             </div>
-
             <div class="bg-white rounded-2xl border border-blue-100 shadow-sm overflow-hidden">
                 <div class="bg-gradient-to-r from-slate-50 to-white p-6 border-b border-slate-100">
                     <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl shadow-inner">
-                            <i class="fa-solid fa-filter"></i>
-                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl shadow-inner"><i class="fa-solid fa-filter"></i></div>
                         <div>
                             <h3 class="font-bold text-lg text-slate-800">맞춤 정책 필터 데이터</h3>
-                            <p class="text-sm text-slate-500">맞춤 정책 검색을 위한 필터 데이터입니다. 최신 상태를 유지해주세요.</p>
+                            <p class="text-sm text-slate-500">맞춤 정책 검색을 위한 필터 데이터입니다.</p>
                         </div>
                     </div>
                 </div>
-
                 <div class="p-8 grid md:grid-cols-2 gap-y-8 gap-x-12">
                     <div class="space-y-1">
                         <label class="text-xs font-bold text-slate-400 uppercase">기본 정보</label>
@@ -121,7 +119,6 @@
                             <span class="font-bold text-slate-800" id="view-region">-</span>
                         </div>
                     </div>
-
                     <div class="space-y-1">
                         <label class="text-xs font-bold text-slate-400 uppercase">사회적 상태</label>
                         <div class="flex items-center justify-between py-2 border-b border-slate-100">
@@ -133,7 +130,6 @@
                             <span class="font-bold text-slate-800" id="view-job">-</span>
                         </div>
                     </div>
-
                     <div class="space-y-1">
                         <label class="text-xs font-bold text-slate-400 uppercase">가족 및 주거</label>
                         <div class="flex items-center justify-between py-2 border-b border-slate-100">
@@ -145,7 +141,6 @@
                             <span class="font-bold text-slate-800" id="view-house">-</span>
                         </div>
                     </div>
-
                     <div class="space-y-1">
                         <label class="text-xs font-bold text-slate-400 uppercase">경제 정보 (월 소득)</label>
                         <div class="flex items-center justify-between py-2 border-b border-slate-100">
@@ -176,7 +171,6 @@
         <div id="account" class="scroll-mt-24">
             <h2 class="text-2xl font-bold text-slate-900 mb-6">비밀번호 수정</h2>
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
-
                 <form action="/updatePassword" method="post" onsubmit="return validateForm()">
 
                     <div th:if="${session.loginMember.provider == 'PoliSight'}">
@@ -242,6 +236,39 @@
 
 <th:block th:replace="~{HF :: footer}"></th:block>
 
+<div id="alert-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center" aria-modal="true">
+    <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="closeAlertModal()"></div>
+    <div class="relative bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center transform scale-95 opacity-0 transition-all duration-200" id="alert-content">
+        <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mx-auto mb-4 text-xl">
+            <i class="fa-solid fa-circle-info"></i>
+        </div>
+        <h3 class="text-lg font-bold text-slate-800 mb-2">알림</h3>
+        <p class="text-sm text-slate-500 mb-6 leading-relaxed" id="alert-msg">메시지 내용</p>
+        <button onclick="closeAlertModal()" class="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-black transition text-sm">확인</button>
+    </div>
+</div>
+
+<div id="name-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center" aria-modal="true">
+    <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="closeNameChangeModal()"></div>
+    <div class="relative bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 transform scale-95 opacity-0 transition-all duration-200" id="name-content">
+        <div class="flex justify-between items-center mb-5">
+            <h3 class="text-lg font-bold text-slate-900">이름 변경</h3>
+            <button onclick="closeNameChangeModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+
+        <form action="/updateName" method="post" onsubmit="return validateNameChange()">
+            <div class="mb-6">
+                <label class="block text-xs font-bold text-slate-500 mb-1.5">새로운 이름</label>
+                <input type="text" id="newNameInput" name="userName" class="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 font-bold text-slate-800" placeholder="변경할 이름을 입력하세요">
+            </div>
+            <div class="flex gap-3">
+                <button type="button" onclick="closeNameChangeModal()" class="flex-1 py-3 border border-slate-200 rounded-xl font-bold text-slate-600 hover:bg-slate-50 transition text-sm">취소</button>
+                <button type="submit" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition text-sm shadow-md">변경하기</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div id="setup-modal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeSetupModal()"></div>
     <div class="fixed inset-0 z-10 overflow-y-auto">
@@ -259,7 +286,6 @@
                 </div>
 
                 <div class="p-6 space-y-8 max-h-[70vh] overflow-y-auto custom-scroll">
-
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <h4 class="text-sm font-bold text-slate-800 mb-3">성별</h4>
@@ -276,8 +302,7 @@
                         </div>
                         <div>
                             <h4 class="text-sm font-bold text-slate-800 mb-3">생년월일</h4>
-                            <input type="text" id="modal-birthDate" placeholder="YYYYMMDD (예: 19950101)" maxlength="8"
-                                   class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm font-medium">
+                            <input type="text" id="modal-birthDate" placeholder="YYYYMMDD" maxlength="8" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm font-medium">
                         </div>
                     </div>
 
@@ -387,7 +412,6 @@
                         </div>
                         <input type="range" id="modal-hhIncomeSlider" min="0" max="1000" step="10" value="0" class="w-full">
                     </div>
-
                 </div>
 
                 <div class="bg-slate-50 px-6 py-4 flex justify-end gap-3 border-t border-slate-100 sticky bottom-0 z-10">
@@ -402,7 +426,73 @@
 <script th:inline="javascript">
     /*<![CDATA[*/
 
-    // --- 1. 행정구역 데이터 정의 (Full List) ---
+    // [중요] Controller에서 넘겨준 Flash Attribute 메시지가 있으면 모달 띄우기
+    const serverMsg = [[${msg}]];
+    if (serverMsg) {
+        window.addEventListener('DOMContentLoaded', () => {
+            showCustomAlert(serverMsg);
+        });
+    }
+
+    // --- 1. 커스텀 알림창 함수 ---
+    function showCustomAlert(msg) {
+        const modal = document.getElementById('alert-modal');
+        const content = document.getElementById('alert-content');
+        document.getElementById('alert-msg').innerText = msg;
+
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            content.classList.remove('scale-95', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
+        }, 10);
+    }
+
+    function closeAlertModal() {
+        const modal = document.getElementById('alert-modal');
+        const content = document.getElementById('alert-content');
+
+        content.classList.remove('scale-100', 'opacity-100');
+        content.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => modal.classList.add('hidden'), 200);
+    }
+
+    // --- 2. 이름 변경 모달 함수 ---
+    function openNameChangeModal() {
+        const modal = document.getElementById('name-modal');
+        const content = document.getElementById('name-content');
+        // 현재 이름 인풋에 세팅 (Thymeleaf 변수 활용)
+        document.getElementById('newNameInput').value = [[${session.loginMember.memberName}]];
+
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            content.classList.remove('scale-95', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
+        }, 10);
+
+        // 포커스 주기
+        setTimeout(() => document.getElementById('newNameInput').focus(), 100);
+    }
+
+    function closeNameChangeModal() {
+        const modal = document.getElementById('name-modal');
+        const content = document.getElementById('name-content');
+
+        content.classList.remove('scale-100', 'opacity-100');
+        content.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => modal.classList.add('hidden'), 200);
+    }
+
+    function validateNameChange() {
+        const nameInput = document.getElementById('newNameInput');
+        if (nameInput.value.trim() === "") {
+            showCustomAlert("이름을 입력해주세요.");
+            nameInput.focus();
+            return false;
+        }
+        return true; // 폼 제출
+    }
+
+    // --- 3. 행정구역 데이터 (Full List) ---
     const areaData = {
         "서울특별시": ["종로구","중구","용산구","성동구","광진구","동대문구","중랑구","성북구","강북구","도봉구","노원구","은평구","서대문구","마포구","양천구","강서구","구로구","금천구","영등포구","동작구","관악구","서초구","강남구","송파구","강동구"],
         "부산광역시": ["중구","서구","동구","영도구","부산진구","동래구","남구","북구","해운대구","사하구","금정구","강서구","연제구","수영구","사상구","기장군"],
@@ -412,33 +502,19 @@
         "대전광역시": ["동구","중구","서구","유성구","대덕구"],
         "울산광역시": ["중구","남구","동구","북구","울주군"],
         "세종특별자치시": ["세종특별자치시"],
-        "경기도": [
-            "수원시","수원시 장안구","수원시 권선구","수원시 팔달구","수원시 영통구",
-            "성남시","성남시 수정구","성남시 중원구","성남시 분당구",
-            "의정부시",
-            "안양시","안양시 만안구","안양시 동안구",
-            "부천시","부천시 원미구","부천시 소사구","부천시 오정구",
-            "광명시","평택시","동두천시",
-            "안산시","안산시 상록구","안산시 단원구",
-            "고양시","고양시 덕양구","고양시 일산동구","고양시 일산서구",
-            "과천시","구리시","남양주시","오산시","시흥시","군포시","의왕시","하남시",
-            "용인시","용인시 처인구","용인시 기흥구","용인시 수지구",
-            "파주시","이천시","안성시","김포시","화성시","광주시","양주시","포천시","여주시",
-            "연천군","가평군","양평군"
-        ],
+        "경기도": ["수원시","성남시","의정부시","안양시","부천시","광명시","평택시","동두천시","안산시","고양시","과천시","구리시","남양주시","오산시","시흥시","군포시","의왕시","하남시","용인시","파주시","이천시","안성시","김포시","화성시","광주시","양주시","포천시","여주시","연천군","가평군","양평군"],
         "강원특별자치도": ["춘천시","원주시","강릉시","동해시","태백시","속초시","삼척시","홍천군","횡성군","영월군","평창군","정선군","철원군","화천군","양구군","인제군","고성군","양양군"],
-        "충청북도": ["청주시","청주시 상당구","청주시 서원구","청주시 흥덕구","청주시 청원구","충주시","제천시","보은군","옥천군","영동군","증평군","진천군","괴산군","음성군","단양군"],
-        "충청남도": ["천안시","천안시 동남구","천안시 서북구","공주시","보령시","아산시","서산시","논산시","계룡시","당진시","금산군","부여군","서천군","청양군","홍성군","예산군","태안군"],
-        "전북특별자치도": ["전주시","전주시 완산구","전주시 덕진구","군산시","익산시","정읍시","남원시","김제시","완주군","진안군","무주군","장수군","임실군","순창군","고창군","부안군"],
-        "전라남도": ["목포시","여수시","순천시","나주시","광양시","담양군","곡성군","구례군","고흥군","보성군","화순군","장흥군","장흥군 장흥읍","강진군","해남군","영암군","무안군","함평군","영광군","장성군","완도군","진도군","신안군"],
-        "경상북도": ["포항시","포항시 남구","포항시 북구","경주시","김천시","안동시","구미시","영주시","영천시","상주시","문경시","경산시","의성군","청송군","영양군","영덕군","청도군","고령군","성주군","칠곡군","예천군","봉화군","울진군","울릉군"],
-        "경상남도": ["창원시","창원시 의창구","창원시 성산구","창원시 마산합포구","창원시 마산회원구","창원시 진해구","진주시","통영시","사천시","김해시","밀양시","거제시","양산시","의령군","함안군","창녕군","고성군","남해군","하동군","산청군","함양군","거창군","합천군"],
+        "충청북도": ["청주시","충주시","제천시","보은군","옥천군","영동군","증평군","진천군","괴산군","음성군","단양군"],
+        "충청남도": ["천안시","공주시","보령시","아산시","서산시","논산시","계룡시","당진시","금산군","부여군","서천군","청양군","홍성군","예산군","태안군"],
+        "전북특별자치도": ["전주시","군산시","익산시","정읍시","남원시","김제시","완주군","진안군","무주군","장수군","임실군","순창군","고창군","부안군"],
+        "전라남도": ["목포시","여수시","순천시","나주시","광양시","담양군","곡성군","구례군","고흥군","보성군","화순군","장흥군","강진군","해남군","영암군","무안군","함평군","영광군","장성군","완도군","진도군","신안군"],
+        "경상북도": ["포항시","경주시","김천시","안동시","구미시","영주시","영천시","상주시","문경시","경산시","의성군","청송군","영양군","영덕군","청도군","고령군","성주군","칠곡군","예천군","봉화군","울진군","울릉군"],
+        "경상남도": ["창원시","진주시","통영시","사천시","김해시","밀양시","거제시","양산시","의령군","함안군","창녕군","고성군","남해군","하동군","산청군","함양군","거창군","합천군"],
         "제주특별자치도": ["제주시","서귀포시"]
     };
 
-    /* ================= 2. 페이지 로드 및 초기화 ================= */
+    /* ================= 4. 페이지 로드 및 초기화 ================= */
     document.addEventListener("DOMContentLoaded", function() {
-        // 2-1. 모달 시/도 Select 목록 초기화
         const siSelect = document.getElementById("modal-regionSi");
         for (const si in areaData) {
             const option = document.createElement("option");
@@ -447,26 +523,19 @@
             siSelect.appendChild(option);
         }
 
-        // 2-2. 초기 화면 데이터 로드
         loadConditionsToView();
-
-        // 2-3. 슬라이더 싱크
         syncSlider('modal-myIncomeSlider', 'modal-myIncomeText');
         syncSlider('modal-hhIncomeSlider', 'modal-hhIncomeText');
     });
 
-    // 시/도 변경 시 구/군 업데이트 함수 (모달용)
     function updateModalRegionGu() {
         const siSelect = document.getElementById("modal-regionSi");
         const guSelect = document.getElementById("modal-regionGu");
         const selectedSi = siSelect.value;
-
-        // 목록 초기화
         guSelect.innerHTML = '<option value="">시/군/구 선택</option>';
 
         if (selectedSi && areaData[selectedSi]) {
-            const guList = areaData[selectedSi];
-            guList.forEach(function(gu) {
+            areaData[selectedSi].forEach(function(gu) {
                 const option = document.createElement("option");
                 option.value = gu;
                 option.text = gu;
@@ -475,19 +544,16 @@
         }
     }
 
-    /* ================= 3. 비밀번호 유효성 검사 (일반 회원만 실행 - 안전장치) ================= */
+    /* ================= 5. 비밀번호 유효성 검사 ================= */
     const newPw = document.getElementById('newPw');
     const newPwConfirm = document.getElementById('newPwConfirm');
     const pwMatchMsg = document.getElementById('pwMatchMsg');
     const pwRuleError = document.getElementById('pwRuleError');
 
-    // [중요] newPw 요소가 존재할 때만(일반 회원일 때만) 이벤트 리스너 등록
     if (newPw && newPwConfirm) {
-
         function checkPwValidation() {
             const val = newPw.value;
             const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{6,20}$/;
-
             if(val.length > 0 && !regex.test(val)) {
                 pwRuleError.classList.remove('hidden');
                 newPw.classList.add('border-red-500');
@@ -497,14 +563,12 @@
             }
             checkPasswordMatch();
         }
-
         function checkPasswordMatch() {
             if (newPwConfirm.value.length === 0) {
                 pwMatchMsg.classList.add('hidden');
                 newPwConfirm.classList.remove('border-red-500');
                 return;
             }
-
             if (newPw.value !== newPwConfirm.value) {
                 pwMatchMsg.classList.remove('hidden');
                 newPwConfirm.classList.add('border-red-500');
@@ -513,31 +577,26 @@
                 newPwConfirm.classList.remove('border-red-500');
             }
         }
-
         newPw.addEventListener('input', checkPwValidation);
         newPwConfirm.addEventListener('input', checkPasswordMatch);
     }
 
-    /* ================= 4. 폼 제출 시 최종 검증 ================= */
     function validateForm() {
-        // [중요] newPw가 존재하고 값이 있을 때만 검사 (소셜 회원은 통과)
         if(newPw && newPw.value.length > 0) {
             const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{6,20}$/;
             if (!regex.test(newPw.value)) {
-                alert('비밀번호 형식이 올바르지 않습니다.');
+                showCustomAlert('비밀번호 형식이 올바르지 않습니다.');
                 newPw.focus();
                 return false;
             }
-
             if(newPw.value !== newPwConfirm.value) {
-                alert('새 비밀번호가 일치하지 않습니다.');
+                showCustomAlert('새 비밀번호가 일치하지 않습니다.');
                 newPwConfirm.focus();
                 return false;
             }
-
             const currentPw = document.querySelector('input[name="currentPw"]');
             if(currentPw && currentPw.value.length === 0) {
-                alert('비밀번호를 변경하려면 기존 비밀번호를 입력해야 합니다.');
+                showCustomAlert('비밀번호를 변경하려면 기존 비밀번호를 입력해야 합니다.');
                 currentPw.focus();
                 return false;
             }
@@ -545,36 +604,7 @@
         return true;
     }
 
-    /* ================= 5. [수정3] 이름 변경 기능 ================= */
-    function changeName() {
-        const currentName = [[${session.loginMember.memberName}]];
-        const newName = prompt("변경할 이름을 입력하세요:", currentName);
-
-        if (newName !== null) {
-            if (newName.trim() === "") {
-                alert("이름을 입력해주세요.");
-                return;
-            }
-
-            // 이름 변경 요청을 위한 동적 폼 생성 및 제출
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '/updateName'; // [중요] 백엔드에 이 경로가 있어야 함
-
-            const inputName = document.createElement('input');
-            inputName.type = 'hidden';
-            inputName.name = 'userName';
-            inputName.value = newName;
-
-            form.appendChild(inputName);
-            document.body.appendChild(form);
-            form.submit();
-        }
-    }
-
-
-    /* ================= 6. LocalStorage 데이터 처리 (View & Modal) ================= */
-
+    /* ================= 6. LocalStorage 및 기타 UI ================= */
     function syncSlider(sliderId, textId) {
         const slider = document.getElementById(sliderId);
         const text = document.getElementById(textId);
@@ -586,23 +616,18 @@
         });
     }
 
-    // LocalStorage -> 화면 표시
     function loadConditionsToView() {
         const json = localStorage.getItem('userSetupData');
         if(!json) return;
-
         const data = JSON.parse(json);
 
-        // 기본 정보
         const gender = (data.gender === 'M') ? '남성' : (data.gender === 'F' ? '여성' : '-');
         const birth = data.birthDate || '-';
         document.getElementById('view-basic').innerText = `${gender} / ${birth}`;
 
-        // 지역 (한글명 그대로 사용)
         const region = (data.region || '-') + ' ' + (data.subRegion || '');
         document.getElementById('view-region').innerText = region;
 
-        // 사회적 상태
         const eduMap = { 'UNDER_HIGH_SCHOOL': '고졸 미만', 'HIGH_SCHOOL': '고졸', 'UNIV_ATTENDING': '대학(원) 재학', 'UNIV_GRAD': '대졸', 'MASTER_PHD': '석/박사' };
         document.getElementById('view-edu').innerText = eduMap[data.educationLevel] || '-';
 
@@ -610,48 +635,37 @@
         const biz = (data.isBusinessOwner === true || data.isBusinessOwner === "true") ? ' (사업자)' : '';
         document.getElementById('view-job').innerText = (jobMap[data.employmentStatus] || '-') + biz;
 
-        // 가족 및 주거
         const marry = (data.marry === 'Y') ? '기혼' : '미혼';
         document.getElementById('view-family').innerText = `${marry} / 자녀 ${data.childCount || 0}명`;
         const house = (data.house === 'Y') ? '자가' : '전/월세';
         document.getElementById('view-house').innerText = `${house} / 가구원 ${data.familyCount || 1}명`;
 
-        // 경제
         document.getElementById('view-myIncome').innerText = (data.myIncome || 0) + '만원';
         document.getElementById('view-hhIncome').innerText = (data.householdIncome || 0) + '만원';
     }
 
-    // 모달 열기 (데이터 바인딩 포함)
     function openSetupModal() {
         const modal = document.getElementById('setup-modal');
         const json = localStorage.getItem('userSetupData');
-
         if(json) {
             const data = JSON.parse(json);
-
             setRadio('modal-gender', data.gender);
             setRadio('modal-marry', data.marry);
             setRadio('modal-house', data.house);
             if(data.isBusinessOwner === true || data.isBusinessOwner === "true") {
                 document.getElementById('modal-bizCheck').checked = true;
             }
-
             setValue('modal-birthDate', data.birthDate);
-
-            // [중요] 지역 데이터 바인딩 로직
             setValue('modal-regionSi', data.region);
             updateModalRegionGu();
             setValue('modal-regionGu', data.subRegion);
-
             setValue('modal-educationLevel', data.educationLevel);
             setValue('modal-employmentStatus', data.employmentStatus);
             setValue('modal-childCount', data.childCount);
             setValue('modal-familyCount', data.familyCount);
-
             setSlider('modal-myIncomeSlider', 'modal-myIncomeText', data.myIncome);
             setSlider('modal-hhIncomeSlider', 'modal-hhIncomeText', data.householdIncome);
         }
-
         modal.classList.remove('hidden');
         setTimeout(() => {
             modal.querySelector('div[class*="backdrop-blur-sm"]').classList.remove('opacity-0');
@@ -664,7 +678,6 @@
         modal.classList.add('hidden');
     }
 
-    // 데이터 저장
     function saveConditions() {
         const data = {
             gender: getRadio('modal-gender'),
@@ -681,17 +694,14 @@
             myIncome: getValue('modal-myIncomeText'),
             householdIncome: getValue('modal-hhIncomeText')
         };
-
         localStorage.setItem('userSetupData', JSON.stringify(data));
         loadConditionsToView();
-        alert("조건이 성공적으로 수정되었습니다.");
+        showCustomAlert("조건이 성공적으로 수정되었습니다.");
         closeSetupModal();
     }
 
-    /* ================= Helper Functions ================= */
     function getValue(id) { return document.getElementById(id).value; }
     function setValue(id, val) { if(val !== undefined && val !== null) document.getElementById(id).value = val; }
-
     function getRadio(name) {
         const el = document.querySelector(`input[name="${name}"]:checked`);
         return el ? el.value : '';
@@ -708,7 +718,11 @@
     }
 
     document.addEventListener('keydown', function(event) {
-        if (event.key === "Escape") closeSetupModal();
+        if (event.key === "Escape") {
+            closeSetupModal();
+            closeAlertModal();
+            closeNameChangeModal();
+        }
     });
     /*]]>*/
 </script>

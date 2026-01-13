@@ -10,9 +10,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes; // [중요] 필수 임포트
 
 import java.io.IOException;
-import java.io.PrintWriter;
 
 @Controller
 public class MemberController {
@@ -57,78 +57,74 @@ public class MemberController {
     }
 
     // ==========================================
-    // [추가] 1. 이름 변경 (자바스크립트 프롬프트 요청 처리)
+    // [수정] 1. 이름 변경 (RedirectAttributes 사용)
     // ==========================================
     @PostMapping("/updateName")
     public String updateName(@RequestParam("userName") String userName,
-                             HttpSession session) {
+                             HttpSession session,
+                             RedirectAttributes rttr) { // RedirectAttributes 추가
+
         MemberDto loginMember = (MemberDto) session.getAttribute("loginMember");
         if (loginMember == null) return "redirect:/login";
 
         // 서비스 호출
         MemberDto updatedMember = memberService.updateName(loginMember.getEmail(), userName);
 
-        // 세션 정보 갱신 (이름 변경 반영)
         if (updatedMember != null) {
+            // 세션 정보 갱신 (이름 변경 반영)
             session.setAttribute("loginMember", updatedMember);
+            // 성공 메시지 전달 (HTML에서 ${msg}로 받음)
+            rttr.addFlashAttribute("msg", "이름이 성공적으로 변경되었습니다.");
+        } else {
+            rttr.addFlashAttribute("msg", "이름 변경에 실패했습니다.");
         }
 
         return "redirect:/mypage";
     }
 
     // ==========================================
-    // [추가] 2. 비밀번호 변경 (마이페이지 폼 요청 처리)
+    // [수정] 2. 비밀번호 변경 (RedirectAttributes 사용)
     // ==========================================
     @PostMapping("/updatePassword")
     public String updatePassword(@RequestParam("currentPw") String currentPw,
                                  @RequestParam("newPw") String newPw,
                                  HttpSession session,
-                                 HttpServletResponse response) throws IOException {
+                                 RedirectAttributes rttr) { // RedirectAttributes 추가
 
         MemberDto loginMember = (MemberDto) session.getAttribute("loginMember");
         if (loginMember == null) return "redirect:/login";
-
-        response.setContentType("text/html; charset=UTF-8");
-        PrintWriter out = response.getWriter();
 
         try {
             // 서비스 호출 (현재 비번 확인 -> 새 비번 변경)
             boolean result = memberService.changePassword(loginMember.getEmail(), currentPw, newPw);
 
             if (result) {
-                out.println("<script>alert('비밀번호가 성공적으로 변경되었습니다.'); location.href='/mypage';</script>");
+                rttr.addFlashAttribute("msg", "비밀번호가 성공적으로 변경되었습니다.");
             } else {
-                out.println("<script>alert('현재 비밀번호가 일치하지 않습니다.'); history.back();</script>");
+                rttr.addFlashAttribute("msg", "현재 비밀번호가 일치하지 않습니다.");
             }
         } catch (Exception e) {
-            out.println("<script>alert('오류가 발생했습니다: " + e.getMessage() + "'); history.back();</script>");
+            rttr.addFlashAttribute("msg", "오류가 발생했습니다: " + e.getMessage());
         }
 
-        out.flush();
-        return null; // 직접 응답을 작성했으므로 뷰 리턴 없음
+        return "redirect:/mypage";
     }
 
-    // (기존 회원수정 로직 - 혹시 모를 상황 대비 유지하거나 삭제해도 됨)
+    // (기존 회원수정 로직 - RedirectAttributes로 변경)
     @PostMapping("/updateMember")
-    public String updateMemberProcess(MemberDto memberDto, HttpSession session, HttpServletResponse response) throws IOException {
-        // 기존 로직 유지...
+    public String updateMemberProcess(MemberDto memberDto, HttpSession session, RedirectAttributes rttr) {
+
         try {
             MemberDto updatedMember = memberService.updateMember(memberDto);
+
             if (updatedMember != null) {
                 session.setAttribute("loginMember", updatedMember);
-                response.setContentType("text/html; charset=UTF-8");
-                PrintWriter out = response.getWriter();
-                out.println("<script>alert('회원 정보가 수정되었습니다.'); location.href='/mypage';</script>");
-                out.flush();
-                return null;
+                rttr.addFlashAttribute("msg", "회원 정보가 수정되었습니다.");
             }
         } catch (IllegalArgumentException e) {
-            response.setContentType("text/html; charset=UTF-8");
-            PrintWriter out = response.getWriter();
-            out.println("<script>alert('" + e.getMessage() + "'); history.back();</script>");
-            out.flush();
-            return null;
+            rttr.addFlashAttribute("msg", e.getMessage());
         }
+
         return "redirect:/mypage";
     }
 
@@ -145,7 +141,7 @@ public class MemberController {
         return "reset_pw";
     }
 
-    // 2. 실제 비밀번호 변경 처리 (이메일 찾기용)
+    // 2. 실제 비밀번호 변경 처리
     @PostMapping("/user/update-pw")
     public String updatePwProcess(@RequestParam("token") String token,
                                   @RequestParam("newPw") String newPw) {
@@ -156,9 +152,10 @@ public class MemberController {
         if (email == null) {
             return "redirect:/?error=session_expired";
         }
-        // 여기서는 기존 비밀번호 체크 없이 강제 변경 (분실 상황이므로)
+
         memberService.updatePassword(email, newPw);
         MailController.resetTokenStore.remove(token);
+
         return "redirect:/user/pw-success";
     }
 
