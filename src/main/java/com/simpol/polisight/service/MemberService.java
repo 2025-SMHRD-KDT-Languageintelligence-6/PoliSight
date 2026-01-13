@@ -9,36 +9,28 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class MemberService implements UserDetailsService { // 1. 시큐리티 인터페이스 추가
+public class MemberService implements UserDetailsService {
 
     private final MemberMapper memberMapper;
     private final PasswordEncoder passwordEncoder;
 
-    // =============================================================
-    // ★ [추가] 스프링 시큐리티 로그인 처리 메서드
-    // 이 메서드가 있어야 SecurityConfig의 빨간 줄이 사라집니다.
-    // =============================================================
+    // 시큐리티 로그인 처리
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         MemberDto member = memberMapper.selectMemberByEmail(email);
-
         if (member == null) {
             throw new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + email);
         }
-
         return User.builder()
                 .username(member.getEmail())
-                .password(member.getPasswordHash()) // DB의 암호화된 비번 사용
+                .password(member.getPasswordHash())
                 .roles("USER")
                 .build();
     }
-
-    // =============================================================
-    // ★ 기존 사용자 로직 (그대로 유지됨)
-    // =============================================================
 
     // 1. 회원가입
     public void join(MemberDto dto) {
@@ -58,7 +50,7 @@ public class MemberService implements UserDetailsService { // 1. 시큐리티 �
         memberMapper.insertMember(dto);
     }
 
-    // 2. 로그인 (기존 컨트롤러에서 호출할 때 사용)
+    // 2. 로그인
     public MemberDto login(String email, String inputPw) {
         MemberDto member = memberMapper.selectMemberByEmail(email);
         if (member != null && passwordEncoder.matches(inputPw, member.getPasswordHash())) {
@@ -67,7 +59,38 @@ public class MemberService implements UserDetailsService { // 1. 시큐리티 �
         return null;
     }
 
-    // 3. 회원 정보 수정
+    // ==========================================
+    // [추가] 이름만 변경
+    // ==========================================
+    public MemberDto updateName(String email, String newName) {
+        MemberDto member = memberMapper.selectMemberByEmail(email);
+        if (member != null) {
+            member.setMemberName(newName);
+            memberMapper.updateMember(member); // 기존 Mapper 재활용 (MyBatis 설정에 따라 전체 업데이트됨)
+            return member;
+        }
+        return null;
+    }
+
+    // ==========================================
+    // [추가] 비밀번호 변경 (현재 비밀번호 확인 포함 - 마이페이지용)
+    // ==========================================
+    public boolean changePassword(String email, String currentPw, String newPw) {
+        MemberDto member = memberMapper.selectMemberByEmail(email);
+        if (member == null) return false;
+
+        // 1. 현재 비밀번호 확인
+        if (!passwordEncoder.matches(currentPw, member.getPasswordHash())) {
+            return false; // 불일치
+        }
+
+        // 2. 새 비밀번호 암호화 및 저장
+        String encodedNewPw = passwordEncoder.encode(newPw);
+        memberMapper.updatePassword(email, encodedNewPw);
+        return true;
+    }
+
+    // 3. 기존 회원 정보 수정 (사용 안할 수도 있지만 유지)
     public MemberDto updateMember(MemberDto dto) {
         MemberDto dbMember = memberMapper.selectMemberByEmail(dto.getEmail());
         if (dbMember == null) return null;
@@ -95,7 +118,7 @@ public class MemberService implements UserDetailsService { // 1. 시큐리티 �
         return memberMapper.selectMemberByEmail(dto.getEmail());
     }
 
-    // 4. 비밀번호 재설정
+    // 4. 비밀번호 재설정 (이메일 찾기용 - 기존 비밀번호 확인 안함)
     public void updatePassword(String email, String newPw) {
         String encodedPw = passwordEncoder.encode(newPw);
         memberMapper.updatePassword(email, encodedPw);

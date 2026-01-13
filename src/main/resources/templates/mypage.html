@@ -20,6 +20,8 @@
         .custom-scroll::-webkit-scrollbar { width: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
         .custom-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+
+        /* 슬라이더 스타일 */
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%;
             background: #2563EB; cursor: pointer; margin-top: -6px;
@@ -28,7 +30,18 @@
         input[type=range]::-webkit-slider-runnable-track {
             width: 100%; height: 4px; cursor: pointer; background: #E2E8F0; border-radius: 2px;
         }
-        /* 비밀번호 불일치 및 에러 시 테두리 붉게 표시 */
+
+        /* Select 화살표 커스텀 */
+        .custom-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 14px;
+            padding-right: 30px;
+        }
+
+        /* 유효성 검사 에러 스타일 */
         .border-red-500 { border-color: #ef4444 !important; }
         .text-red-500 { color: #ef4444 !important; }
         .hidden { display: none; }
@@ -46,7 +59,14 @@
                 <div class="w-24 h-24 rounded-full bg-slate-200 mx-auto mb-4 overflow-hidden border-4 border-white shadow-lg flex items-center justify-center">
                     <i class="fa-solid fa-user text-4xl text-slate-400"></i>
                 </div>
-                <h2 class="text-xl font-bold text-slate-900 mb-1" th:text="${session.loginMember.memberName}">사용자</h2>
+
+                <div class="flex items-center justify-center gap-2 mb-1">
+                    <h2 class="text-xl font-bold text-slate-900" th:text="${session.loginMember.memberName}">사용자</h2>
+                    <button type="button" onclick="changeName()" class="text-slate-400 hover:text-blue-600 transition p-1" title="이름 변경">
+                        <i class="fa-solid fa-arrows-rotate text-sm"></i>
+                    </button>
+                </div>
+
                 <p class="text-sm text-slate-500" th:text="${session.loginMember.email}">user@email.com</p>
             </div>
 
@@ -59,7 +79,7 @@
                         <i class="fa-solid fa-bookmark w-5 text-center"></i> 즐겨찾기 및 알림
                     </a>
                     <a href="#account" class="px-6 py-4 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 border-l-4 border-transparent transition flex items-center gap-3">
-                        <i class="fa-solid fa-user-gear w-5 text-center"></i> 회원정보 수정
+                        <i class="fa-solid fa-key w-5 text-center"></i> 비밀번호 수정
                     </a>
                 </nav>
             </div>
@@ -93,12 +113,48 @@
                     <div class="space-y-1">
                         <label class="text-xs font-bold text-slate-400 uppercase">기본 정보</label>
                         <div class="flex items-center justify-between py-2 border-b border-slate-100">
-                            <span class="text-slate-600">성별 / 나이</span>
-                            <span class="font-bold text-slate-800">남성 / 만 26세</span>
+                            <span class="text-slate-600">성별 / 생년월일</span>
+                            <span class="font-bold text-slate-800" id="view-basic">-</span>
                         </div>
                         <div class="flex items-center justify-between py-2 border-b border-slate-100">
                             <span class="text-slate-600">거주지역</span>
-                            <span class="font-bold text-slate-800">서울특별시 마포구</span>
+                            <span class="font-bold text-slate-800" id="view-region">-</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-400 uppercase">사회적 상태</label>
+                        <div class="flex items-center justify-between py-2 border-b border-slate-100">
+                            <span class="text-slate-600">최종 학력</span>
+                            <span class="font-bold text-slate-800" id="view-edu">-</span>
+                        </div>
+                        <div class="flex items-center justify-between py-2 border-b border-slate-100">
+                            <span class="text-slate-600">고용 / 사업자</span>
+                            <span class="font-bold text-slate-800" id="view-job">-</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-400 uppercase">가족 및 주거</label>
+                        <div class="flex items-center justify-between py-2 border-b border-slate-100">
+                            <span class="text-slate-600">결혼 / 자녀</span>
+                            <span class="font-bold text-slate-800" id="view-family">-</span>
+                        </div>
+                        <div class="flex items-center justify-between py-2 border-b border-slate-100">
+                            <span class="text-slate-600">주택 소유 / 가구원</span>
+                            <span class="font-bold text-slate-800" id="view-house">-</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-400 uppercase">경제 정보 (월 소득)</label>
+                        <div class="flex items-center justify-between py-2 border-b border-slate-100">
+                            <span class="text-slate-600">본인 소득</span>
+                            <span class="font-bold text-blue-600" id="view-myIncome">0만원</span>
+                        </div>
+                        <div class="flex items-center justify-between py-2 border-b border-slate-100">
+                            <span class="text-slate-600">가구 합산 소득</span>
+                            <span class="font-bold text-slate-800" id="view-hhIncome">0만원</span>
                         </div>
                     </div>
                 </div>
@@ -118,85 +174,65 @@
         <hr class="border-slate-200">
 
         <div id="account" class="scroll-mt-24">
-            <h2 class="text-2xl font-bold text-slate-900 mb-6">회원정보 수정</h2>
+            <h2 class="text-2xl font-bold text-slate-900 mb-6">비밀번호 수정</h2>
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
-                <form action="/updateMember" method="post" class="space-y-8" onsubmit="return validateForm()">
 
-                    <div class="space-y-6">
-                        <div class="grid md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-2">이름</label>
-                                <input type="text" name="userName" th:value="${session.loginMember.memberName}"
-                                       class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm font-medium">
+                <form action="/updatePassword" method="post" onsubmit="return validateForm()">
+
+                    <div th:if="${session.loginMember.provider == 'PoliSight'}">
+                        <div class="text-center mb-8">
+                            <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 text-blue-600 mb-3">
+                                <i class="fa-solid fa-shield-halved text-xl"></i>
                             </div>
-                            <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-2">이메일 (아이디)</label>
-                                <input type="email" name="email" th:value="${session.loginMember.email}" readonly
-                                       class="w-full p-3 rounded-xl border border-slate-200 bg-slate-100 text-slate-500 cursor-not-allowed text-sm font-medium">
-                                <p class="text-xs text-red-500 mt-1">* 이메일은 변경할 수 없습니다.</p>
-                            </div>
+                            <h3 class="text-lg font-bold text-slate-800">안전한 정보 보호</h3>
+                            <p class="text-sm text-slate-500">주기적인 비밀번호 변경으로 계정을 안전하게 보호하세요.</p>
                         </div>
 
-                        <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">생년월일</label>
-
-                            <input type="hidden" id="originBirthDate" th:value="${session.loginMember.birthDate}">
-
-                            <div class="flex gap-2">
-                                <select id="year" name="birthYear" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm font-medium"></select>
-                                <select id="month" name="birthMonth" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm font-medium"></select>
-                                <select id="day" name="birthDay" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm font-medium"></select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="border-t border-slate-100"></div>
-
-                    <div>
-                        <h3 class="text-lg font-bold text-slate-800 mb-4">비밀번호 변경</h3>
-
-                        <div th:if="${session.loginMember.provider == 'PoliSight'}"
-                             class="bg-slate-50 p-6 rounded-xl border border-slate-200 space-y-4">
+                        <div class="space-y-5 max-w-lg mx-auto">
                             <div>
-                                <label class="block text-xs font-bold text-slate-500 mb-1">기존 비밀번호</label>
-                                <input type="password" name="currentPw" placeholder="현재 비밀번호를 입력해 주세요"
-                                       class="w-full p-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
+                                <label class="block text-sm font-bold text-slate-700 mb-2">현재 비밀번호</label>
+                                <input type="password" name="currentPw" required placeholder="현재 비밀번호를 입력해 주세요"
+                                       class="w-full p-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm transition">
                             </div>
 
-                            <div class="grid md:grid-cols-2 gap-4">
+                            <div class="space-y-4 pt-2 border-t border-slate-100">
                                 <div>
-                                    <label class="block text-xs font-bold text-slate-500 mb-1">새 비밀번호</label>
-                                    <input type="password" id="newPw" name="newPw" placeholder="6~20자 (영문/숫자/특수문자 포함)"
-                                           class="w-full p-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
-                                    <p id="pwRuleError" class="text-xs text-red-500 mt-1 hidden">* 영문/숫자/특수문자 포함 6~20자로 입력해 주세요.</p>
+                                    <label class="block text-sm font-bold text-slate-700 mb-2">새 비밀번호</label>
+                                    <input type="password" id="newPw" name="newPw" required placeholder="6~20자 (영문/숫자/특수문자 포함)"
+                                           class="w-full p-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm transition">
+                                    <p id="pwRuleError" class="text-xs text-red-500 mt-1 hidden font-medium">* 영문/숫자/특수문자 포함 6~20자로 입력해 주세요.</p>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-bold text-slate-500 mb-1">새 비밀번호 확인</label>
-                                    <input type="password" id="newPwConfirm" placeholder="새로운 비밀번호 확인"
-                                           class="w-full p-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
-                                    <p id="pwMatchMsg" class="text-xs text-red-500 mt-1 hidden">* 비밀번호가 일치하지 않습니다.</p>
+                                    <label class="block text-sm font-bold text-slate-700 mb-2">새 비밀번호 확인</label>
+                                    <input type="password" id="newPwConfirm" required placeholder="새로운 비밀번호 확인"
+                                           class="w-full p-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm transition">
+                                    <p id="pwMatchMsg" class="text-xs text-red-500 mt-1 hidden font-medium">* 비밀번호가 일치하지 않습니다.</p>
                                 </div>
                             </div>
-                            <p class="text-[11px] text-red-500 font-medium">* 비밀번호를 변경하지 않으려면 비워두세요.</p>
-                        </div>
 
-                        <div th:unless="${session.loginMember.provider == 'PoliSight'}"
-                             class="bg-slate-100 p-8 rounded-xl border border-slate-200 text-center">
-                            <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-200 text-slate-500 mb-3">
-                                <i class="fa-solid fa-lock text-xl"></i>
+                            <div class="pt-4">
+                                <button type="submit" class="w-full py-4 bg-slate-900 text-white font-bold rounded-xl hover:bg-black transition text-sm shadow-md flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-check"></i> 비밀번호 변경하기
+                                </button>
                             </div>
-                            <p class="text-sm text-slate-600 font-bold">소셜 계정으로 로그인되었습니다.</p>
-                            <p class="text-xs text-red-500 mt-2 font-medium">
-                                * 소셜 로그인(카카오, 구글) 이용 시 비밀번호 변경은 해당 소셜 서비스에서 가능합니다.
-                            </p>
                         </div>
                     </div>
 
-                    <div class="flex justify-end pt-2">
-                        <button type="submit" class="px-6 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-black transition text-sm shadow-md">
-                            정보 수정 저장
-                        </button>
+                    <div th:unless="${session.loginMember.provider == 'PoliSight'}"
+                         class="bg-slate-50 p-10 rounded-xl border border-slate-200 text-center flex flex-col items-center justify-center min-h-[300px]">
+                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-200 text-slate-500 mb-4 shadow-sm">
+                            <i class="fa-solid fa-lock text-2xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-800 mb-1">비밀번호 변경 불가</h3>
+                        <p class="text-sm text-slate-500 mb-6">
+                            현재 회원님은 <span class="font-bold text-blue-600" th:text="${session.loginMember.provider}">Social</span> 계정으로 로그인 중입니다.<br>
+                            비밀번호 변경 및 계정 관리는 해당 소셜 서비스에서 가능합니다.
+                        </p>
+                        <div class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-400 font-medium">
+                            <i class="fa-solid fa-circle-info mr-1"></i> 소셜 연동 계정은 PoliSight 내에서 비밀번호를 관리하지 않습니다.
+                        </div>
                     </div>
+
                 </form>
             </div>
         </div>
@@ -210,23 +246,26 @@
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeSetupModal()"></div>
     <div class="fixed inset-0 z-10 overflow-y-auto">
         <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-            <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 w-full max-w-lg border border-slate-200">
+            <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 w-full max-w-2xl border border-slate-200">
+
                 <div class="bg-white px-6 py-5 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10">
                     <div>
                         <h3 class="text-xl font-bold text-slate-900">맞춤 조건 설정</h3>
-                        <p class="text-xs text-slate-500 mt-1">정책 검색 필터에 자동 적용될 정보를 수정합니다.</p>
+                        <p class="text-xs text-slate-500 mt-1">이곳에서 저장한 정보는 '내 조건 불러오기' 시 적용됩니다.</p>
                     </div>
                     <button type="button" onclick="closeSetupModal()" class="text-slate-400 hover:text-slate-600 transition p-2 bg-slate-50 rounded-full">
                         <i class="fa-solid fa-xmark text-lg"></i>
                     </button>
                 </div>
+
                 <div class="p-6 space-y-8 max-h-[70vh] overflow-y-auto custom-scroll">
-                    <div class="grid grid-cols-2 gap-6">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <h4 class="text-sm font-bold text-slate-800 mb-3">성별</h4>
                             <div class="flex bg-slate-100 p-1 rounded-xl">
                                 <label class="flex-1 cursor-pointer">
-                                    <input type="radio" name="modal-gender" value="M" class="peer sr-only" checked>
+                                    <input type="radio" name="modal-gender" value="M" class="peer sr-only">
                                     <span class="block text-center py-2 text-sm font-bold text-slate-500 rounded-lg peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm transition-all">남성</span>
                                 </label>
                                 <label class="flex-1 cursor-pointer">
@@ -236,10 +275,65 @@
                             </div>
                         </div>
                         <div>
+                            <h4 class="text-sm font-bold text-slate-800 mb-3">생년월일</h4>
+                            <input type="text" id="modal-birthDate" placeholder="YYYYMMDD (예: 19950101)" maxlength="8"
+                                   class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm font-medium">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-800 mb-3">거주 지역 (시/도)</h4>
+                            <select id="modal-regionSi" onchange="updateModalRegionGu()" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm custom-select">
+                                <option value="">시/도 선택</option>
+                            </select>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-800 mb-3">거주 지역 (시/군/구)</h4>
+                            <select id="modal-regionGu" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm custom-select">
+                                <option value="">시/군/구 선택</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <hr class="border-slate-100">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-800 mb-3">최종 학력</h4>
+                            <select id="modal-educationLevel" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm custom-select">
+                                <option value="">선택</option>
+                                <option value="UNDER_HIGH_SCHOOL">고졸 미만</option>
+                                <option value="HIGH_SCHOOL">고등학교 졸업</option>
+                                <option value="UNIV_ATTENDING">대학교 재학/휴학</option>
+                                <option value="UNIV_GRAD">대학교 졸업 (예정)</option>
+                                <option value="MASTER_PHD">석/박사 (과정/졸업)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-800 mb-3">고용 상태</h4>
+                            <select id="modal-employmentStatus" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm custom-select">
+                                <option value="">선택</option>
+                                <option value="UNEMPLOYED">미취업 (구직자)</option>
+                                <option value="EMPLOYED">직장인 (계약/정규직)</option>
+                                <option value="SELF_EMPLOYED">자영업 / 프리랜서</option>
+                                <option value="STUDENT">학생</option>
+                            </select>
+                            <div class="mt-2 flex items-center gap-2">
+                                <input type="checkbox" id="modal-bizCheck" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300">
+                                <label for="modal-bizCheck" class="text-xs font-bold text-slate-600 cursor-pointer">사업자 등록증 보유</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="border-slate-100">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
                             <h4 class="text-sm font-bold text-slate-800 mb-3">결혼 여부</h4>
                             <div class="flex bg-slate-100 p-1 rounded-xl">
                                 <label class="flex-1 cursor-pointer">
-                                    <input type="radio" name="modal-marry" value="N" class="peer sr-only" checked>
+                                    <input type="radio" name="modal-marry" value="N" class="peer sr-only">
                                     <span class="block text-center py-2 text-sm font-bold text-slate-500 rounded-lg peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm transition-all">미혼</span>
                                 </label>
                                 <label class="flex-1 cursor-pointer">
@@ -248,99 +342,186 @@
                                 </label>
                             </div>
                         </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-800 mb-3">자녀 수 (명)</h4>
+                            <input type="number" id="modal-childCount" min="0" value="0" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm font-medium text-right">
+                        </div>
                     </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-800 mb-3">주택 소유</h4>
+                            <div class="flex bg-slate-100 p-1 rounded-xl">
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" name="modal-house" value="N" class="peer sr-only">
+                                    <span class="block text-center py-2 text-sm font-bold text-slate-500 rounded-lg peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm transition-all">미소유</span>
+                                </label>
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" name="modal-house" value="Y" class="peer sr-only">
+                                    <span class="block text-center py-2 text-sm font-bold text-slate-500 rounded-lg peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm transition-all">소유</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-800 mb-3">가구원 수 (명)</h4>
+                            <input type="number" id="modal-familyCount" min="1" value="1" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm font-medium text-right">
+                        </div>
+                    </div>
+
+                    <hr class="border-slate-100">
+
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-800 mb-3">본인 월 소득 (세전)</h4>
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 mb-2 flex items-center gap-2">
+                            <input type="number" id="modal-myIncomeText" class="flex-1 min-w-0 bg-transparent font-bold text-slate-800 text-sm focus:outline-none text-right" placeholder="0">
+                            <span class="text-xs font-bold text-slate-500">만원</span>
+                        </div>
+                        <input type="range" id="modal-myIncomeSlider" min="0" max="600" step="10" value="0" class="w-full">
+                    </div>
+
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-800 mb-3">가구 합산 월 소득 (세전)</h4>
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 mb-2 flex items-center gap-2">
+                            <input type="number" id="modal-hhIncomeText" class="flex-1 min-w-0 bg-transparent font-bold text-slate-800 text-sm focus:outline-none text-right" placeholder="0">
+                            <span class="text-xs font-bold text-slate-500">만원</span>
+                        </div>
+                        <input type="range" id="modal-hhIncomeSlider" min="0" max="1000" step="10" value="0" class="w-full">
+                    </div>
+
                 </div>
+
                 <div class="bg-slate-50 px-6 py-4 flex justify-end gap-3 border-t border-slate-100 sticky bottom-0 z-10">
                     <button type="button" onclick="closeSetupModal()" class="px-5 py-3 rounded-xl border border-slate-300 bg-white font-bold text-slate-600 hover:bg-slate-50 transition text-sm">취소</button>
-                    <button type="button" onclick="saveAndClose()" class="px-5 py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200 text-sm">변경사항 저장</button>
+                    <button type="button" onclick="saveConditions()" class="px-5 py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200 text-sm">변경사항 저장</button>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-    /* ================= 초기화 로직 (생년월일 세팅) ================= */
+<script th:inline="javascript">
+    /*<![CDATA[*/
+
+    // --- 1. 행정구역 데이터 정의 (Full List) ---
+    const areaData = {
+        "서울특별시": ["종로구","중구","용산구","성동구","광진구","동대문구","중랑구","성북구","강북구","도봉구","노원구","은평구","서대문구","마포구","양천구","강서구","구로구","금천구","영등포구","동작구","관악구","서초구","강남구","송파구","강동구"],
+        "부산광역시": ["중구","서구","동구","영도구","부산진구","동래구","남구","북구","해운대구","사하구","금정구","강서구","연제구","수영구","사상구","기장군"],
+        "대구광역시": ["중구","동구","서구","남구","북구","수성구","달서구","달성군","군위군"],
+        "인천광역시": ["중구","동구","미추홀구","연수구","남동구","부평구","계양구","서구","강화군","옹진군"],
+        "광주광역시": ["동구","서구","남구","북구","광산구"],
+        "대전광역시": ["동구","중구","서구","유성구","대덕구"],
+        "울산광역시": ["중구","남구","동구","북구","울주군"],
+        "세종특별자치시": ["세종특별자치시"],
+        "경기도": [
+            "수원시","수원시 장안구","수원시 권선구","수원시 팔달구","수원시 영통구",
+            "성남시","성남시 수정구","성남시 중원구","성남시 분당구",
+            "의정부시",
+            "안양시","안양시 만안구","안양시 동안구",
+            "부천시","부천시 원미구","부천시 소사구","부천시 오정구",
+            "광명시","평택시","동두천시",
+            "안산시","안산시 상록구","안산시 단원구",
+            "고양시","고양시 덕양구","고양시 일산동구","고양시 일산서구",
+            "과천시","구리시","남양주시","오산시","시흥시","군포시","의왕시","하남시",
+            "용인시","용인시 처인구","용인시 기흥구","용인시 수지구",
+            "파주시","이천시","안성시","김포시","화성시","광주시","양주시","포천시","여주시",
+            "연천군","가평군","양평군"
+        ],
+        "강원특별자치도": ["춘천시","원주시","강릉시","동해시","태백시","속초시","삼척시","홍천군","횡성군","영월군","평창군","정선군","철원군","화천군","양구군","인제군","고성군","양양군"],
+        "충청북도": ["청주시","청주시 상당구","청주시 서원구","청주시 흥덕구","청주시 청원구","충주시","제천시","보은군","옥천군","영동군","증평군","진천군","괴산군","음성군","단양군"],
+        "충청남도": ["천안시","천안시 동남구","천안시 서북구","공주시","보령시","아산시","서산시","논산시","계룡시","당진시","금산군","부여군","서천군","청양군","홍성군","예산군","태안군"],
+        "전북특별자치도": ["전주시","전주시 완산구","전주시 덕진구","군산시","익산시","정읍시","남원시","김제시","완주군","진안군","무주군","장수군","임실군","순창군","고창군","부안군"],
+        "전라남도": ["목포시","여수시","순천시","나주시","광양시","담양군","곡성군","구례군","고흥군","보성군","화순군","장흥군","장흥군 장흥읍","강진군","해남군","영암군","무안군","함평군","영광군","장성군","완도군","진도군","신안군"],
+        "경상북도": ["포항시","포항시 남구","포항시 북구","경주시","김천시","안동시","구미시","영주시","영천시","상주시","문경시","경산시","의성군","청송군","영양군","영덕군","청도군","고령군","성주군","칠곡군","예천군","봉화군","울진군","울릉군"],
+        "경상남도": ["창원시","창원시 의창구","창원시 성산구","창원시 마산합포구","창원시 마산회원구","창원시 진해구","진주시","통영시","사천시","김해시","밀양시","거제시","양산시","의령군","함안군","창녕군","고성군","남해군","하동군","산청군","함양군","거창군","합천군"],
+        "제주특별자치도": ["제주시","서귀포시"]
+    };
+
+    /* ================= 2. 페이지 로드 및 초기화 ================= */
     document.addEventListener("DOMContentLoaded", function() {
-        // 1. Select 박스 옵션 생성
-        const yearS = document.getElementById('year');
-        const monthS = document.getElementById('month');
-        const dayS = document.getElementById('day');
-
-        yearS.add(new Option('년도', ''));
-        monthS.add(new Option('월', ''));
-        dayS.add(new Option('일', ''));
-
-        for(let i=2025; i>=1950; i--) yearS.add(new Option(i+'년', i));
-        for(let i=1; i<=12; i++) monthS.add(new Option(i+'월', i));
-        for(let i=1; i<=31; i++) dayS.add(new Option(i+'일', i));
-
-        // 2. DB에 저장된 값 파싱하여 선택 (format: YYYY-MM-DD or YYYYMMDD)
-        const originDate = document.getElementById('originBirthDate').value; // hidden value
-        if(originDate && originDate.length >= 8) {
-            // 구분자 제거하고 숫자만 추출
-            const cleanDate = originDate.replace(/[^0-9]/g, '');
-            if(cleanDate.length === 8) {
-                const y = cleanDate.substring(0, 4);
-                const m = parseInt(cleanDate.substring(4, 6)); // '01' -> 1
-                const d = parseInt(cleanDate.substring(6, 8)); // '01' -> 1
-
-                yearS.value = y;
-                monthS.value = m;
-                dayS.value = d;
-            }
+        // 2-1. 모달 시/도 Select 목록 초기화
+        const siSelect = document.getElementById("modal-regionSi");
+        for (const si in areaData) {
+            const option = document.createElement("option");
+            option.value = si;
+            option.text = si;
+            siSelect.appendChild(option);
         }
+
+        // 2-2. 초기 화면 데이터 로드
+        loadConditionsToView();
+
+        // 2-3. 슬라이더 싱크
+        syncSlider('modal-myIncomeSlider', 'modal-myIncomeText');
+        syncSlider('modal-hhIncomeSlider', 'modal-hhIncomeText');
     });
 
-    /* ================= 비밀번호 실시간 유효성 검사 ================= */
+    // 시/도 변경 시 구/군 업데이트 함수 (모달용)
+    function updateModalRegionGu() {
+        const siSelect = document.getElementById("modal-regionSi");
+        const guSelect = document.getElementById("modal-regionGu");
+        const selectedSi = siSelect.value;
+
+        // 목록 초기화
+        guSelect.innerHTML = '<option value="">시/군/구 선택</option>';
+
+        if (selectedSi && areaData[selectedSi]) {
+            const guList = areaData[selectedSi];
+            guList.forEach(function(gu) {
+                const option = document.createElement("option");
+                option.value = gu;
+                option.text = gu;
+                guSelect.appendChild(option);
+            });
+        }
+    }
+
+    /* ================= 3. 비밀번호 유효성 검사 (일반 회원만 실행 - 안전장치) ================= */
     const newPw = document.getElementById('newPw');
     const newPwConfirm = document.getElementById('newPwConfirm');
     const pwMatchMsg = document.getElementById('pwMatchMsg');
     const pwRuleError = document.getElementById('pwRuleError');
 
-    // 1. 규칙 검사
-    function checkPwValidation() {
-        const val = newPw.value;
-        // 정규식: 영문, 숫자, 특수문자 포함 6~20자
-        const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{6,20}$/;
+    // [중요] newPw 요소가 존재할 때만(일반 회원일 때만) 이벤트 리스너 등록
+    if (newPw && newPwConfirm) {
 
-        if(val.length > 0 && !regex.test(val)) {
-            pwRuleError.classList.remove('hidden');
-            newPw.classList.add('border-red-500');
-        } else {
-            pwRuleError.classList.add('hidden');
-            newPw.classList.remove('border-red-500');
+        function checkPwValidation() {
+            const val = newPw.value;
+            const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{6,20}$/;
+
+            if(val.length > 0 && !regex.test(val)) {
+                pwRuleError.classList.remove('hidden');
+                newPw.classList.add('border-red-500');
+            } else {
+                pwRuleError.classList.add('hidden');
+                newPw.classList.remove('border-red-500');
+            }
+            checkPasswordMatch();
         }
-        // 내용 변경 시 일치 여부도 재확인
-        checkPasswordMatch();
+
+        function checkPasswordMatch() {
+            if (newPwConfirm.value.length === 0) {
+                pwMatchMsg.classList.add('hidden');
+                newPwConfirm.classList.remove('border-red-500');
+                return;
+            }
+
+            if (newPw.value !== newPwConfirm.value) {
+                pwMatchMsg.classList.remove('hidden');
+                newPwConfirm.classList.add('border-red-500');
+            } else {
+                pwMatchMsg.classList.add('hidden');
+                newPwConfirm.classList.remove('border-red-500');
+            }
+        }
+
+        newPw.addEventListener('input', checkPwValidation);
+        newPwConfirm.addEventListener('input', checkPasswordMatch);
     }
 
-    // 2. 일치 검사
-    function checkPasswordMatch() {
-        // 확인란이 비어있으면 에러 안 띄움
-        if (newPwConfirm.value.length === 0) {
-            pwMatchMsg.classList.add('hidden');
-            newPwConfirm.classList.remove('border-red-500');
-            return;
-        }
-
-        if (newPw.value !== newPwConfirm.value) {
-            pwMatchMsg.classList.remove('hidden');
-            newPwConfirm.classList.add('border-red-500');
-        } else {
-            pwMatchMsg.classList.add('hidden');
-            newPwConfirm.classList.remove('border-red-500');
-        }
-    }
-
-    newPw.addEventListener('input', checkPwValidation);
-    newPwConfirm.addEventListener('input', checkPasswordMatch);
-
-    /* ================= 폼 제출 시 최종 검증 ================= */
+    /* ================= 4. 폼 제출 시 최종 검증 ================= */
     function validateForm() {
-        // 새 비밀번호를 입력했는데
-        if(newPw.value.length > 0) {
-            // 1. 규칙 위반 시 차단
+        // [중요] newPw가 존재하고 값이 있을 때만 검사 (소셜 회원은 통과)
+        if(newPw && newPw.value.length > 0) {
             const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{6,20}$/;
             if (!regex.test(newPw.value)) {
                 alert('비밀번호 형식이 올바르지 않습니다.');
@@ -348,16 +529,14 @@
                 return false;
             }
 
-            // 2. 확인란과 다르다면 차단
             if(newPw.value !== newPwConfirm.value) {
                 alert('새 비밀번호가 일치하지 않습니다.');
                 newPwConfirm.focus();
                 return false;
             }
 
-            // 3. 기존 비밀번호가 비어있다면 차단
             const currentPw = document.querySelector('input[name="currentPw"]');
-            if(currentPw.value.length === 0) {
+            if(currentPw && currentPw.value.length === 0) {
                 alert('비밀번호를 변경하려면 기존 비밀번호를 입력해야 합니다.');
                 currentPw.focus();
                 return false;
@@ -366,9 +545,113 @@
         return true;
     }
 
-    /* ================= 모달 및 기타 로직 (기존 유지) ================= */
+    /* ================= 5. [수정3] 이름 변경 기능 ================= */
+    function changeName() {
+        const currentName = [[${session.loginMember.memberName}]];
+        const newName = prompt("변경할 이름을 입력하세요:", currentName);
+
+        if (newName !== null) {
+            if (newName.trim() === "") {
+                alert("이름을 입력해주세요.");
+                return;
+            }
+
+            // 이름 변경 요청을 위한 동적 폼 생성 및 제출
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/updateName'; // [중요] 백엔드에 이 경로가 있어야 함
+
+            const inputName = document.createElement('input');
+            inputName.type = 'hidden';
+            inputName.name = 'userName';
+            inputName.value = newName;
+
+            form.appendChild(inputName);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
+
+    /* ================= 6. LocalStorage 데이터 처리 (View & Modal) ================= */
+
+    function syncSlider(sliderId, textId) {
+        const slider = document.getElementById(sliderId);
+        const text = document.getElementById(textId);
+        slider.addEventListener('input', () => text.value = slider.value);
+        text.addEventListener('input', () => {
+             let val = parseInt(text.value) || 0;
+             if(val > parseInt(slider.max)) val = slider.max;
+             slider.value = val;
+        });
+    }
+
+    // LocalStorage -> 화면 표시
+    function loadConditionsToView() {
+        const json = localStorage.getItem('userSetupData');
+        if(!json) return;
+
+        const data = JSON.parse(json);
+
+        // 기본 정보
+        const gender = (data.gender === 'M') ? '남성' : (data.gender === 'F' ? '여성' : '-');
+        const birth = data.birthDate || '-';
+        document.getElementById('view-basic').innerText = `${gender} / ${birth}`;
+
+        // 지역 (한글명 그대로 사용)
+        const region = (data.region || '-') + ' ' + (data.subRegion || '');
+        document.getElementById('view-region').innerText = region;
+
+        // 사회적 상태
+        const eduMap = { 'UNDER_HIGH_SCHOOL': '고졸 미만', 'HIGH_SCHOOL': '고졸', 'UNIV_ATTENDING': '대학(원) 재학', 'UNIV_GRAD': '대졸', 'MASTER_PHD': '석/박사' };
+        document.getElementById('view-edu').innerText = eduMap[data.educationLevel] || '-';
+
+        const jobMap = { 'UNEMPLOYED': '미취업', 'EMPLOYED': '직장인', 'SELF_EMPLOYED': '자영업', 'STUDENT': '학생' };
+        const biz = (data.isBusinessOwner === true || data.isBusinessOwner === "true") ? ' (사업자)' : '';
+        document.getElementById('view-job').innerText = (jobMap[data.employmentStatus] || '-') + biz;
+
+        // 가족 및 주거
+        const marry = (data.marry === 'Y') ? '기혼' : '미혼';
+        document.getElementById('view-family').innerText = `${marry} / 자녀 ${data.childCount || 0}명`;
+        const house = (data.house === 'Y') ? '자가' : '전/월세';
+        document.getElementById('view-house').innerText = `${house} / 가구원 ${data.familyCount || 1}명`;
+
+        // 경제
+        document.getElementById('view-myIncome').innerText = (data.myIncome || 0) + '만원';
+        document.getElementById('view-hhIncome').innerText = (data.householdIncome || 0) + '만원';
+    }
+
+    // 모달 열기 (데이터 바인딩 포함)
     function openSetupModal() {
         const modal = document.getElementById('setup-modal');
+        const json = localStorage.getItem('userSetupData');
+
+        if(json) {
+            const data = JSON.parse(json);
+
+            setRadio('modal-gender', data.gender);
+            setRadio('modal-marry', data.marry);
+            setRadio('modal-house', data.house);
+            if(data.isBusinessOwner === true || data.isBusinessOwner === "true") {
+                document.getElementById('modal-bizCheck').checked = true;
+            }
+
+            setValue('modal-birthDate', data.birthDate);
+
+            // [중요] 지역 데이터 바인딩 로직
+            setValue('modal-regionSi', data.region);
+            updateModalRegionGu();
+            setValue('modal-regionGu', data.subRegion);
+
+            setValue('modal-educationLevel', data.educationLevel);
+            setValue('modal-employmentStatus', data.employmentStatus);
+            setValue('modal-childCount', data.childCount);
+            setValue('modal-familyCount', data.familyCount);
+
+            setSlider('modal-myIncomeSlider', 'modal-myIncomeText', data.myIncome);
+            setSlider('modal-hhIncomeSlider', 'modal-hhIncomeText', data.householdIncome);
+        }
+
         modal.classList.remove('hidden');
         setTimeout(() => {
             modal.querySelector('div[class*="backdrop-blur-sm"]').classList.remove('opacity-0');
@@ -381,23 +664,53 @@
         modal.classList.add('hidden');
     }
 
-    function saveAndClose() {
+    // 데이터 저장
+    function saveConditions() {
+        const data = {
+            gender: getRadio('modal-gender'),
+            birthDate: getValue('modal-birthDate'),
+            region: getValue('modal-regionSi'),
+            subRegion: getValue('modal-regionGu'),
+            educationLevel: getValue('modal-educationLevel'),
+            employmentStatus: getValue('modal-employmentStatus'),
+            isBusinessOwner: document.getElementById('modal-bizCheck').checked,
+            marry: getRadio('modal-marry'),
+            childCount: getValue('modal-childCount'),
+            house: getRadio('modal-house'),
+            familyCount: getValue('modal-familyCount'),
+            myIncome: getValue('modal-myIncomeText'),
+            householdIncome: getValue('modal-hhIncomeText')
+        };
+
+        localStorage.setItem('userSetupData', JSON.stringify(data));
+        loadConditionsToView();
         alert("조건이 성공적으로 수정되었습니다.");
         closeSetupModal();
+    }
+
+    /* ================= Helper Functions ================= */
+    function getValue(id) { return document.getElementById(id).value; }
+    function setValue(id, val) { if(val !== undefined && val !== null) document.getElementById(id).value = val; }
+
+    function getRadio(name) {
+        const el = document.querySelector(`input[name="${name}"]:checked`);
+        return el ? el.value : '';
+    }
+    function setRadio(name, val) {
+        if(!val) return;
+        const el = document.querySelector(`input[name="${name}"][value="${val}"]`);
+        if(el) el.checked = true;
+    }
+    function setSlider(sliderId, textId, val) {
+        const v = val || 0;
+        document.getElementById(sliderId).value = v;
+        document.getElementById(textId).value = v;
     }
 
     document.addEventListener('keydown', function(event) {
         if (event.key === "Escape") closeSetupModal();
     });
-
-    // 슬라이더 동기화
-    const mySlider = document.getElementById('modalMyIncomeSlider');
-    const myText = document.getElementById('modalMyIncomeText');
-    mySlider.addEventListener('input', function() { myText.value = Number(this.value).toLocaleString(); });
-
-    const hhSlider = document.getElementById('modalHhIncomeSlider');
-    const hhText = document.getElementById('modalHhIncomeText');
-    hhSlider.addEventListener('input', function() { hhText.value = Number(this.value).toLocaleString(); });
+    /*]]>*/
 </script>
 
 </body>
