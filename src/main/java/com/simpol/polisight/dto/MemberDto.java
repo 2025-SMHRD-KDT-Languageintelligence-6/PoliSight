@@ -15,17 +15,21 @@ public class MemberDto {
     private String city;
 
     private String gender;
-    private String birthDate;// YYYY-MM-DD 형식
+    private String birthDate; // YYYY-MM-DD 형식
 
     private Long personalIncome;
     private Long familyIncome;
-    private int familySize;
+    private Integer familySize;
 
-    private int eduLevelCode;
-    private int empStatusCode;
-    private boolean married;
-    private int child;
-    private boolean home;
+    private Integer eduLevelCode;
+    private Integer empStatusCode;
+
+    private Boolean married;
+    private Integer child;
+    private Boolean home;
+
+    // ✅ 추가 컬럼
+    private Boolean businessRegistered;
 
     // [HTML Form 입력값]
     private String userPw;    // 회원가입 시 사용

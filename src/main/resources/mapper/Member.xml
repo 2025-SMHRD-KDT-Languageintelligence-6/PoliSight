@@ -31,11 +31,39 @@
 
     <select id="countByEmail" parameterType="String" resultType="int">
         SELECT COUNT(*)
-        FROM member  WHERE email = #{email}
+        FROM member WHERE email = #{email}
     </select>
 
     <update id="updatePassword">
         UPDATE member SET passwordHash = #{passwordHash} WHERE email = #{email}
+    </update>
+
+    <!-- ✅ 추가: 마이페이지 내 조건 업데이트 -->
+    <update id="updateConditions" parameterType="com.simpol.polisight.dto.MemberDto">
+        UPDATE member
+        SET
+        updatedAt = NOW()
+
+        <if test="province != null">, province = #{province}</if>
+        <if test="city != null">, city = #{city}</if>
+
+        <if test="gender != null and gender != ''">, gender = #{gender}</if>
+        <if test="birthDate != null and birthDate != ''">, birthDate = #{birthDate}</if>
+
+        <if test="personalIncome != null">, personalIncome = #{personalIncome}</if>
+        <if test="familyIncome != null">, familyIncome = #{familyIncome}</if>
+        <if test="familySize != null">, familySize = #{familySize}</if>
+
+        <if test="eduLevelCode != null">, eduLevelCode = #{eduLevelCode}</if>
+        <if test="empStatusCode != null">, empStatusCode = #{empStatusCode}</if>
+
+        <if test="married != null">, married = #{married}</if>
+        <if test="child != null">, child = #{child}</if>
+        <if test="home != null">, home = #{home}</if>
+
+        <if test="businessRegistered != null">, businessRegistered = #{businessRegistered}</if>
+
+        WHERE email = #{email}
     </update>
 
 </mapper>

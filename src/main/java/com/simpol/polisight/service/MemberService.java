@@ -18,7 +18,6 @@ public class MemberService implements UserDetailsService {
     private final MemberMapper memberMapper;
     private final PasswordEncoder passwordEncoder;
 
-    // 시큐리티 로그인 처리
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         MemberDto member = memberMapper.selectMemberByEmail(email);
@@ -59,38 +58,30 @@ public class MemberService implements UserDetailsService {
         return null;
     }
 
-    // ==========================================
-    // [추가] 이름만 변경
-    // ==========================================
+    // 이름 변경
     public MemberDto updateName(String email, String newName) {
         MemberDto member = memberMapper.selectMemberByEmail(email);
         if (member != null) {
             member.setMemberName(newName);
-            memberMapper.updateMember(member); // 기존 Mapper 재활용 (MyBatis 설정에 따라 전체 업데이트됨)
-            return member;
+            memberMapper.updateMember(member);
+            return memberMapper.selectMemberByEmail(email);
         }
         return null;
     }
 
-    // ==========================================
-    // [추가] 비밀번호 변경 (현재 비밀번호 확인 포함 - 마이페이지용)
-    // ==========================================
+    // 비밀번호 변경 (마이페이지)
     public boolean changePassword(String email, String currentPw, String newPw) {
         MemberDto member = memberMapper.selectMemberByEmail(email);
         if (member == null) return false;
 
-        // 1. 현재 비밀번호 확인
-        if (!passwordEncoder.matches(currentPw, member.getPasswordHash())) {
-            return false; // 불일치
-        }
+        if (!passwordEncoder.matches(currentPw, member.getPasswordHash())) return false;
 
-        // 2. 새 비밀번호 암호화 및 저장
         String encodedNewPw = passwordEncoder.encode(newPw);
         memberMapper.updatePassword(email, encodedNewPw);
         return true;
     }
 
-    // 3. 기존 회원 정보 수정 (사용 안할 수도 있지만 유지)
+    // (기존) 회원 정보 수정
     public MemberDto updateMember(MemberDto dto) {
         MemberDto dbMember = memberMapper.selectMemberByEmail(dto.getEmail());
         if (dbMember == null) return null;
@@ -118,21 +109,22 @@ public class MemberService implements UserDetailsService {
         return memberMapper.selectMemberByEmail(dto.getEmail());
     }
 
-    // 4. 비밀번호 재설정 (이메일 찾기용 - 기존 비밀번호 확인 안함)
+    // 비밀번호 재설정(이메일)
     public void updatePassword(String email, String newPw) {
         String encodedPw = passwordEncoder.encode(newPw);
         memberMapper.updatePassword(email, encodedPw);
     }
 
-    // --- 유틸리티 메서드 ---
-    private boolean isValidDateInput(MemberDto dto) {
-        return dto.getBirthYear() != null && !dto.getBirthYear().isEmpty() &&
-                dto.getBirthMonth() != null && !dto.getBirthMonth().isEmpty() &&
-                dto.getBirthDay() != null && !dto.getBirthDay().isEmpty();
-    }
+    // ✅ [추가] 마이페이지 "내 조건" 업데이트
+    @Transactional
+    public MemberDto updateConditions(MemberDto dto) {
+        MemberDto dbMember = memberMapper.selectMemberByEmail(dto.getEmail());
+        if (dbMember == null) return null;
 
-    private String combineDate(String y, String m, String d) {
-        return String.format("%s-%02d-%02d", y, Integer.parseInt(m), Integer.parseInt(d));
+        // 조건만 업데이트 (이름/비번/provider 등은 건드리지 않음)
+        memberMapper.updateConditions(dto);
+
+        return memberMapper.selectMemberByEmail(dto.getEmail());
     }
 
     public boolean checkEmailDuplicate(String email) {
@@ -141,5 +133,16 @@ public class MemberService implements UserDetailsService {
 
     public MemberDto getMemberByEmail(String email) {
         return memberMapper.selectMemberByEmail(email);
+    }
+
+    // --- 유틸 ---
+    private boolean isValidDateInput(MemberDto dto) {
+        return dto.getBirthYear() != null && !dto.getBirthYear().isEmpty() &&
+                dto.getBirthMonth() != null && !dto.getBirthMonth().isEmpty() &&
+                dto.getBirthDay() != null && !dto.getBirthDay().isEmpty();
+    }
+
+    private String combineDate(String y, String m, String d) {
+        return String.format("%s-%02d-%02d", y, Integer.parseInt(m), Integer.parseInt(d));
     }
 }

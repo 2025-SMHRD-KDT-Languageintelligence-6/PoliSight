@@ -2,7 +2,6 @@ package com.simpol.polisight.controller;
 
 import com.simpol.polisight.dto.MemberDto;
 import com.simpol.polisight.service.MemberService;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -10,9 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes; // [중요] 필수 임포트
-
-import java.io.IOException;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class MemberController {
@@ -50,30 +47,31 @@ public class MemberController {
 
     @GetMapping("/mypage")
     public String myPage(HttpSession session) {
-        if (session.getAttribute("loginMember") == null) {
-            return "redirect:/login";
-        }
+        MemberDto loginMember = (MemberDto) session.getAttribute("loginMember");
+        if (loginMember == null) return "redirect:/login";
+
+        // ✅ 세션에 있는 회원을 DB에서 최신으로 다시 조회해서 세션 갱신(안전)
+        MemberDto fresh = memberService.getMemberByEmail(loginMember.getEmail());
+        if (fresh != null) session.setAttribute("loginMember", fresh);
+
         return "mypage";
     }
 
     // ==========================================
-    // [수정] 1. 이름 변경 (RedirectAttributes 사용)
+    // 이름 변경
     // ==========================================
     @PostMapping("/updateName")
     public String updateName(@RequestParam("userName") String userName,
                              HttpSession session,
-                             RedirectAttributes rttr) { // RedirectAttributes 추가
+                             RedirectAttributes rttr) {
 
         MemberDto loginMember = (MemberDto) session.getAttribute("loginMember");
         if (loginMember == null) return "redirect:/login";
 
-        // 서비스 호출
         MemberDto updatedMember = memberService.updateName(loginMember.getEmail(), userName);
 
         if (updatedMember != null) {
-            // 세션 정보 갱신 (이름 변경 반영)
             session.setAttribute("loginMember", updatedMember);
-            // 성공 메시지 전달 (HTML에서 ${msg}로 받음)
             rttr.addFlashAttribute("msg", "이름이 성공적으로 변경되었습니다.");
         } else {
             rttr.addFlashAttribute("msg", "이름 변경에 실패했습니다.");
@@ -83,26 +81,23 @@ public class MemberController {
     }
 
     // ==========================================
-    // [수정] 2. 비밀번호 변경 (RedirectAttributes 사용)
+    // 비밀번호 변경
     // ==========================================
     @PostMapping("/updatePassword")
     public String updatePassword(@RequestParam("currentPw") String currentPw,
                                  @RequestParam("newPw") String newPw,
                                  HttpSession session,
-                                 RedirectAttributes rttr) { // RedirectAttributes 추가
+                                 RedirectAttributes rttr) {
 
         MemberDto loginMember = (MemberDto) session.getAttribute("loginMember");
         if (loginMember == null) return "redirect:/login";
 
         try {
-            // 서비스 호출 (현재 비번 확인 -> 새 비번 변경)
             boolean result = memberService.changePassword(loginMember.getEmail(), currentPw, newPw);
 
-            if (result) {
-                rttr.addFlashAttribute("msg", "비밀번호가 성공적으로 변경되었습니다.");
-            } else {
-                rttr.addFlashAttribute("msg", "현재 비밀번호가 일치하지 않습니다.");
-            }
+            if (result) rttr.addFlashAttribute("msg", "비밀번호가 성공적으로 변경되었습니다.");
+            else rttr.addFlashAttribute("msg", "현재 비밀번호가 일치하지 않습니다.");
+
         } catch (Exception e) {
             rttr.addFlashAttribute("msg", "오류가 발생했습니다: " + e.getMessage());
         }
@@ -110,19 +105,47 @@ public class MemberController {
         return "redirect:/mypage";
     }
 
-    // (기존 회원수정 로직 - RedirectAttributes로 변경)
+    // ==========================================
+    // (기존) 회원정보 수정
+    // ==========================================
     @PostMapping("/updateMember")
     public String updateMemberProcess(MemberDto memberDto, HttpSession session, RedirectAttributes rttr) {
-
         try {
             MemberDto updatedMember = memberService.updateMember(memberDto);
-
             if (updatedMember != null) {
                 session.setAttribute("loginMember", updatedMember);
                 rttr.addFlashAttribute("msg", "회원 정보가 수정되었습니다.");
             }
         } catch (IllegalArgumentException e) {
             rttr.addFlashAttribute("msg", e.getMessage());
+        }
+        return "redirect:/mypage";
+    }
+
+    // ==========================================
+    // ✅ [추가] 마이페이지 "내 조건" 저장 (DB 저장)
+    // ==========================================
+    @PostMapping("/updateConditions")
+    public String updateConditions(MemberDto memberDto,
+                                   HttpSession session,
+                                   RedirectAttributes rttr) {
+
+        MemberDto loginMember = (MemberDto) session.getAttribute("loginMember");
+        if (loginMember == null) return "redirect:/login";
+
+        // 이메일은 세션 기준으로 고정(클라에서 바꾸는 것 방지)
+        memberDto.setEmail(loginMember.getEmail());
+
+        try {
+            MemberDto updated = memberService.updateConditions(memberDto);
+            if (updated != null) {
+                session.setAttribute("loginMember", updated);
+                rttr.addFlashAttribute("msg", "내 조건이 DB에 저장되었습니다.");
+            } else {
+                rttr.addFlashAttribute("msg", "조건 저장에 실패했습니다.");
+            }
+        } catch (Exception e) {
+            rttr.addFlashAttribute("msg", "오류가 발생했습니다: " + e.getMessage());
         }
 
         return "redirect:/mypage";
