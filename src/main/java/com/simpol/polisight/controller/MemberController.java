@@ -170,4 +170,16 @@ public class MemberController {
     public String successPage() {
         return "pw_success";
     }
+
+    // [추가] AJAX 요청용 내 정보 조회 API
+    @GetMapping("/api/my-info")
+    @ResponseBody
+    public MemberDto getMyInfo(HttpSession session) {
+        MemberDto loginMember = (MemberDto) session.getAttribute("loginMember");
+        if (loginMember == null) {
+            return null; // 로그인 안 된 상태면 null 반환
+        }
+        // 세션 정보보다 DB 최신 정보를 가져오는 것이 안전함
+        return memberService.getMemberByEmail(loginMember.getEmail());
+    }
 }

@@ -177,7 +177,7 @@
         <div class="btn-group">
             <button class="btn-next" style="width: 100%; flex: auto;" onclick="nextStep(2)">다음으로 <i class="fa-solid fa-arrow-right" style="margin-left:6px;"></i></button>
         </div>
-        <button class="btn-skip-link" th:onclick="|location.href='@{/policy}'|">조건 설정 건너뛰기</button>
+        <button class="btn-skip-link" onclick="skipSetup()">조건 설정 건너뛰기</button>
     </div>
 
 
@@ -413,14 +413,22 @@
             householdIncome: document.getElementById('householdIncomeText').value.replace(/,/g, '')
         };
 
-        // 로컬 스토리지 저장
-        localStorage.setItem('userSetupData', JSON.stringify(setupData));
+        // 세션 스토리지 저장
+        sessionStorage.setItem('userSetupData', JSON.stringify(setupData));
 
         if (destination === 'signup') {
             location.href = /*[[@{/login(mode='signup')}]]*/ '/login?mode=signup';
         } else if (destination === 'policy') {
             location.href = /*[[@{/policy}]]*/ '/policy';
         }
+    }
+
+    function skipSetup() {
+        // ★ 핵심: 과거에 저장된 데이터를 지워야 '빈 화면'이 나옵니다.
+        sessionStorage.removeItem('userSetupData');
+
+        // 정책 페이지로 이동
+        location.href = /*[[@{/policy}]]*/ '/policy';
     }
 
     function setupHybridInput(rangeId, textId) {

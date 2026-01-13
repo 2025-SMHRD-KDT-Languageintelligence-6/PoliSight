@@ -107,7 +107,7 @@
                 </button>
             </div>
 
-            <form th:action="@{/policy}" method="get" class="space-y-6" id="filter-form">
+            <form th:action="@{/policy}" method="get" class="space-y-6" id="filter-form" autocomplete="off">
 
                 <div class="space-y-3">
                     <div>
@@ -348,7 +348,7 @@
 <script th:inline="javascript">
     /*<![CDATA[*/
 
-    // --- 1. 행정구역 데이터 정의 ---
+    // --- 1. 행정구역 데이터 ---
     const areaData = {
         "서울특별시": ["종로구","중구","용산구","성동구","광진구","동대문구","중랑구","성북구","강북구","도봉구","노원구","은평구","서대문구","마포구","양천구","강서구","구로구","금천구","영등포구","동작구","관악구","서초구","강남구","송파구","강동구"],
         "부산광역시": ["중구","서구","동구","영도구","부산진구","동래구","남구","북구","해운대구","사하구","금정구","강서구","연제구","수영구","사상구","기장군"],
@@ -382,18 +382,13 @@
         "제주특별자치도": ["제주시","서귀포시"]
     };
 
-    // --- 2. 시/도 선택 시 하위 목록 갱신 ---
     function updateRegionGu() {
         const siSelect = document.getElementById("regionSi");
         const guSelect = document.getElementById("regionGu");
         const selectedSi = siSelect.value;
-
-        // 목록 초기화
         guSelect.innerHTML = '<option value="">시/군/구 선택</option>';
-
         if (selectedSi && areaData[selectedSi]) {
-            const guList = areaData[selectedSi];
-            guList.forEach(function(gu) {
+            areaData[selectedSi].forEach(gu => {
                 const option = document.createElement("option");
                 option.value = gu;
                 option.text = gu;
@@ -402,24 +397,53 @@
         }
     }
 
-    // --- 3. 소득 슬라이더 동기화 ---
+    // --- 2. [변경] 강력한 초기화 함수 ---
+    // form.reset()에 의존하지 않고 모든 값을 수동으로 비웁니다.
+    function forceClearAllInputs() {
+        console.log("Cleaning up form data...");
+
+        // 1. 텍스트, 숫자, 날짜 입력칸 싹 비우기
+        document.querySelectorAll('input[type="text"], input[type="number"], input[type="date"]').forEach(el => {
+            el.value = '';
+        });
+
+        // 2. 셀렉트 박스 첫 번째(선택하세요)로 되돌리기
+        document.querySelectorAll('select').forEach(el => {
+            el.selectedIndex = 0;
+        });
+
+        // 3. 라디오, 체크박스 체크 해제
+        document.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(el => {
+            el.checked = false;
+        });
+
+        // 4. 슬라이더와 관련된 UI 0으로 강제 세팅
+        document.getElementById('my_income_range').value = 0;
+        document.getElementById('my_income_text').value = 0;
+        document.getElementById('household_income_range').value = 0;
+        document.getElementById('household_income_text').value = 0;
+        document.getElementById('family-count').value = 1;
+        document.getElementById('childCount').value = 0;
+
+        // 5. 지역 하위 목록 초기화
+        updateRegionGu();
+    }
+
+    // 소득 슬라이더 동기화 로직
     function syncInput(rangeId, textId) {
-        const rangeInput = document.getElementById(rangeId);
-        const textInput = document.getElementById(textId);
-        rangeInput.addEventListener('input', function() { textInput.value = this.value; });
-        textInput.addEventListener('input', function() {
-            let val = parseInt(this.value) || 0;
-            if (val > parseInt(rangeInput.max)) val = rangeInput.max;
-            rangeInput.value = val;
+        const range = document.getElementById(rangeId);
+        const text = document.getElementById(textId);
+        range.addEventListener('input', () => text.value = range.value);
+        text.addEventListener('input', () => {
+            let val = parseInt(text.value) || 0;
+            if (val > parseInt(range.max)) val = range.max;
+            range.value = val;
         });
     }
 
-    // --- 4. 초기 로드 및 설정 ---
+    // --- 3. [핵심] 페이지 로드 시 실행 로직 ---
     document.addEventListener("DOMContentLoaded", function() {
-        syncInput('my_income_range', 'my_income_text');
-        syncInput('household_income_range', 'household_income_text');
-
-        // (1) 시/도 목록 채우기
+        // 기본 데이터 세팅
         const siSelect = document.getElementById("regionSi");
         for (const si in areaData) {
             const option = document.createElement("option");
@@ -427,85 +451,137 @@
             option.text = si;
             siSelect.appendChild(option);
         }
+        syncInput('my_income_range', 'my_income_text');
+        syncInput('household_income_range', 'household_income_text');
 
-        // (2) LocalStorage 데이터 확인 (비회원 등 Setup 페이지에서 넘어온 경우)
-        const setupData = localStorage.getItem('userSetupData');
-        if (setupData) {
-            const data = JSON.parse(setupData);
-            populateForm(data);
+        // ▼▼▼ 로직 분기 ▼▼▼
+        const isLoggedIn = /*[[${session.loginMember != null}]]*/ false;
+
+        // URL에 '?'가 있는가? (검색 결과 화면인가?)
+        // location.search가 비어있으면 처음 들어온 것 -> 무조건 초기화
+        const isSearchResult = window.location.search.trim().length > 1;
+
+        if (!isSearchResult) {
+            // [상황 A] 처음 들어옴 (검색 X) -> 무조건 싹 지움
+            // 브라우저가 자동완성한 것을 덮어쓰기 위해 setTimeout 사용
+            setTimeout(forceClearAllInputs, 10);
+
+            // 비로그인이라면 -> 지운 뒤에 sessionStorage 데이터 채우기
+            if (!isLoggedIn) {
+                setTimeout(() => {
+                    const setupData = sessionStorage.getItem('userSetupData');
+                    if (setupData) {
+                        console.log("비로그인: sessionStorage 데이터 로드");
+                        populateForm(JSON.parse(setupData));
+                    }
+                }, 20); // 초기화(10ms) 직후(20ms) 실행
+            } else {
+                console.log("로그인 상태: 폼 초기화 완료 (대기 중)");
+            }
+        } else {
+            // [상황 B] 검색 결과 화면 (URL 파라미터 있음)
+            // 이때는 브라우저나 타임리프가 채워준 값을 건드리지 않음 (유지)
+            console.log("검색 결과 화면: 입력값 유지");
         }
     });
 
-    // 폼 채우기 헬퍼 함수
+    // --- 4. 뒤로가기(BFCache) 대응 ---
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted) {
+            // 뒤로가기로 왔을 때도 검색결과가 아니면 초기화
+            if (window.location.search.trim().length <= 1) {
+                 setTimeout(forceClearAllInputs, 10);
+            }
+        }
+    });
+
+    // --- 5. 폼 채우기 함수 ---
     function populateForm(data) {
+        if (!data) return;
+
+        // ★ [디버깅용] DB에서 가져온 데이터를 브라우저 콘솔(F12)에 출력
+        console.log("DB에서 가져온 데이터:", data);
+
+        // (타이밍 문제 방지용) 지역 먼저 처리
+        const siValue = data.regionSi || data.region;
+        const guValue = data.regionGu || data.subRegion;
+
+        if(siValue) {
+            document.getElementById('regionSi').value = siValue;
+            updateRegionGu(); // 구 목록 생성
+            // 약간의 딜레이 후 구 선택 (DOM 반영 대기)
+            if(guValue) setTimeout(() => document.getElementById('regionGu').value = guValue, 0);
+        }
+
+        // 나머지 필드들
         if(data.gender) {
-            const val = (data.gender === 'M') ? 'male' : 'female';
-            const radio = document.querySelector(`input[name="gender"][value="${val}"]`);
+            const radio = document.querySelector(`input[name="gender"][value="${data.gender === 'M' ? 'male' : 'female'}"]`);
             if(radio) radio.checked = true;
         }
         if(data.birthDate) document.getElementById('birthDate').value = data.birthDate;
 
-        // [중요] 시/도를 먼저 선택하고, 구/군 목록을 업데이트한 뒤 값을 넣어야 함
-        if(data.region) {
-            document.getElementById('regionSi').value = data.region;
-            updateRegionGu(); // 하위 목록 생성
-        }
-        if(data.subRegion) {
-            document.getElementById('regionGu').value = data.subRegion;
-        }
-
         if(data.educationLevel) document.getElementById('educationLevel').value = data.educationLevel;
         if(data.employmentStatus) document.getElementById('employmentStatus').value = data.employmentStatus;
 
-        if(data.isBusinessOwner === true || data.isBusinessOwner === "true") {
-            document.getElementById('bizCheck').checked = true;
-        }
+        // 사업자 체크박스
+        const isBiz = (data.isBusinessOwner === true || data.isBusinessOwner === "true" || data.businessOwner === "Y");
+        if (isBiz) document.getElementById('bizCheck').checked = true;
 
         if(data.marry) {
             const radio = document.querySelector(`input[name="marry"][value="${data.marry}"]`);
             if(radio) radio.checked = true;
         }
-        if(data.childCount) document.getElementById('childCount').value = data.childCount;
+        if(data.childCount != null) document.getElementById('childCount').value = data.childCount;
+        if(data.familyCount != null) document.getElementById('family-count').value = data.familyCount;
+
         if(data.house) {
             const radio = document.querySelector(`input[name="house"][value="${data.house}"]`);
             if(radio) radio.checked = true;
         }
 
-        if(data.myIncome) {
-            document.getElementById('my_income_text').value = data.myIncome;
-            document.getElementById('my_income_range').value = data.myIncome;
+        // 소득
+        const myInc = data.income || data.myIncome;
+        if(myInc != null) {
+            document.getElementById('my_income_text').value = myInc;
+            document.getElementById('my_income_range').value = myInc;
         }
-        if(data.householdIncome) {
-            document.getElementById('household_income_text').value = data.householdIncome;
-            document.getElementById('household_income_range').value = data.householdIncome;
+        const houseInc = data.householdIncome;
+        if(houseInc != null) {
+            document.getElementById('household_income_text').value = houseInc;
+            document.getElementById('household_income_range').value = houseInc;
         }
-        if(data.familyCount) document.getElementById('family-count').value = data.familyCount;
     }
 
-    // 회원 정보 불러오기 로직 (AJAX 구현 필요)
+    // --- 6. DB 정보 불러오기 (로그인 유저용) ---
     function loadMemberConditions() {
-        alert("회원 정보를 불러오는 기능입니다.\n(실제 구현 시 Controller와 연결하여 DB 정보를 가져옵니다.)");
-    }
+        const btn = document.querySelector('button[onclick="loadMemberConditions()"]');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 불러오는 중...';
 
-    // 달력 동기화
-    document.getElementById('hiddenDatePicker').addEventListener('change', function() {
-        if(this.value) {
-            const dateStr = this.value.replace(/-/g, '');
-            document.getElementById('birthDate').value = dateStr;
-        }
-    });
+        fetch('/api/my-info')
+            .then(response => {
+                if (!response.ok) throw new Error("세션 만료");
+                return response.json();
+            })
+            .then(data => {
+                if(!data) { alert("저장된 회원 정보가 없습니다."); return; }
+
+                forceClearAllInputs(); // 일단 싹 지우고
+                setTimeout(() => {     // 채워넣기
+                    populateForm(data);
+                    alert("내 정보를 불러왔습니다!");
+                }, 50);
+            })
+            .catch(error => { console.error(error); alert("정보 불러오기 실패"); })
+            .finally(() => btn.innerHTML = originalText);
+    }
 
     // 초기화 버튼
     function resetConditions() {
-        document.getElementById('filter-form').reset();
-        document.getElementById('my_income_range').value = 0;
-        document.getElementById('household_income_range').value = 0;
-        document.getElementById('family-count').value = 1;
-        document.getElementById('childCount').value = 0;
-        updateRegionGu(); // 초기화 시 구/군 목록도 초기화
+        forceClearAllInputs();
     }
 
-    // 정책 선택 및 모달 로직
+    // ... (정책 카드 선택, 모달 관련 기존 코드 유지) ...
     function selectPolicy(card) {
         const actionBar = document.getElementById('action-bar');
         const selectedTitle = document.getElementById('selected-title');
