@@ -4,11 +4,10 @@ import com.simpol.polisight.dto.MemberDto;
 import com.simpol.polisight.service.MemberService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -50,7 +49,6 @@ public class MemberController {
         MemberDto loginMember = (MemberDto) session.getAttribute("loginMember");
         if (loginMember == null) return "redirect:/login";
 
-        // ✅ 세션에 있는 회원을 DB에서 최신으로 다시 조회해서 세션 갱신(안전)
         MemberDto fresh = memberService.getMemberByEmail(loginMember.getEmail());
         if (fresh != null) session.setAttribute("loginMember", fresh);
 
@@ -123,32 +121,31 @@ public class MemberController {
     }
 
     // ==========================================
-    // ✅ [추가] 마이페이지 "내 조건" 저장 (DB 저장)
+    // ✅ 마이페이지 "내 조건" 저장 (JSON fetch 대응)
     // ==========================================
-    @PostMapping("/updateConditions")
-    public String updateConditions(MemberDto memberDto,
-                                   HttpSession session,
-                                   RedirectAttributes rttr) {
+    @PostMapping(value = "/updateConditions", consumes = "application/json")
+    @ResponseBody
+    public ResponseEntity<String> updateConditions(@RequestBody MemberDto memberDto,
+                                                   HttpSession session) {
 
         MemberDto loginMember = (MemberDto) session.getAttribute("loginMember");
-        if (loginMember == null) return "redirect:/login";
+        if (loginMember == null) {
+            return ResponseEntity.status(401).body("unauthorized");
+        }
 
-        // 이메일은 세션 기준으로 고정(클라에서 바꾸는 것 방지)
+        // 이메일은 세션 기준으로 고정
         memberDto.setEmail(loginMember.getEmail());
 
         try {
             MemberDto updated = memberService.updateConditions(memberDto);
             if (updated != null) {
                 session.setAttribute("loginMember", updated);
-                rttr.addFlashAttribute("msg", "내 조건이 DB에 저장되었습니다.");
-            } else {
-                rttr.addFlashAttribute("msg", "조건 저장에 실패했습니다.");
+                return ResponseEntity.ok("success");
             }
+            return ResponseEntity.ok("fail");
         } catch (Exception e) {
-            rttr.addFlashAttribute("msg", "오류가 발생했습니다: " + e.getMessage());
+            return ResponseEntity.status(500).body("error:" + e.getMessage());
         }
-
-        return "redirect:/mypage";
     }
 
     @GetMapping("/setup")

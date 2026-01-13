@@ -2,6 +2,7 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PoliSight - 마이페이지</title>
 
@@ -43,6 +44,7 @@
         .text-red-500 { color: #ef4444 !important; }
         .hidden { display: none; }
 
+        /* 모달 애니메이션 */
         .modal-enter { animation: fadeIn 0.2s ease-out forwards; }
         .modal-leave { animation: fadeOut 0.2s ease-in forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
@@ -235,7 +237,6 @@
 
 <th:block th:replace="~{HF :: footer}"></th:block>
 
-<!-- ✅ 서버 메시지 모달 -->
 <div id="alert-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center" aria-modal="true">
     <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="closeAlertModal()"></div>
     <div class="relative bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center transform scale-95 opacity-0 transition-all duration-200" id="alert-content">
@@ -248,7 +249,6 @@
     </div>
 </div>
 
-<!-- 이름 변경 모달 -->
 <div id="name-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center" aria-modal="true">
     <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="closeNameChangeModal()"></div>
     <div class="relative bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 transform scale-95 opacity-0 transition-all duration-200" id="name-content">
@@ -270,7 +270,6 @@
     </div>
 </div>
 
-<!-- ✅ 조건 설정 모달 -->
 <div id="setup-modal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeSetupModal()"></div>
     <div class="fixed inset-0 z-10 overflow-y-auto">
@@ -305,8 +304,18 @@
                         </div>
                         <div>
                             <h4 class="text-sm font-bold text-slate-800 mb-3">생년월일</h4>
-                            <input type="text" id="modal-birthDate" placeholder="YYYY-MM-DD 또는 YYYYMMDD" maxlength="10"
-                                   class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm font-medium">
+                            <div style="position: relative;">
+                                <input type="text" id="modal-birthDate" maxlength="8"
+                                       class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm font-medium pr-10"
+                                       placeholder="YYYYMMDD (예: 19950101)">
+
+                                <input type="date" id="hiddenDatePicker"
+                                       class="absolute inset-0 opacity-0 cursor-pointer -z-10"
+                                       style="width: 0; height: 0; border: 0; visibility: hidden;">
+
+                                <i class="fa-regular fa-calendar absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 cursor-pointer text-lg hover:text-blue-600 transition"
+                                   onclick="document.getElementById('hiddenDatePicker').showPicker()"></i>
+                            </div>
                         </div>
                     </div>
 
@@ -335,11 +344,11 @@
                             <select id="modal-educationLevel"
                                     class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm custom-select">
                                 <option value="">선택</option>
-                                <option value="1">고졸 미만</option>
-                                <option value="2">고등학교 졸업</option>
-                                <option value="3">대학교 재학/휴학</option>
-                                <option value="4">대학교 졸업 (예정)</option>
-                                <option value="5">석/박사 (과정/졸업)</option>
+                                <option value="UNDER_HIGH_SCHOOL">고졸 미만</option>
+                                <option value="HIGH_SCHOOL">고등학교 졸업</option>
+                                <option value="UNIV_ATTENDING">대학교 재학/휴학</option>
+                                <option value="UNIV_GRAD">대학교 졸업 (예정)</option>
+                                <option value="MASTER_PHD">석/박사 (과정/졸업)</option>
                             </select>
                         </div>
                         <div>
@@ -347,10 +356,10 @@
                             <select id="modal-employmentStatus"
                                     class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm custom-select">
                                 <option value="">선택</option>
-                                <option value="1">미취업 (구직자)</option>
-                                <option value="2">직장인 (계약/정규직)</option>
-                                <option value="3">자영업 / 프리랜서</option>
-                                <option value="4">학생</option>
+                                <option value="UNEMPLOYED">미취업 (구직자)</option>
+                                <option value="EMPLOYED">직장인 (계약/정규직)</option>
+                                <option value="SELF_EMPLOYED">자영업 / 프리랜서</option>
+                                <option value="STUDENT">학생</option>
                             </select>
                             <div class="mt-2 flex items-center gap-2">
                                 <input type="checkbox" id="modal-bizCheck" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300">
@@ -398,8 +407,7 @@
                         </div>
                         <div>
                             <h4 class="text-sm font-bold text-slate-800 mb-3">가구원 수 (명)</h4>
-                            <input type="number" id="modal-familyCount" min="1" value="1"
-                                   class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm font-medium text-right">
+                            <input type="number" id="modal-familyCount" min="1" value="1" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm font-medium text-right">
                         </div>
                     </div>
 
@@ -411,7 +419,7 @@
                             <input type="number" id="modal-myIncomeText" class="flex-1 min-w-0 bg-transparent font-bold text-slate-800 text-sm focus:outline-none text-right" placeholder="0">
                             <span class="text-xs font-bold text-slate-500">만원</span>
                         </div>
-                        <input type="range" id="modal-myIncomeSlider" min="0" max="600" step="10" value="0" class="w-full">
+                        <input type="range" id="modal-myIncomeSlider" min="0" max="1500" step="10" value="0" class="w-full">
                     </div>
 
                     <div>
@@ -420,8 +428,9 @@
                             <input type="number" id="modal-hhIncomeText" class="flex-1 min-w-0 bg-transparent font-bold text-slate-800 text-sm focus:outline-none text-right" placeholder="0">
                             <span class="text-xs font-bold text-slate-500">만원</span>
                         </div>
-                        <input type="range" id="modal-hhIncomeSlider" min="0" max="1000" step="10" value="0" class="w-full">
+                        <input type="range" id="modal-hhIncomeSlider" min="0" max="2000" step="10" value="0" class="w-full">
                     </div>
+
                 </div>
 
                 <div class="bg-slate-50 px-6 py-4 flex justify-end gap-3 border-t border-slate-100 sticky bottom-0 z-10">
@@ -433,30 +442,9 @@
     </div>
 </div>
 
-<!-- ✅ hidden form: DB 저장용 -->
-<form id="conditionsForm" action="/updateConditions" method="post" class="hidden">
-    <input type="hidden" name="province" id="f-province">
-    <input type="hidden" name="city" id="f-city">
-    <input type="hidden" name="gender" id="f-gender">
-    <input type="hidden" name="birthDate" id="f-birthDate">
-
-    <input type="hidden" name="eduLevelCode" id="f-eduLevelCode">
-    <input type="hidden" name="empStatusCode" id="f-empStatusCode">
-    <input type="hidden" name="businessRegistered" id="f-businessRegistered">
-
-    <input type="hidden" name="married" id="f-married">
-    <input type="hidden" name="child" id="f-child">
-    <input type="hidden" name="home" id="f-home">
-    <input type="hidden" name="familySize" id="f-familySize">
-
-    <input type="hidden" name="personalIncome" id="f-personalIncome">
-    <input type="hidden" name="familyIncome" id="f-familyIncome">
-</form>
-
 <script th:inline="javascript">
     /*<![CDATA[*/
 
-        // 서버 플래시 메시지
         const serverMsg = [[${msg}]];
         if (serverMsg) {
             window.addEventListener('DOMContentLoaded', () => {
@@ -464,7 +452,6 @@
             });
         }
 
-        // ✅ 서버 세션(member) 값들을 JS로 받기
         const serverMember = {
             gender: [[${session.loginMember.gender}]],
             birthDate: [[${session.loginMember.birthDate}]],
@@ -480,10 +467,73 @@
             home: [[${session.loginMember.home}]],
             familySize: [[${session.loginMember.familySize}]],
 
-            // DB는 원 단위. 화면은 만원 단위로 보여줄거라서 아래에서 변환
             personalIncome: [[${session.loginMember.personalIncome}]],
             familyIncome: [[${session.loginMember.familyIncome}]]
         };
+
+        // ============================
+        // ✅ 문자열 옵션값 <-> 코드 매핑
+        // ============================
+        const eduCodeMap = {
+          "UNDER_HIGH_SCHOOL": 1,
+          "HIGH_SCHOOL": 2,
+          "UNIV_ATTENDING": 3,
+          "UNIV_GRAD": 4,
+          "MASTER_PHD": 5
+        };
+        const empCodeMap = {
+          "UNEMPLOYED": 1,
+          "EMPLOYED": 2,
+          "SELF_EMPLOYED": 3,
+          "STUDENT": 4
+        };
+
+        const eduKeyByCode = {
+          1: "UNDER_HIGH_SCHOOL",
+          2: "HIGH_SCHOOL",
+          3: "UNIV_ATTENDING",
+          4: "UNIV_GRAD",
+          5: "MASTER_PHD"
+        };
+        const empKeyByCode = {
+          1: "UNEMPLOYED",
+          2: "EMPLOYED",
+          3: "SELF_EMPLOYED",
+          4: "STUDENT"
+        };
+
+        // --- 날짜 포맷 함수들 ---
+        // 1. 보여줄 때: 19950101 or 1995-01-01 -> 1995-01-01
+        function formatBirthDate(dateStr) {
+            if (!dateStr) return '-';
+            const cleanStr = String(dateStr).replace(/[^0-9]/g, '');
+            if (cleanStr.length === 8) {
+                return cleanStr.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3');
+            }
+            return String(dateStr);
+        }
+
+        // 2. 모달에 넣을 때: 1995-01-01 -> 19950101
+        function unformatBirthDate(dateStr) {
+            if (!dateStr) return '';
+            return String(dateStr).replace(/[^0-9]/g, '');
+        }
+
+        // 3. 서버로 보낼 때: YYYYMMDD -> YYYY-MM-DD (DB DATE 안전)
+        function yyyymmddToDate(yyyymmdd) {
+          if (!yyyymmdd) return null;
+          const s = String(yyyymmdd).replace(/[^0-9]/g, '');
+          if (s.length !== 8) return null;
+          return `${s.substring(0,4)}-${s.substring(4,6)}-${s.substring(6,8)}`;
+        }
+
+        // --- 숨겨진 날짜 선택기 이벤트 ---
+        document.getElementById('hiddenDatePicker').addEventListener('change', function() {
+            if(this.value) {
+                const dateStr = this.value.replace(/-/g, '');
+                document.getElementById('modal-birthDate').value = dateStr;
+            }
+        });
 
         function showCustomAlert(msg) {
             const modal = document.getElementById('alert-modal');
@@ -603,7 +653,6 @@
             });
         }
 
-        // ✅ 서버값(원 단위)을 화면(만원)으로 보여주기
         function wonToManwon(won) {
             if (won === null || won === undefined) return 0;
             const n = parseInt(won);
@@ -611,15 +660,10 @@
             return Math.floor(n / 10000);
         }
 
-        function formatBirth(b) {
-            if (!b) return '-';
-            // "YYYY-MM-DD" 형태가 보통이라 그대로 사용
-            return b;
-        }
-
         function loadServerConditionsToView() {
             const gender = (serverMember.gender === 'M') ? '남성' : (serverMember.gender === 'F' ? '여성' : '-');
-            const birth = formatBirth(serverMember.birthDate);
+
+            const birth = formatBirthDate(serverMember.birthDate);
             document.getElementById('view-basic').innerText = `${gender} / ${birth}`;
 
             const region = (serverMember.province || '-') + ' ' + (serverMember.city || '');
@@ -666,16 +710,18 @@
         function openSetupModal() {
             const modal = document.getElementById('setup-modal');
 
-            // ✅ 서버값으로 모달 초기화
             setRadio('modal-gender', serverMember.gender);
-            setValue('modal-birthDate', serverMember.birthDate);
+
+            // 모달에는 YYYYMMDD로
+            setValue('modal-birthDate', unformatBirthDate(serverMember.birthDate));
 
             setValue('modal-regionSi', serverMember.province);
             updateModalRegionGu();
             setValue('modal-regionGu', serverMember.city);
 
-            setValue('modal-educationLevel', serverMember.eduLevelCode);
-            setValue('modal-employmentStatus', serverMember.empStatusCode);
+            // ✅ 코드(숫자) -> select key(문자열)로 변환해서 세팅
+            setValue('modal-educationLevel', eduKeyByCode[parseInt(serverMember.eduLevelCode)] || '');
+            setValue('modal-employmentStatus', empKeyByCode[parseInt(serverMember.empStatusCode)] || '');
 
             document.getElementById('modal-bizCheck').checked = (serverMember.businessRegistered === true);
 
@@ -695,64 +741,75 @@
             document.getElementById('setup-modal').classList.add('hidden');
         }
 
-        function normalizeBirthDate(input) {
-            if (!input) return '';
-            const v = input.trim();
-            // YYYYMMDD -> YYYY-MM-DD
-            if (/^\d{8}$/.test(v)) {
-                return v.substring(0,4) + "-" + v.substring(4,6) + "-" + v.substring(6,8);
-            }
-            // YYYY-MM-DD
-            if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
-            return v; // 일단 그대로 보내고, 필요하면 서버에서 검증
-        }
-
-        // ✅ 저장: hidden form 채워서 /updateConditions POST
+        // ✅ 저장: 컨트롤러(@RequestBody JSON) + mapper 필드명에 정확히 맞춰 전송
         function saveConditions() {
             const gender = getRadio('modal-gender');
-            const birthDate = normalizeBirthDate(getValue('modal-birthDate'));
-            const province = getValue('modal-regionSi');
-            const city = getValue('modal-regionGu');
 
-            const eduLevelCode = getValue('modal-educationLevel');
-            const empStatusCode = getValue('modal-employmentStatus');
-            const businessRegistered = document.getElementById('modal-bizCheck').checked;
+            // 모달(YYYYMMDD) -> 서버(YYYY-MM-DD)
+            const birthDate = yyyymmddToDate(getValue('modal-birthDate'));
 
-            const married = getRadio('modal-marry');
-            const child = getValue('modal-childCount');
-            const home = getRadio('modal-house');
-            const familySize = getValue('modal-familyCount');
+            // ⚠️ mapper(updateConditions)는 regionSi/regionGu를 사용
+            const regionSi = getValue('modal-regionSi');
+            const regionGu = getValue('modal-regionGu');
+
+            // select는 문자열 키 → 코드로 변환
+            const eduKey = getValue('modal-educationLevel');
+            const empKey = getValue('modal-employmentStatus');
+            const educationLevel = eduCodeMap[eduKey] ?? null;
+            const employmentStatus = empCodeMap[empKey] ?? null;
+
+            const isBusinessOwner = document.getElementById('modal-bizCheck').checked;
+
+            // mapper는 married/home(Boolean) 사용
+            const married = (getRadio('modal-marry') === 'true');
+            const home = (getRadio('modal-house') === 'true');
+
+            const child = parseInt(getValue('modal-childCount')) || 0;
+            const familySize = parseInt(getValue('modal-familyCount')) || 1;
 
             const myIncomeMan = parseInt(getValue('modal-myIncomeText')) || 0;
             const hhIncomeMan = parseInt(getValue('modal-hhIncomeText')) || 0;
 
-            // 화면 입력은 "만원" 단위 → DB는 "원" 단위로 저장
             const personalIncome = myIncomeMan * 10000;
             const familyIncome = hhIncomeMan * 10000;
 
-            // hidden form set
-            setHidden('f-province', province);
-            setHidden('f-city', city);
-            setHidden('f-gender', gender);
-            setHidden('f-birthDate', birthDate);
+            const data = {
+                gender,
+                birthDate,           // "YYYY-MM-DD"
+                regionSi,            // -> province
+                regionGu,            // -> city
+                educationLevel,      // -> eduLevelCode
+                employmentStatus,    // -> empStatusCode
+                isBusinessOwner,     // -> businessRegistered
+                married,
+                home,
+                child,
+                familySize,
+                personalIncome,
+                familyIncome
+            };
 
-            setHidden('f-eduLevelCode', eduLevelCode);
-            setHidden('f-empStatusCode', empStatusCode);
-            setHidden('f-businessRegistered', String(businessRegistered));
-
-            setHidden('f-married', married);
-            setHidden('f-child', child);
-            setHidden('f-home', home);
-            setHidden('f-familySize', familySize);
-
-            setHidden('f-personalIncome', String(personalIncome));
-            setHidden('f-familyIncome', String(familyIncome));
-
-            document.getElementById('conditionsForm').submit();
-        }
-
-        function setHidden(id, val) {
-            document.getElementById(id).value = (val === undefined || val === null) ? '' : val;
+            fetch('/updateConditions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.text())
+            .then(result => {
+                if(result === 'success') {
+                    showCustomAlert("조건이 성공적으로 저장되었습니다.");
+                    document.querySelector('#alert-modal button').onclick = function() { location.reload(); };
+                } else if (result === 'unauthorized') {
+                    showCustomAlert("로그인이 필요합니다.");
+                } else {
+                    showCustomAlert("저장에 실패했습니다. (" + result + ")");
+                }
+                closeSetupModal();
+            })
+            .catch(err => {
+                console.error(err);
+                showCustomAlert("오류가 발생했습니다.");
+            });
         }
 
         function getValue(id) { return document.getElementById(id).value; }
@@ -772,7 +829,6 @@
             document.getElementById(textId).value = v;
         }
 
-        // 비밀번호 유효성 검사 기존 유지
         const newPw = document.getElementById('newPw');
         const newPwConfirm = document.getElementById('newPwConfirm');
         const pwMatchMsg = document.getElementById('pwMatchMsg');
