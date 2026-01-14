@@ -19,4 +19,7 @@ public interface MemberMapper {
 
     // ✅ 추가: 마이페이지 내 조건 업데이트
     void updateConditions(MemberDto memberDto);
+
+    // 회원 탈퇴
+    void deleteMember(String email);
 }

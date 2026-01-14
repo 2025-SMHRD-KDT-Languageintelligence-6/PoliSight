@@ -90,4 +90,8 @@
         UPDATE member SET passwordHash = #{passwordHash} WHERE email = #{email}
     </update>
 
+    <delete id="deleteMember" parameterType="String">
+        DELETE FROM member WHERE email = #{email}
+    </delete>
+
 </mapper>

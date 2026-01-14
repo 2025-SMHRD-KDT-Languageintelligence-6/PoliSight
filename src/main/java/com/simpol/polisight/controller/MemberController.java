@@ -182,4 +182,35 @@ public class MemberController {
         // 세션 정보보다 DB 최신 정보를 가져오는 것이 안전함
         return memberService.getMemberByEmail(loginMember.getEmail());
     }
+
+    // ==========================================
+    // 5. 회원 탈퇴 요청 처리 (연동 해제 포함)
+    // ==========================================
+    @PostMapping("/withdraw")
+    public String withdraw(HttpSession session, RedirectAttributes rttr) {
+        MemberDto loginMember = (MemberDto) session.getAttribute("loginMember");
+
+        if (loginMember == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            // ★ 중요: 로그인할 때 세션에 저장해둔 액세스 토큰을 가져옵니다.
+            String accessToken = (String) session.getAttribute("socialAccessToken");
+
+            // 서비스 호출 (이메일, 제공자, 토큰 전달)
+            memberService.withdraw(loginMember.getEmail(), loginMember.getProvider(), accessToken);
+
+            // 세션 삭제
+            session.invalidate();
+
+            rttr.addFlashAttribute("msg", "회원 탈퇴 및 계정 연동 해제가 완료되었습니다.");
+            return "redirect:/";
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            rttr.addFlashAttribute("msg", "탈퇴 처리 중 오류가 발생했습니다.");
+            return "redirect:/mypage";
+        }
+    }
 }

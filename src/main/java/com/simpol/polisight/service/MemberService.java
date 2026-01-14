@@ -11,6 +11,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.OutputStream; // ★ 추가
+import java.io.BufferedReader; // ★ 추가
+import java.io.InputStreamReader; // ★ 추가
+import java.net.URI;
+import java.net.URL;
+import java.net.HttpURLConnection;
+
 @Service
 @RequiredArgsConstructor
 public class MemberService implements UserDetailsService {
@@ -153,6 +160,80 @@ public class MemberService implements UserDetailsService {
 
     public MemberDto getMemberByEmail(String email) {
         return memberMapper.selectMemberByEmail(email);
+    }
+
+    // 회원 탈퇴 기능
+    // [회원 탈퇴 통합 메서드]
+    @Transactional
+    public void withdraw(String email, String provider, String accessToken) {
+        // 1. 소셜 계정이면 연동 해제 요청 먼저 수행
+        if (provider != null && accessToken != null && !accessToken.isEmpty()) {
+            if (provider.equals("kakao")) {
+                unlinkKakao(accessToken);
+            } else if (provider.equals("google")) {
+                unlinkGoogle(accessToken);
+            }
+        }
+
+        // 2. 연동 해제 성공(혹은 일반회원) 후 DB 삭제
+        memberMapper.deleteMember(email);
+    }
+
+    // --- [카카오 연동 해제] ---
+    private void unlinkKakao(String accessToken) {
+        try {
+            // [수정] new URL(...) 대신 URI.create(...).toURL() 사용
+            URL url = URI.create("https://kapi.kakao.com/v1/user/unlink").toURL();
+
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Authorization", "Bearer " + accessToken);
+
+            int responseCode = conn.getResponseCode();
+            System.out.println("카카오 연동 해제 결과: " + responseCode);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // --- [구글 연동 해제 (수정판)] ---
+    private void unlinkGoogle(String accessToken) {
+        try {
+            // 1. URL 설정 (쿼리 파라미터 없이 깔끔하게)
+            URL url = URI.create("https://oauth2.googleapis.com/revoke").toURL();
+
+            // 2. 연결 설정
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            conn.setDoOutput(true); // POST Body에 데이터를 쓰겠다는 설정
+
+            // 3. 데이터 전송 (Body에 token 담기)
+            String data = "token=" + accessToken;
+            try (OutputStream os = conn.getOutputStream()) {
+                os.write(data.getBytes());
+                os.flush();
+            }
+
+            // 4. 응답 확인 (로그 찍기)
+            int responseCode = conn.getResponseCode();
+            System.out.println("구글 연동 해제 요청 결과 코드: " + responseCode);
+
+            // 성공(200)이 아니면 에러 메시지 읽어보기 (디버깅용)
+            if (responseCode != 200) {
+                try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getErrorStream()))) {
+                    String line;
+                    StringBuilder response = new StringBuilder();
+                    while ((line = br.readLine()) != null) {
+                        response.append(line);
+                    }
+                    System.out.println("구글 에러 응답: " + response.toString());
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("구글 연동 해제 중 예외 발생 (DB 삭제는 진행됨)");
+            e.printStackTrace();
+        }
     }
 
     // --- 유틸 ---
