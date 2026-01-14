@@ -2,7 +2,6 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PoliSight - 마이페이지</title>
 
@@ -43,12 +42,6 @@
         .border-red-500 { border-color: #ef4444 !important; }
         .text-red-500 { color: #ef4444 !important; }
         .hidden { display: none; }
-
-        /* 모달 애니메이션 */
-        .modal-enter { animation: fadeIn 0.2s ease-out forwards; }
-        .modal-leave { animation: fadeOut 0.2s ease-in forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        @keyframes fadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.95); } }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen">
@@ -227,8 +220,14 @@
                             <i class="fa-solid fa-circle-info mr-1"></i> 소셜 연동 계정은 PoliSight 내에서 비밀번호를 관리하지 않습니다.
                         </div>
                     </div>
-
                 </form>
+
+                <div class="mt-8 pt-6 border-t border-slate-100 flex justify-end items-center gap-2">
+                    <span class="text-xs text-slate-400">더 이상 PoliSight를 이용하지 않으시나요?</span>
+                    <button type="button" onclick="openWithdrawStep1()" class="text-xs text-slate-400 font-medium hover:text-slate-600 hover:underline transition">
+                        회원 탈퇴
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -256,7 +255,6 @@
             <h3 class="text-lg font-bold text-slate-900">이름 변경</h3>
             <button onclick="closeNameChangeModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
         </div>
-
         <form action="/updateName" method="post" onsubmit="return validateNameChange()">
             <div class="mb-6">
                 <label class="block text-xs font-bold text-slate-500 mb-1.5">새로운 이름</label>
@@ -275,7 +273,6 @@
     <div class="fixed inset-0 z-10 overflow-y-auto">
         <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
             <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 w-full max-w-2xl border border-slate-200">
-
                 <div class="bg-white px-6 py-5 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10">
                     <div>
                         <h3 class="text-xl font-bold text-slate-900">맞춤 조건 설정</h3>
@@ -285,9 +282,7 @@
                         <i class="fa-solid fa-xmark text-lg"></i>
                     </button>
                 </div>
-
                 <div class="p-6 space-y-8 max-h-[70vh] overflow-y-auto custom-scroll">
-
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <h4 class="text-sm font-bold text-slate-800 mb-3">성별</h4>
@@ -308,41 +303,33 @@
                                 <input type="text" id="modal-birthDate" maxlength="8"
                                        class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm font-medium pr-10"
                                        placeholder="YYYYMMDD (예: 19950101)">
-
                                 <input type="date" id="hiddenDatePicker"
                                        class="absolute inset-0 opacity-0 cursor-pointer -z-10"
                                        style="width: 0; height: 0; border: 0; visibility: hidden;">
-
                                 <i class="fa-regular fa-calendar absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 cursor-pointer text-lg hover:text-blue-600 transition"
                                    onclick="document.getElementById('hiddenDatePicker').showPicker()"></i>
                             </div>
                         </div>
                     </div>
-
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <h4 class="text-sm font-bold text-slate-800 mb-3">거주 지역 (시/도)</h4>
-                            <select id="modal-regionSi" onchange="updateModalRegionGu()"
-                                    class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm custom-select">
+                            <select id="modal-regionSi" onchange="updateModalRegionGu()" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm custom-select">
                                 <option value="">시/도 선택</option>
                             </select>
                         </div>
                         <div>
                             <h4 class="text-sm font-bold text-slate-800 mb-3">거주 지역 (시/군/구)</h4>
-                            <select id="modal-regionGu"
-                                    class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm custom-select">
+                            <select id="modal-regionGu" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm custom-select">
                                 <option value="">시/군/구 선택</option>
                             </select>
                         </div>
                     </div>
-
                     <hr class="border-slate-100">
-
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <h4 class="text-sm font-bold text-slate-800 mb-3">최종 학력</h4>
-                            <select id="modal-educationLevel"
-                                    class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm custom-select">
+                            <select id="modal-educationLevel" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm custom-select">
                                 <option value="">선택</option>
                                 <option value="UNDER_HIGH_SCHOOL">고졸 미만</option>
                                 <option value="HIGH_SCHOOL">고등학교 졸업</option>
@@ -353,8 +340,7 @@
                         </div>
                         <div>
                             <h4 class="text-sm font-bold text-slate-800 mb-3">고용 상태</h4>
-                            <select id="modal-employmentStatus"
-                                    class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm custom-select">
+                            <select id="modal-employmentStatus" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm custom-select">
                                 <option value="">선택</option>
                                 <option value="UNEMPLOYED">미취업 (구직자)</option>
                                 <option value="EMPLOYED">직장인 (계약/정규직)</option>
@@ -367,9 +353,7 @@
                             </div>
                         </div>
                     </div>
-
                     <hr class="border-slate-100">
-
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <h4 class="text-sm font-bold text-slate-800 mb-3">결혼 여부</h4>
@@ -386,11 +370,9 @@
                         </div>
                         <div>
                             <h4 class="text-sm font-bold text-slate-800 mb-3">자녀 수 (명)</h4>
-                            <input type="number" id="modal-childCount" min="0" value="0"
-                                   class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm font-medium text-right">
+                            <input type="number" id="modal-childCount" min="0" value="0" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm font-medium text-right">
                         </div>
                     </div>
-
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <h4 class="text-sm font-bold text-slate-800 mb-3">주택 소유</h4>
@@ -410,9 +392,7 @@
                             <input type="number" id="modal-familyCount" min="1" value="1" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm font-medium text-right">
                         </div>
                     </div>
-
                     <hr class="border-slate-100">
-
                     <div>
                         <h4 class="text-sm font-bold text-slate-800 mb-3">본인 월 소득 (세전)</h4>
                         <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 mb-2 flex items-center gap-2">
@@ -421,7 +401,6 @@
                         </div>
                         <input type="range" id="modal-myIncomeSlider" min="0" max="1500" step="10" value="0" class="w-full">
                     </div>
-
                     <div>
                         <h4 class="text-sm font-bold text-slate-800 mb-3">가구 합산 월 소득 (세전)</h4>
                         <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 mb-2 flex items-center gap-2">
@@ -430,14 +409,50 @@
                         </div>
                         <input type="range" id="modal-hhIncomeSlider" min="0" max="2000" step="10" value="0" class="w-full">
                     </div>
-
                 </div>
-
                 <div class="bg-slate-50 px-6 py-4 flex justify-end gap-3 border-t border-slate-100 sticky bottom-0 z-10">
                     <button type="button" onclick="closeSetupModal()" class="px-5 py-3 rounded-xl border border-slate-300 bg-white font-bold text-slate-600 hover:bg-slate-50 transition text-sm">취소</button>
                     <button type="button" onclick="saveConditions()" class="px-5 py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200 text-sm">변경사항 저장</button>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<div id="withdraw-step1-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center" aria-modal="true">
+    <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="closeWithdrawModal()"></div>
+    <div class="relative bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center transform scale-95 opacity-0 transition-all duration-200" id="withdraw-step1-content">
+        <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center mx-auto mb-4 text-xl">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h3 class="text-lg font-bold text-slate-900 mb-2">회원 탈퇴</h3>
+        <p class="text-sm text-slate-500 mb-6 leading-relaxed">
+            정말로 탈퇴하시겠습니까?<br>
+            탈퇴 시 모든 정보가 삭제되며 복구할 수 없습니다.
+        </p>
+        <div class="flex gap-3">
+            <button onclick="closeWithdrawModal()" class="flex-1 py-3 border border-slate-200 bg-white text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition text-sm">취소</button>
+            <button onclick="openWithdrawStep2()" class="flex-1 py-3 bg-slate-800 text-white font-bold rounded-xl hover:bg-black transition text-sm">계속</button>
+        </div>
+    </div>
+</div>
+
+<div id="withdraw-step2-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center" aria-modal="true">
+    <div class="fixed inset-0 bg-red-900/40 backdrop-blur-sm transition-opacity" onclick="closeWithdrawModal()"></div>
+    <div class="relative bg-red-50 w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center border-2 border-red-100 transform scale-95 opacity-0 transition-all duration-200" id="withdraw-step2-content">
+        <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-4 text-xl">
+            <i class="fa-solid fa-skull-crossbones"></i>
+        </div>
+        <h3 class="text-lg font-bold text-red-700 mb-2">최종 경고</h3>
+        <p class="text-sm text-red-600/80 mb-6 leading-relaxed font-medium">
+            이 작업은 되돌릴 수 없습니다.<br>
+            계정을 영구적으로 삭제하시겠습니까?
+        </p>
+        <div class="flex gap-3">
+            <form action="/withdraw" method="post" class="flex-1">
+                <button type="submit" class="w-full py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition text-sm shadow-md shadow-red-200">탈퇴하기</button>
+            </form>
+            <button onclick="closeWithdrawModal()" class="flex-1 py-3 border border-red-200 bg-white text-slate-500 font-bold rounded-xl hover:bg-slate-50 transition text-sm">취소</button>
         </div>
     </div>
 </div>
@@ -452,58 +467,28 @@
             });
         }
 
+        // ... (기존 변수 및 함수들은 모두 그대로 유지) ...
         const serverMember = {
             gender: [[${session.loginMember.gender}]],
             birthDate: [[${session.loginMember.birthDate}]],
             province: [[${session.loginMember.province}]],
             city: [[${session.loginMember.city}]],
-
             eduLevelCode: [[${session.loginMember.eduLevelCode}]],
             empStatusCode: [[${session.loginMember.empStatusCode}]],
             businessRegistered: [[${session.loginMember.businessRegistered}]],
-
             married: [[${session.loginMember.married}]],
             child: [[${session.loginMember.child}]],
             home: [[${session.loginMember.home}]],
             familySize: [[${session.loginMember.familySize}]],
-
             personalIncome: [[${session.loginMember.personalIncome}]],
             familyIncome: [[${session.loginMember.familyIncome}]]
         };
 
-        // ============================
-        // ✅ 문자열 옵션값 <-> 코드 매핑
-        // ============================
-        const eduCodeMap = {
-          "UNDER_HIGH_SCHOOL": 1,
-          "HIGH_SCHOOL": 2,
-          "UNIV_ATTENDING": 3,
-          "UNIV_GRAD": 4,
-          "MASTER_PHD": 5
-        };
-        const empCodeMap = {
-          "UNEMPLOYED": 1,
-          "EMPLOYED": 2,
-          "SELF_EMPLOYED": 3,
-          "STUDENT": 4
-        };
+        const eduCodeMap = { "UNDER_HIGH_SCHOOL": 1, "HIGH_SCHOOL": 2, "UNIV_ATTENDING": 3, "UNIV_GRAD": 4, "MASTER_PHD": 5 };
+        const empCodeMap = { "UNEMPLOYED": 1, "EMPLOYED": 2, "SELF_EMPLOYED": 3, "STUDENT": 4 };
+        const eduKeyByCode = { 1: "UNDER_HIGH_SCHOOL", 2: "HIGH_SCHOOL", 3: "UNIV_ATTENDING", 4: "UNIV_GRAD", 5: "MASTER_PHD" };
+        const empKeyByCode = { 1: "UNEMPLOYED", 2: "EMPLOYED", 3: "SELF_EMPLOYED", 4: "STUDENT" };
 
-        const eduKeyByCode = {
-          1: "UNDER_HIGH_SCHOOL",
-          2: "HIGH_SCHOOL",
-          3: "UNIV_ATTENDING",
-          4: "UNIV_GRAD",
-          5: "MASTER_PHD"
-        };
-        const empKeyByCode = {
-          1: "UNEMPLOYED",
-          2: "EMPLOYED",
-          3: "SELF_EMPLOYED",
-          4: "STUDENT"
-        };
-
-        // --- 날짜 포맷 함수들 ---
-        // 1. 보여줄 때: 19950101 or 1995-01-01 -> 1995-01-01
         function formatBirthDate(dateStr) {
             if (!dateStr) return '-';
             const cleanStr = String(dateStr).replace(/[^0-9]/g, '');
@@ -513,13 +498,11 @@
             return String(dateStr);
         }
 
-        // 2. 모달에 넣을 때: 1995-01-01 -> 19950101
         function unformatBirthDate(dateStr) {
             if (!dateStr) return '';
             return String(dateStr).replace(/[^0-9]/g, '');
         }
 
-        // 3. 서버로 보낼 때: YYYYMMDD -> YYYY-MM-DD (DB DATE 안전)
         function yyyymmddToDate(yyyymmdd) {
           if (!yyyymmdd) return null;
           const s = String(yyyymmdd).replace(/[^0-9]/g, '');
@@ -527,7 +510,6 @@
           return `${s.substring(0,4)}-${s.substring(4,6)}-${s.substring(6,8)}`;
         }
 
-        // --- 숨겨진 날짜 선택기 이벤트 ---
         document.getElementById('hiddenDatePicker').addEventListener('change', function() {
             if(this.value) {
                 const dateStr = this.value.replace(/-/g, '');
@@ -539,7 +521,6 @@
             const modal = document.getElementById('alert-modal');
             const content = document.getElementById('alert-content');
             document.getElementById('alert-msg').innerText = msg;
-
             modal.classList.remove('hidden');
             setTimeout(() => {
                 content.classList.remove('scale-95', 'opacity-0');
@@ -550,7 +531,6 @@
         function closeAlertModal() {
             const modal = document.getElementById('alert-modal');
             const content = document.getElementById('alert-content');
-
             content.classList.remove('scale-100', 'opacity-100');
             content.classList.add('scale-95', 'opacity-0');
             setTimeout(() => modal.classList.add('hidden'), 200);
@@ -560,20 +540,17 @@
             const modal = document.getElementById('name-modal');
             const content = document.getElementById('name-content');
             document.getElementById('newNameInput').value = [[${session.loginMember.memberName}]];
-
             modal.classList.remove('hidden');
             setTimeout(() => {
                 content.classList.remove('scale-95', 'opacity-0');
                 content.classList.add('scale-100', 'opacity-100');
             }, 10);
-
             setTimeout(() => document.getElementById('newNameInput').focus(), 100);
         }
 
         function closeNameChangeModal() {
             const modal = document.getElementById('name-modal');
             const content = document.getElementById('name-content');
-
             content.classList.remove('scale-100', 'opacity-100');
             content.classList.add('scale-95', 'opacity-0');
             setTimeout(() => modal.classList.add('hidden'), 200);
@@ -617,11 +594,8 @@
                 option.text = si;
                 siSelect.appendChild(option);
             }
-
             syncSlider('modal-myIncomeSlider', 'modal-myIncomeText');
             syncSlider('modal-hhIncomeSlider', 'modal-hhIncomeText');
-
-            // ✅ 서버 세션값으로 뷰 채우기
             loadServerConditionsToView();
         });
 
@@ -630,7 +604,6 @@
             const guSelect = document.getElementById("modal-regionGu");
             const selectedSi = siSelect.value;
             guSelect.innerHTML = '<option value="">시/군/구 선택</option>';
-
             if (selectedSi && areaData[selectedSi]) {
                 areaData[selectedSi].forEach(function(gu) {
                     const option = document.createElement("option");
@@ -644,7 +617,6 @@
         function syncSlider(sliderId, textId) {
             const slider = document.getElementById(sliderId);
             const text = document.getElementById(textId);
-
             slider.addEventListener('input', () => text.value = slider.value);
             text.addEventListener('input', () => {
                  let val = parseInt(text.value) || 0;
@@ -662,78 +634,50 @@
 
         function loadServerConditionsToView() {
             const gender = (serverMember.gender === 'M') ? '남성' : (serverMember.gender === 'F' ? '여성' : '-');
-
             const birth = formatBirthDate(serverMember.birthDate);
             document.getElementById('view-basic').innerText = `${gender} / ${birth}`;
-
             const region = (serverMember.province || '-') + ' ' + (serverMember.city || '');
             document.getElementById('view-region').innerText = region.trim();
-
             const eduLabel = eduText(serverMember.eduLevelCode);
             document.getElementById('view-edu').innerText = eduLabel;
-
             const jobLabel = empText(serverMember.empStatusCode);
             const biz = (serverMember.businessRegistered === true) ? ' (사업자)' : '';
             document.getElementById('view-job').innerText = (jobLabel || '-') + biz;
-
             const marry = (serverMember.married === true) ? '기혼' : '미혼';
             document.getElementById('view-family').innerText = `${marry} / 자녀 ${(serverMember.child ?? 0)}명`;
-
             const house = (serverMember.home === true) ? '자가' : '전/월세';
             document.getElementById('view-house').innerText = `${house} / 가구원 ${(serverMember.familySize ?? 1)}명`;
-
             document.getElementById('view-myIncome').innerText = wonToManwon(serverMember.personalIncome) + '만원';
             document.getElementById('view-hhIncome').innerText = wonToManwon(serverMember.familyIncome) + '만원';
         }
 
         function eduText(code) {
             switch (parseInt(code)) {
-                case 1: return '고졸 미만';
-                case 2: return '고등학교 졸업';
-                case 3: return '대학교 재학/휴학';
-                case 4: return '대학교 졸업(예정)';
-                case 5: return '석/박사';
-                default: return '-';
+                case 1: return '고졸 미만'; case 2: return '고등학교 졸업'; case 3: return '대학교 재학/휴학'; case 4: return '대학교 졸업(예정)'; case 5: return '석/박사'; default: return '-';
             }
         }
-
         function empText(code) {
             switch (parseInt(code)) {
-                case 1: return '미취업';
-                case 2: return '직장인';
-                case 3: return '자영업/프리랜서';
-                case 4: return '학생';
-                default: return '-';
+                case 1: return '미취업'; case 2: return '직장인'; case 3: return '자영업/프리랜서'; case 4: return '학생'; default: return '-';
             }
         }
 
         function openSetupModal() {
             const modal = document.getElementById('setup-modal');
-
             setRadio('modal-gender', serverMember.gender);
-
-            // 모달에는 YYYYMMDD로
             setValue('modal-birthDate', unformatBirthDate(serverMember.birthDate));
-
             setValue('modal-regionSi', serverMember.province);
             updateModalRegionGu();
             setValue('modal-regionGu', serverMember.city);
-
-            // ✅ 코드(숫자) -> select key(문자열)로 변환해서 세팅
             setValue('modal-educationLevel', eduKeyByCode[parseInt(serverMember.eduLevelCode)] || '');
             setValue('modal-employmentStatus', empKeyByCode[parseInt(serverMember.empStatusCode)] || '');
-
             document.getElementById('modal-bizCheck').checked = (serverMember.businessRegistered === true);
-
             setRadio('modal-marry', String(serverMember.married === true));
             setValue('modal-childCount', (serverMember.child ?? 0));
-
             setRadio('modal-house', String(serverMember.home === true));
             setValue('modal-familyCount', (serverMember.familySize ?? 1));
-
             setSlider('modal-myIncomeSlider', 'modal-myIncomeText', wonToManwon(serverMember.personalIncome));
             setSlider('modal-hhIncomeSlider', 'modal-hhIncomeText', wonToManwon(serverMember.familyIncome));
-
             modal.classList.remove('hidden');
         }
 
@@ -741,53 +685,26 @@
             document.getElementById('setup-modal').classList.add('hidden');
         }
 
-        // ✅ 저장: 컨트롤러(@RequestBody JSON) + mapper 필드명에 정확히 맞춰 전송
         function saveConditions() {
             const gender = getRadio('modal-gender');
-
-            // 모달(YYYYMMDD) -> 서버(YYYY-MM-DD)
             const birthDate = yyyymmddToDate(getValue('modal-birthDate'));
-
-            // ⚠️ mapper(updateConditions)는 regionSi/regionGu를 사용
             const regionSi = getValue('modal-regionSi');
             const regionGu = getValue('modal-regionGu');
-
-            // select는 문자열 키 → 코드로 변환
             const eduKey = getValue('modal-educationLevel');
             const empKey = getValue('modal-employmentStatus');
             const educationLevel = eduCodeMap[eduKey] ?? null;
             const employmentStatus = empCodeMap[empKey] ?? null;
-
             const isBusinessOwner = document.getElementById('modal-bizCheck').checked;
-
-            // mapper는 married/home(Boolean) 사용
             const married = (getRadio('modal-marry') === 'true');
             const home = (getRadio('modal-house') === 'true');
-
             const child = parseInt(getValue('modal-childCount')) || 0;
             const familySize = parseInt(getValue('modal-familyCount')) || 1;
-
             const myIncomeMan = parseInt(getValue('modal-myIncomeText')) || 0;
             const hhIncomeMan = parseInt(getValue('modal-hhIncomeText')) || 0;
-
             const personalIncome = myIncomeMan * 10000;
             const familyIncome = hhIncomeMan * 10000;
 
-            const data = {
-                gender,
-                birthDate,           // "YYYY-MM-DD"
-                regionSi,            // -> province
-                regionGu,            // -> city
-                educationLevel,      // -> eduLevelCode
-                employmentStatus,    // -> empStatusCode
-                isBusinessOwner,     // -> businessRegistered
-                married,
-                home,
-                child,
-                familySize,
-                personalIncome,
-                familyIncome
-            };
+            const data = { gender, birthDate, regionSi, regionGu, educationLevel, employmentStatus, isBusinessOwner, married, home, child, familySize, personalIncome, familyIncome };
 
             fetch('/updateConditions', {
                 method: 'POST',
@@ -888,11 +805,57 @@
             return true;
         }
 
+        // --- [신규 추가] 회원탈퇴 모달 제어 함수 ---
+        function openWithdrawStep1() {
+            const modal = document.getElementById('withdraw-step1-modal');
+            const content = document.getElementById('withdraw-step1-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function openWithdrawStep2() {
+            // 1단계 닫기
+            const modal1 = document.getElementById('withdraw-step1-modal');
+            modal1.classList.add('hidden');
+
+            // 2단계 열기
+            const modal2 = document.getElementById('withdraw-step2-modal');
+            const content2 = document.getElementById('withdraw-step2-content');
+            modal2.classList.remove('hidden');
+            setTimeout(() => {
+                content2.classList.remove('scale-95', 'opacity-0');
+                content2.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeWithdrawModal() {
+            const modal1 = document.getElementById('withdraw-step1-modal');
+            const content1 = document.getElementById('withdraw-step1-content');
+            const modal2 = document.getElementById('withdraw-step2-modal');
+            const content2 = document.getElementById('withdraw-step2-content');
+
+            // 애니메이션 역재생 후 hidden 처리
+            if (!modal1.classList.contains('hidden')) {
+                content1.classList.remove('scale-100', 'opacity-100');
+                content1.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => modal1.classList.add('hidden'), 200);
+            }
+            if (!modal2.classList.contains('hidden')) {
+                content2.classList.remove('scale-100', 'opacity-100');
+                content2.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => modal2.classList.add('hidden'), 200);
+            }
+        }
+
         document.addEventListener('keydown', function(event) {
             if (event.key === "Escape") {
                 closeSetupModal();
                 closeAlertModal();
                 closeNameChangeModal();
+                closeWithdrawModal(); // ESC 키로 탈퇴 모달도 닫기
             }
         });
 
