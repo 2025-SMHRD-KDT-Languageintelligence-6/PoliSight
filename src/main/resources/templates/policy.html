@@ -484,9 +484,12 @@
         syncInput('household_income_range', 'household_income_text');
 
         const isLoggedIn = /*[[${session.loginMember != null}]]*/ false;
+
+        // 검색 결과인지 확인 (URL에 파라미터가 있는지)
         const isSearchResult = window.location.search.trim().length > 1;
 
         if (!isSearchResult) {
+            // 검색 결과가 아니면 (처음 진입 시) -> 초기화 및 내 정보 불러오기
             setTimeout(forceClearAllInputs, 10);
             if (!isLoggedIn) {
                 setTimeout(() => {
@@ -496,6 +499,9 @@
                     }
                 }, 20);
             }
+        } else {
+            // 검색 결과이면 (파라미터가 있으면) -> URL 파라미터로 폼 복구
+            restoreSearchConditions();
         }
     });
 
@@ -556,6 +562,76 @@
             const val = (fIncome >= 10000) ? Math.floor(fIncome / 10000) : fIncome;
             document.getElementById('household_income_text').value = val;
             document.getElementById('household_income_range').value = val;
+        }
+    }
+
+    // --- 검색 후 URL 파라미터를 읽어 폼을 복구하는 함수 ---
+    function restoreSearchConditions() {
+        const params = new URLSearchParams(window.location.search);
+
+        // 1. 단순 텍스트/숫자/날짜 입력값 복구
+        // name 속성 값을 기준으로 값을 찾아 넣습니다.
+        const textInputs = ['birthDate', 'childCount', 'familySize'];
+        textInputs.forEach(name => {
+            const val = params.get(name);
+            if (val) {
+                // name으로 요소를 찾되, 여러 개일 수 있으니 첫 번째 요소를 타겟
+                const el = document.querySelector(`[name="${name}"]`);
+                if (el) el.value = val;
+            }
+        });
+
+        // 2. 라디오 버튼 (성별, 결혼, 주택)
+        ['gender', 'marry', 'house'].forEach(name => {
+            const val = params.get(name);
+            if (val) {
+                const radio = document.querySelector(`input[name="${name}"][value="${val}"]`);
+                if (radio) radio.checked = true;
+            }
+        });
+
+        // 3. 셀렉트 박스 (학력, 고용상태)
+        ['educationLevel', 'employmentStatus'].forEach(name => {
+            const val = params.get(name);
+            if (val) document.querySelector(`select[name="${name}"]`).value = val;
+        });
+
+        // 4. 체크박스 (사업자)
+        const biz = params.get('isBusinessOwner');
+        if (biz === 'on' || biz === 'true') {
+            document.getElementById('bizCheck').checked = true;
+        }
+
+        // 5. 지역 (시/도 선택 -> 시/군/구 업데이트 -> 시/군/구 선택)
+        const si = params.get('regionSi');
+        if (si) {
+            document.getElementById('regionSi').value = si;
+            updateRegionGu(); // 구 목록 생성
+
+            const gu = params.get('regionGu');
+            if (gu) {
+                document.getElementById('regionGu').value = gu;
+            }
+        }
+
+        // 6. 소득 (슬라이더와 텍스트 동기화)
+        const myIncome = params.get('income');
+        if (myIncome) {
+            document.getElementById('my_income_text').value = myIncome;
+            document.getElementById('my_income_range').value = myIncome;
+        }
+
+        const hhIncome = params.get('householdIncome');
+        if (hhIncome) {
+            document.getElementById('household_income_text').value = hhIncome;
+            document.getElementById('household_income_range').value = hhIncome;
+        }
+
+        // 7. 검색어 유지 (선택사항)
+        const keyword = params.get('keyword');
+        if (keyword) {
+            document.getElementById('visual-keyword').value = keyword;
+            document.getElementById('hidden-keyword').value = keyword;
         }
     }
 
