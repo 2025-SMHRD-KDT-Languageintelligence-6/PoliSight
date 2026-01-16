@@ -306,6 +306,7 @@
                      th:data-title="${policy.title}"
                      th:data-desc="${policy.description}"
                      th:data-desc-easy="${policy.description}"
+                     th:data-id="${policy.id}"
                      onclick="selectPolicy(this)">
 
                     <div class="flex justify-between items-start mb-2">
@@ -339,7 +340,7 @@
 <div class="fixed bottom-0 left-0 w-full bg-white border-t p-3 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] z-50 transition-transform translate-y-full" id="action-bar">
     <div class="max-w-6xl mx-auto flex justify-between items-center px-4">
         <p class="font-bold text-slate-800 text-sm" id="selected-title">선택된 정책 없음</p>
-        <button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-bold transition shadow-lg flex items-center gap-2 text-sm">
+        <button onclick="goToSimulation()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-bold transition shadow-lg flex items-center gap-2 text-sm">
             <i class="fa-solid fa-wand-magic-sparkles"></i> AI 시뮬레이션 시작
         </button>
     </div>
@@ -570,12 +571,10 @@
         const params = new URLSearchParams(window.location.search);
 
         // 1. 단순 텍스트/숫자/날짜 입력값 복구
-        // name 속성 값을 기준으로 값을 찾아 넣습니다.
         const textInputs = ['birthDate', 'childCount', 'familySize'];
         textInputs.forEach(name => {
             const val = params.get(name);
             if (val) {
-                // name으로 요소를 찾되, 여러 개일 수 있으니 첫 번째 요소를 타겟
                 const el = document.querySelector(`[name="${name}"]`);
                 if (el) el.value = val;
             }
@@ -627,7 +626,7 @@
             document.getElementById('household_income_range').value = hhIncome;
         }
 
-        // 7. 검색어 유지 (선택사항)
+        // 7. 검색어 유지
         const keyword = params.get('keyword');
         if (keyword) {
             document.getElementById('visual-keyword').value = keyword;
@@ -650,7 +649,6 @@
                 forceClearAllInputs();
                 setTimeout(() => {
                     populateForm(data);
-                    // 수정 3: 알림창(alert) 제거됨
                 }, 50);
             })
             .catch(error => { console.error(error); alert("정보 불러오기 실패"); })
@@ -758,6 +756,23 @@
             selectedTitle.innerText = "선택된 정책 없음";
             actionBar.classList.add('translate-y-full');
         }
+    }
+
+    // [수정됨] 시뮬레이션 페이지 이동 함수 추가 (중요!)
+    function goToSimulation() {
+        const selectedCard = document.querySelector('.policy-card.selected');
+        if (!selectedCard) {
+            alert("먼저 정책을 선택해주세요.");
+            return;
+        }
+
+        const policyId = selectedCard.getAttribute('data-id');
+        if (!policyId) {
+            alert("정책 ID를 찾을 수 없습니다.");
+            return;
+        }
+
+        location.href = '/simulation?policyId=' + policyId;
     }
 
     const modal = document.getElementById('policy-modal');

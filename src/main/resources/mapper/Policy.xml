@@ -6,60 +6,55 @@
     <select id="selectPoliciesByCondition"
             parameterType="com.simpol.polisight.dto.PolicySearchCondition"
             resultType="com.simpol.polisight.dto.PolicyDto">
-
         SELECT
         plcyNo,
         plcyNm,
         plcyExplnCn,
         lclsfNm,
         bizPrdBgngYmd,
-        bizPrdEndYmd,
-        -- D-Day 계산 (마감일 - 오늘)
-        DATEDIFF(bizPrdEndYmd, CURDATE()) as dDay
+        bizPrdEndYmd
         FROM policy
         <where>
             <if test="keyword != null and keyword != ''">
                 AND (plcyNm LIKE CONCAT('%', #{keyword}, '%')
                 OR plcyExplnCn LIKE CONCAT('%', #{keyword}, '%'))
             </if>
-
             <if test="age != null">
                 AND (sprtTrgtMinAge IS NULL OR sprtTrgtMinAge &lt;= #{age})
                 AND (sprtTrgtMaxAge IS NULL OR sprtTrgtMaxAge &gt;= #{age})
             </if>
-
             <if test="income != null and income > 0">
                 AND (earnMaxAmt IS NULL OR earnMaxAmt >= #{income})
             </if>
-
             <if test="regionSi != null and regionSi != ''">
                 AND (
                 JSON_SEARCH(zipCd, 'one', CONCAT('%', #{regionSi}, '%')) IS NOT NULL
                 OR JSON_SEARCH(zipCd, 'one', '전국') IS NOT NULL
                 )
             </if>
-
             <if test="educationLevel != null and educationLevel != ''">
-                AND (
-                schoolCd IS NULL
-                OR JSON_SEARCH(schoolCd, 'one', #{educationLevel}) IS NOT NULL
-                )
+                AND (schoolCd IS NULL OR JSON_SEARCH(schoolCd, 'one', #{educationLevel}) IS NOT NULL)
             </if>
-
             <if test="employmentStatus != null and employmentStatus != ''">
-                AND (
-                jobCd IS NULL
-                OR JSON_SEARCH(jobCd, 'one', #{employmentStatus}) IS NOT NULL
-                )
+                AND (jobCd IS NULL OR JSON_SEARCH(jobCd, 'one', #{employmentStatus}) IS NOT NULL)
             </if>
-
             AND (bizPrdEndYmd IS NULL OR bizPrdEndYmd >= CURDATE())
-
         </where>
         ORDER BY
-        -- 마감 임박순 정렬 (NULL은 뒤로)
         CASE WHEN bizPrdEndYmd IS NULL THEN 1 ELSE 0 END,
         bizPrdEndYmd ASC
+    </select>
+
+    <select id="selectPolicyById" resultType="com.simpol.polisight.dto.PolicyDto">
+        SELECT
+        plcyNo,
+        plcyNm,
+        plcyExplnCn,
+        lclsfNm,
+        bizPrdBgngYmd,
+        bizPrdEndYmd
+        FROM policy
+        WHERE plcyNo = #{id}
     </select>
 
 </mapper>
