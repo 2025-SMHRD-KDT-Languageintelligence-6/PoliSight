@@ -118,12 +118,16 @@
             <if test="employmentStatus != null and employmentStatus.size > 0">
                 AND (
                 p.jobCd IS NULL
+
+                -- [무조건 포함] 기타(0013009) + 제한없음(0013010)
+                OR JSON_SEARCH(p.jobCd, 'one', '0013009') IS NOT NULL
+                OR JSON_SEARCH(p.jobCd, 'one', '0013010') IS NOT NULL
+
+                -- [사용자 선택 값] (Service에서 확장된 코드들: 재직자, 일용직 등)
                 OR
                 <foreach collection="employmentStatus" item="item" open="(" close=")" separator=" OR ">
                     JSON_SEARCH(p.jobCd, 'one', #{item}) IS NOT NULL
                 </foreach>
-                OR JSON_SEARCH(p.jobCd, 'one', '0013010') IS NOT NULL
-                OR JSON_SEARCH(p.jobCd, 'one', '0013009') IS NOT NULL
                 )
             </if>
 

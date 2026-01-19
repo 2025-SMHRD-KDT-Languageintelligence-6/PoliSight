@@ -552,12 +552,24 @@
         "0049001": 1, "0049002": 2, "0049003": 3, "0049004": 4,
         "0049005": 5, "0049006": 6, "0049007": 7, "0049008": 8
     };
-        const empCodeMap = { "UNEMPLOYED": 1, "EMPLOYED": 2, "SELF_EMPLOYED": 3, "STUDENT": 4 };
+        const empCodeMap = {
+        "UNEMPLOYED": 1,    // 미취업
+        "EMPLOYED": 2,      // 직장인
+        "SELF_EMPLOYED": 3, // 자영업
+        "FREELANCER": 4,    // 프리랜서
+        "FOUNDER": 5        // 창업자
+    };
         const eduKeyByCode = {
         1: "0049001", 2: "0049002", 3: "0049003", 4: "0049004",
         5: "0049005", 6: "0049006", 7: "0049007", 8: "0049008"
     };
-        const empKeyByCode = { 1: "UNEMPLOYED", 2: "EMPLOYED", 3: "SELF_EMPLOYED", 4: "STUDENT" };
+        const empKeyByCode = {
+        1: "UNEMPLOYED",
+        2: "EMPLOYED",
+        3: "SELF_EMPLOYED",
+        4: "FREELANCER",
+        5: "FOUNDER"
+    };
 
         function formatBirthDate(dateStr) {
             if (!dateStr) return '-';
@@ -735,10 +747,15 @@
         }
     }
         function empText(code) {
-            switch (parseInt(code)) {
-                case 1: return '미취업'; case 2: return '직장인'; case 3: return '자영업/프리랜서'; case 4: return '학생'; default: return '-';
-            }
+        switch (parseInt(code)) {
+            case 1: return '미취업';
+            case 2: return '직장인';
+            case 3: return '자영업';
+            case 4: return '프리랜서';
+            case 5: return '창업자';
+            default: return '-';
         }
+    }
 
         function openSetupModal() {
             const modal = document.getElementById('setup-modal');
