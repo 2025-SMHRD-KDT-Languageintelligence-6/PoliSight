@@ -214,11 +214,6 @@
             <option value="FOUNDER">(예비) 창업자</option>
         </select>
 
-        <label class="checkbox-wrapper">
-            <input type="checkbox" id="bizCheck">
-            <span>사업자 등록증을 보유하고 있습니다</span>
-        </label>
-
         <div class="section-title"><i class="fa-solid fa-ring"></i> 결혼 여부</div>
         <div class="choice-group">
             <label class="choice-btn"><input type="radio" name="marry" value="N"
@@ -423,9 +418,6 @@
         // 여기서는 값을 그대로 넘깁니다.
         educationLevel: document.getElementById('educationLevel').value,
         employmentStatus: document.getElementById('employmentStatus').value,
-
-        // 변수명 유지 (policy.html에서 isBusinessOwner || businessRegistered 로 체크함)
-        isBusinessOwner: document.getElementById('bizCheck').checked,
 
         // marry -> married (Boolean) 로 변경
         // policy.html이 (data.married === true)로 체크하므로 true/false 변환

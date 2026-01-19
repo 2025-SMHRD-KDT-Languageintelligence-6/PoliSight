@@ -353,10 +353,9 @@
                 };
                 if(data.employmentStatus) addHiddenInfo('empStatusCode', empMap[data.employmentStatus] || 0);
 
-                // 8. 결혼/주택/사업자 (boolean)
+                // 8. 결혼/주택 (boolean)
                 addHiddenInfo('married', data.marry === 'Y');
                 addHiddenInfo('home', data.house === 'Y');
-                addHiddenInfo('businessRegistered', data.isBusinessOwner);
 
             } catch (e) {
                 console.error("데이터 매핑 중 오류 발생:", e);

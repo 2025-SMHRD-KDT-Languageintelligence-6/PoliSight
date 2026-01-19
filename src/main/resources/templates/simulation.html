@@ -168,11 +168,14 @@
                             <label class="block text-xs font-bold text-slate-600 mb-1.5">최종 학력</label>
                             <select th:field="*{educationLevel}" class="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium text-slate-700 text-sm custom-select">
                                 <option value="">선택해주세요</option>
-                                <option value="UNDER_HIGH_SCHOOL">고졸 미만</option>
-                                <option value="HIGH_SCHOOL">고등학교 졸업</option>
-                                <option value="UNIV_ATTENDING">대학교 재학/휴학</option>
-                                <option value="UNIV_GRAD">대학교 졸업 (예정)</option>
-                                <option value="MASTER_PHD">석/박사 (과정/졸업)</option>
+                                <option value="0049001">고졸 미만 (중졸 이하)</option>
+                                <option value="0049002">고교 재학</option>
+                                <option value="0049003">고졸 예정 (3학년)</option>
+                                <option value="0049004">고교 졸업 (검정고시 포함)</option>
+                                <option value="0049005">대학 재학 (휴학 포함)</option>
+                                <option value="0049006">대졸 예정 (졸업 유예)</option>
+                                <option value="0049007">대학 졸업</option>
+                                <option value="0049008">석/박사 (과정/졸업)</option>
                             </select>
                         </div>
                         <div>
@@ -180,9 +183,10 @@
                             <select th:field="*{employmentStatus}" class="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium text-slate-700 text-sm custom-select">
                                 <option value="">선택해주세요</option>
                                 <option value="UNEMPLOYED">미취업 (구직자)</option>
-                                <option value="EMPLOYED">직장인 (계약/정규직)</option>
-                                <option value="SELF_EMPLOYED">자영업 / 프리랜서</option>
-                                <option value="STUDENT">학생</option>
+                                <option value="EMPLOYED">직장인 (정규/계약/아르바이트)</option>
+                                <option value="SELF_EMPLOYED">자영업 / 소상공인</option>
+                                <option value="FREELANCER">프리랜서</option>
+                                <option value="FOUNDER">(예비) 창업자</option>
                             </select>
                         </div>
                     </div>
@@ -466,11 +470,6 @@
 
             if (has(data.educationLevel)) document.querySelector('select[name="educationLevel"]').value = data.educationLevel;
             if (has(data.employmentStatus)) document.querySelector('select[name="employmentStatus"]').value = data.employmentStatus;
-
-            if (data.isBusinessOwner === true) {
-                const chk = document.querySelector('input[name="isBusinessOwner"]');
-                if (chk) chk.checked = true;
-            }
 
             if (has(data.regionSi)) {
                 document.getElementById('regionSi').value = data.regionSi;

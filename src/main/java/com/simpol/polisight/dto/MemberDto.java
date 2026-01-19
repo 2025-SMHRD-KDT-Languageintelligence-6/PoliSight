@@ -27,7 +27,6 @@ public class MemberDto {
     private Boolean married;
     private Integer child;
     private Boolean home;
-    private Boolean businessRegistered;
 
     // [HTML Form / JSON 입력값 매핑용 필드]
     // 화면에서 regionSi, regionGu 등으로 보내므로 이를 받을 필드가 필요함!
@@ -41,7 +40,6 @@ public class MemberDto {
     // 화면에서 String이나 int로 넘어오는 값들
     private Integer educationLevel; // -> eduLevelCode
     private Integer employmentStatus;// -> empStatusCode
-    private Boolean isBusinessOwner; // -> businessRegistered
 
     private String marryStatus;     // 화면에서 'Y'/'N' 또는 'true'/'false'로 올 수 있음
     private String houseOwnership;  // 화면에서 'Y'/'N' 또는 'true'/'false'로 올 수 있음

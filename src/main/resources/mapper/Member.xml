@@ -9,12 +9,12 @@
         INSERT INTO member (
         email, passwordHash, memberName, birthDate, provider, gender,
         province, city, personalIncome, familyIncome, familySize, child,
-        eduLevelCode, empStatusCode, married, home, businessRegistered,
+        eduLevelCode, empStatusCode, married, home,
         createdAt, updatedAt
         ) VALUES (
         #{email}, #{passwordHash}, #{memberName}, #{birthDate}, #{provider}, #{gender},
         #{province}, #{city}, #{personalIncome}, #{familyIncome}, #{familySize}, #{child},
-        #{eduLevelCode}, #{empStatusCode}, #{married}, #{home}, #{businessRegistered},
+        #{eduLevelCode}, #{empStatusCode}, #{married}, #{home},
         NOW(), NOW() )
     </insert>
 
@@ -26,7 +26,6 @@
         city AS regionGu,
         eduLevelCode AS educationLevel,
         empStatusCode AS employmentStatus,
-        businessRegistered AS isBusinessOwner,
 
         -- Boolean -> String 변환 (선택 사항, 화면 로직에 따라 다름)
         -- 여기서는 기본 필드(married, home)에 Boolean 값이 자동으로 들어감
@@ -69,9 +68,6 @@
         -- 상태 코드 (화면 필드명 -> DB 컬럼)
         <if test="educationLevel != null">, eduLevelCode = #{educationLevel}</if>
         <if test="employmentStatus != null">, empStatusCode = #{employmentStatus}</if>
-
-        -- 사업자 여부 (화면 isBusinessOwner -> DB businessRegistered)
-        <if test="isBusinessOwner != null">, businessRegistered = #{isBusinessOwner}</if>
 
         -- 결혼/주택 (DTO의 married, home 필드가 Boolean으로 잘 넘어오면 그대로 사용)
         -- 화면에서 'Y'/'N' 문자열로 보낸다면 marryStatus 사용 필요

@@ -381,12 +381,6 @@
                                 <option value="SELF_EMPLOYED">자영업 / 프리랜서</option>
                                 <option value="STUDENT">학생</option>
                             </select>
-                            <div class="mt-2 flex items-center gap-2">
-                                <input class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300" id="modal-bizCheck"
-                                       type="checkbox">
-                                <label class="text-xs font-bold text-slate-600 cursor-pointer" for="modal-bizCheck">사업자
-                                    등록증 보유</label>
-                            </div>
                         </div>
                     </div>
                     <hr class="border-slate-100">
@@ -723,8 +717,7 @@
             const eduLabel = eduText(serverMember.eduLevelCode);
             document.getElementById('view-edu').innerText = eduLabel;
             const jobLabel = empText(serverMember.empStatusCode);
-            const biz = (serverMember.businessRegistered === true) ? ' (사업자)' : '';
-            document.getElementById('view-job').innerText = (jobLabel || '-') + biz;
+            document.getElementById('view-job').innerText = (jobLabel || '-');
             const marry = (serverMember.married === true) ? '기혼' : '미혼';
             document.getElementById('view-family').innerText = `${marry} / 자녀 ${(serverMember.child ?? 0)}명`;
             const house = (serverMember.home === true) ? '자가' : '전/월세';
@@ -766,7 +759,6 @@
             setValue('modal-regionGu', serverMember.city);
             setValue('modal-educationLevel', eduKeyByCode[parseInt(serverMember.eduLevelCode)] || '');
             setValue('modal-employmentStatus', empKeyByCode[parseInt(serverMember.empStatusCode)] || '');
-            document.getElementById('modal-bizCheck').checked = (serverMember.businessRegistered === true);
             setRadio('modal-marry', String(serverMember.married === true));
             setValue('modal-childCount', (serverMember.child ?? 0));
             setRadio('modal-house', String(serverMember.home === true));
@@ -789,7 +781,6 @@
             const empKey = getValue('modal-employmentStatus');
             const educationLevel = eduCodeMap[eduKey] ?? null;
             const employmentStatus = empCodeMap[empKey] ?? null;
-            const isBusinessOwner = document.getElementById('modal-bizCheck').checked;
             const married = (getRadio('modal-marry') === 'true');
             const home = (getRadio('modal-house') === 'true');
             const child = parseInt(getValue('modal-childCount')) || 0;
@@ -799,7 +790,7 @@
             const personalIncome = myIncomeMan * 10000;
             const familyIncome = hhIncomeMan * 10000;
 
-            const data = { gender, birthDate, regionSi, regionGu, educationLevel, employmentStatus, isBusinessOwner, married, home, child, familySize, personalIncome, familyIncome };
+            const data = { gender, birthDate, regionSi, regionGu, educationLevel, employmentStatus, married, home, child, familySize, personalIncome, familyIncome };
 
             fetch('/updateConditions', {
                 method: 'POST',
