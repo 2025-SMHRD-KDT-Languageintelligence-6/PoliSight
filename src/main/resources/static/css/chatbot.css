@@ -1,4 +1,4 @@
-/* chatbot.css */
+/* chatbot.css - 가로형(Wide) + 높이 축소 버전 */
 
 /* =========================
    챗봇 컨테이너
@@ -12,17 +12,15 @@
 }
 
 /* =========================
-   토글 버튼 (사이즈 90px로 확대)
+   토글 버튼 (90px)
 ========================= */
 #chatbot-toggle-btn {
     width: 90px;
     height: 90px;
-
     background: transparent;
     border: none;
     box-shadow: none;
     border-radius: 0;
-
     padding: 0;
     display: flex;
     align-items: center;
@@ -44,7 +42,6 @@
     filter: drop-shadow(0 0 4px rgba(37,99,235,0.5));
 }
 
-/* PNG 아이콘 이미지 */
 #chatbot-toggle-btn .chatbot-icon-img {
     width: 100%;
     height: 100%;
@@ -52,7 +49,6 @@
     display: block;
     user-select: none;
     pointer-events: none;
-
     filter: drop-shadow(0 5px 15px rgba(37, 99, 235, 0.3));
     transition: filter 0.2s ease;
 }
@@ -62,19 +58,24 @@
 }
 
 /* =========================
-   채팅창 (위치 조정)
+   ✅ 채팅창 (가로형 구조, 높이 수정됨)
 ========================= */
 #chatbot-window {
     position: absolute;
     bottom: 120px;
     right: 5px;
-    width: 350px;
-    height: 500px;
+
+    /* 가로 750px 유지, 세로 585px로 축소 (화면 잘림 방지) */
+    width: 750px;
+    height: 585px;
+
     background: #ffffff;
     border-radius: 16px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+
+    /* 가로 배치를 위해 row 설정 */
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     overflow: hidden;
 
     opacity: 0;
@@ -90,10 +91,37 @@
 }
 
 /* =========================
-   헤더
+   ✅ 왼쪽: 캐릭터 영역 (Live2D)
 ========================= */
+#live2d-stage {
+    width: 300px;        /* 너비 고정 */
+    height: 100%;        /* 전체 높이 */
+    background: #eef2f8; /* 배경색 구분 */
+    border-right: 1px solid #e5e7eb;
+    position: relative;
+    overflow: hidden;
+}
+
+#live2d-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* =========================
+   ✅ 오른쪽: 채팅 UI 영역
+========================= */
+#chatbot-right-panel {
+    flex: 1; /* 남은 공간 모두 차지 */
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: #ffffff;
+}
+
+/* 헤더 */
 .chatbot-header {
-    background: linear-gradient(180deg, #2F7BFF 0%, #1E5BFF 100%);
+    background: linear-gradient(90deg, #2F7BFF 0%, #1E5BFF 100%);
     color: #fff;
     padding: 14px 16px;
     display: flex;
@@ -112,31 +140,12 @@
     line-height: 1;
 }
 
-/* =========================
-   ✅ Live2D 영역 (추가)
-========================= */
-#live2d-stage {
-    height: 190px;                 /* Live2D 표시 높이 */
-    background: #f4f6fb;
-    border-bottom: 1px solid #e5e7eb;
-    position: relative;
-    overflow: hidden;
-}
-
-#live2d-canvas {
-    width: 100%;
-    height: 100%;
-    display: block;
-}
-
-/* =========================
-   메시지 영역
-========================= */
+/* 메시지 목록 */
 #chatbot-messages {
     flex: 1;
     padding: 14px;
     overflow-y: auto;
-    background: #f4f6fb;
+    background: #ffffff;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -147,14 +156,15 @@
     border-radius: 12px;
     font-size: 13px;
     line-height: 1.4;
-    max-width: 80%;
+    max-width: 85%;
     word-break: break-word;
     white-space: pre-line;
 }
 
 .bot-message {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
+    background: #f3f4f6;
+    color: #333;
+    border: none;
     align-self: flex-start;
 }
 
@@ -164,11 +174,9 @@
     align-self: flex-end;
 }
 
-/* =========================
-   입력 영역
-========================= */
+/* 입력 영역 */
 .chatbot-input-area {
-    padding: 10px;
+    padding: 12px;
     border-top: 1px solid #e5e7eb;
     display: flex;
     gap: 8px;
@@ -180,8 +188,8 @@
     padding: 10px 12px;
     border: 1px solid #d1d5db;
     border-radius: 8px;
-    font-size: 13px;
     outline: none;
+    font-size: 13px;
 }
 
 #chatbot-input:focus {
@@ -189,7 +197,7 @@
 }
 
 #chatbot-send-btn {
-    padding: 0 14px;
+    padding: 0 16px;
     background: #2563EB;
     color: #ffffff;
     border: none;

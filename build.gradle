@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.4.1' // *주의: 4.0.1은 아직 정식 버전이 아닐 수 있어 가장 안정적인 3.4.1로 수정 제안드립니다. 만약 4.0.1이 맞다면 그대로 두셔도 됩니다.
+    id 'org.springframework.boot' version '3.4.1'
     id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -40,13 +40,15 @@ dependencies {
     implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect'
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
 
-    // 여기가 수정된 부분입니다
+    // MySQL 드라이버
     runtimeOnly 'com.mysql:mysql-connector-j'
 
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-thymeleaf-test'
+
+    // ✅ 수정된 부분: 존재하지 않는 'thymeleaf-test'를 삭제하고, 표준 테스트 라이브러리로 변경
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
