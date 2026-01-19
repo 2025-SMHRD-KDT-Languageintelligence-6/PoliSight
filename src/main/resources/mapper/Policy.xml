@@ -3,49 +3,75 @@
 
 <mapper namespace="com.simpol.polisight.mapper.PolicyMapper">
 
+    <resultMap id="PolicyResultMap" type="com.simpol.polisight.dto.PolicyDto">
+        <id property="plcyNo" column="plcyNo"/>
+        <result property="plcyNm" column="plcyNm"/>
+        <result property="plcyExplnCn" column="plcyExplnCn"/>
+        <result property="lclsfNm" column="lclsfNm"/>
+        <result property="bizPrdBgngYmd" column="bizPrdBgngYmd"/>
+        <result property="bizPrdEndYmd" column="bizPrdEndYmd"/>
+    </resultMap>
+
     <select id="selectPoliciesByCondition"
             parameterType="com.simpol.polisight.dto.PolicySearchCondition"
-            resultType="com.simpol.polisight.dto.PolicyDto">
-        SELECT
-        plcyNo,
-        plcyNm,
-        plcyExplnCn,
-        lclsfNm,
-        bizPrdBgngYmd,
-        bizPrdEndYmd
-        FROM policy
+            resultMap="PolicyResultMap"> SELECT
+        p.plcyNo,
+        p.plcyNm,
+        p.plcyExplnCn,
+        p.lclsfNm,
+        p.bizPrdBgngYmd,
+        p.bizPrdEndYmd
+        FROM policy p
         <where>
             <if test="keyword != null and keyword != ''">
-                AND (plcyNm LIKE CONCAT('%', #{keyword}, '%')
-                OR plcyExplnCn LIKE CONCAT('%', #{keyword}, '%'))
-            </if>
-            <if test="age != null">
-                AND (sprtTrgtMinAge IS NULL OR sprtTrgtMinAge &lt;= #{age})
-                AND (sprtTrgtMaxAge IS NULL OR sprtTrgtMaxAge &gt;= #{age})
-            </if>
-            <if test="income != null and income > 0">
-                AND (earnMaxAmt IS NULL OR earnMaxAmt >= #{income})
-            </if>
-            <if test="regionSi != null and regionSi != ''">
                 AND (
-                JSON_SEARCH(zipCd, 'one', CONCAT('%', #{regionSi}, '%')) IS NOT NULL
-                OR JSON_SEARCH(zipCd, 'one', '전국') IS NOT NULL
+                p.plcyNm LIKE CONCAT('%', #{keyword}, '%')
+                OR p.plcyExplnCn LIKE CONCAT('%', #{keyword}, '%')
                 )
             </if>
+
+            <if test="regionSi != null and regionSi != ''">
+                AND (
+                -- A. 특정 지역 매칭 (EXISTS 서브쿼리 사용)
+                EXISTS (
+                SELECT 1
+                FROM region r
+                WHERE r.province = #{regionSi}  <if test="regionGu != null and regionGu != ''">
+                AND r.city = #{regionGu}    </if>
+                -- 정책의 JSON 배열에 지역 코드가 포함되어 있는지 확인
+                AND JSON_CONTAINS(p.zipCd, CAST(CONCAT('"', r.zipCd, '"') AS JSON))
+                )
+                -- B. 혹은 '전국' 대상 정책 (zipCd가 NULL이거나 비어있으면 전국으로 간주하는 경우)
+                OR p.zipCd IS NULL
+                OR JSON_LENGTH(p.zipCd) = 0
+                )
+            </if>
+
+            <if test="age != null">
+                AND (p.sprtTrgtMinAge IS NULL OR p.sprtTrgtMinAge &lt;= #{age})
+                AND (p.sprtTrgtMaxAge IS NULL OR p.sprtTrgtMaxAge &gt;= #{age})
+            </if>
+
+            <if test="income != null">
+                AND (p.earnMaxAmt IS NULL OR p.earnMaxAmt >= #{income})
+            </if>
+
             <if test="educationLevel != null and educationLevel != ''">
-                AND (schoolCd IS NULL OR JSON_SEARCH(schoolCd, 'one', #{educationLevel}) IS NOT NULL)
+                AND (p.schoolCd IS NULL OR JSON_SEARCH(p.schoolCd, 'one', #{educationLevel}) IS NOT NULL)
             </if>
             <if test="employmentStatus != null and employmentStatus != ''">
-                AND (jobCd IS NULL OR JSON_SEARCH(jobCd, 'one', #{employmentStatus}) IS NOT NULL)
+                AND (p.jobCd IS NULL OR JSON_SEARCH(p.jobCd, 'one', #{employmentStatus}) IS NOT NULL)
             </if>
-            AND (bizPrdEndYmd IS NULL OR bizPrdEndYmd >= CURDATE())
+
+            AND (p.bizPrdEndYmd IS NULL OR p.bizPrdEndYmd >= CURDATE())
         </where>
+
         ORDER BY
-        CASE WHEN bizPrdEndYmd IS NULL THEN 1 ELSE 0 END,
-        bizPrdEndYmd ASC
+        CASE WHEN p.bizPrdEndYmd IS NULL THEN 1 ELSE 0 END,
+        p.bizPrdEndYmd ASC
     </select>
 
-    <select id="selectPolicyById" resultType="com.simpol.polisight.dto.PolicyDto">
+    <select id="selectPolicyById" resultMap="PolicyResultMap">
         SELECT
         plcyNo,
         plcyNm,
