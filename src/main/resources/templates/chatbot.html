@@ -160,16 +160,19 @@
                     const w = stage.clientWidth;
                     const h = stage.clientHeight;
 
-                    // 1. 기준점: 중앙 하단 (발 끝)
+                    // 1. 계산 전에 스케일을 1로 초기화하여 '원본 크기'를 기준으로 계산하도록 함
+                    model.scale.set(1, 1);
+
+                    // 2. 기준점: 중앙 하단 (발 끝)
                     if (model.anchor) {
                         model.anchor.set(0.5, 1.0);
                     }
 
-                    // 2. 위치: 가로 중앙, 세로 맨 아래
+                    // 3. 위치: 가로 중앙, 세로 맨 아래
                     model.x = w * 0.5;
                     model.y = h;
 
-                    // 3. 크기: 전신이 다 보이게 (높이 기준 95%)
+                    // 4. 크기: 전신이 다 보이게 (높이 기준 95%)
                     // 화면 높이의 95% 크기로 맞춥니다. (약간의 여백 포함)
                     const scaleHeight = (h * 0.95) / model.height;
 
