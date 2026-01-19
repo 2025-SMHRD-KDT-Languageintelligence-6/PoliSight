@@ -15,10 +15,9 @@
    토글 버튼 (사이즈 90px로 확대)
 ========================= */
 #chatbot-toggle-btn {
-    width: 90px;  /* 70px -> 90px (약 30% 확대) */
-    height: 90px; /* 70px -> 90px */
+    width: 90px;
+    height: 90px;
 
-    /* 배경/테두리 투명화 */
     background: transparent;
     border: none;
     box-shadow: none;
@@ -33,7 +32,7 @@
 }
 
 #chatbot-toggle-btn:hover {
-    transform: translateY(-3px); /* 호버 시 살짝 위로 */
+    transform: translateY(-3px);
 }
 
 #chatbot-toggle-btn:active {
@@ -54,7 +53,6 @@
     user-select: none;
     pointer-events: none;
 
-    /* 이미지 그림자 */
     filter: drop-shadow(0 5px 15px rgba(37, 99, 235, 0.3));
     transition: filter 0.2s ease;
 }
@@ -63,13 +61,12 @@
     filter: drop-shadow(0 8px 20px rgba(37, 99, 235, 0.4));
 }
 
-
 /* =========================
    채팅창 (위치 조정)
 ========================= */
 #chatbot-window {
     position: absolute;
-    bottom: 120px; /* 버튼이 커졌으므로 90px -> 120px로 상향 조정 */
+    bottom: 120px;
     right: 5px;
     width: 350px;
     height: 500px;
@@ -80,7 +77,6 @@
     flex-direction: column;
     overflow: hidden;
 
-    /* 기본 숨김 */
     opacity: 0;
     visibility: hidden;
     transform: translateY(20px);
@@ -114,6 +110,23 @@
     font-size: 22px;
     cursor: pointer;
     line-height: 1;
+}
+
+/* =========================
+   ✅ Live2D 영역 (추가)
+========================= */
+#live2d-stage {
+    height: 190px;                 /* Live2D 표시 높이 */
+    background: #f4f6fb;
+    border-bottom: 1px solid #e5e7eb;
+    position: relative;
+    overflow: hidden;
+}
+
+#live2d-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
 }
 
 /* =========================

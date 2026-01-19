@@ -19,9 +19,8 @@ public class SecurityConfig {
 
     private final OAuth2UserCustomService oAuth2UserCustomService;
     private final MemberMapper memberMapper;
-    private final PasswordEncoder passwordEncoder; // ★ 생성자 주입을 위해 추가
+    private final PasswordEncoder passwordEncoder;
 
-    // 생성자에 passwordEncoder를 추가하여 PasswordConfig에서 만든 빈을 가져옵니다.
     public SecurityConfig(OAuth2UserCustomService oAuth2UserCustomService,
                           MemberMapper memberMapper,
                           PasswordEncoder passwordEncoder) {
@@ -30,7 +29,6 @@ public class SecurityConfig {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // ★ 이미지에서 빨간 줄 떴던 부분: 인증 매니저 설정
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http,
                                                        MemberService memberService) throws Exception {
@@ -38,8 +36,8 @@ public class SecurityConfig {
                 http.getSharedObject(AuthenticationManagerBuilder.class);
 
         authenticationManagerBuilder
-                .userDetailsService(memberService) // DB에서 유저 찾는 서비스 연결
-                .passwordEncoder(passwordEncoder); // 비밀번호 암호화 도구 연결
+                .userDetailsService(memberService)
+                .passwordEncoder(passwordEncoder);
 
         return authenticationManagerBuilder.build();
     }
@@ -49,9 +47,10 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        // ▼▼▼ 여기에 "/live2d/**"를 꼭 추가해야 합니다! ▼▼▼
                         .requestMatchers(
                                 "/", "/login", "/join",
-                                "/css/**", "/js/**", "/images/**",
+                                "/css/**", "/js/**", "/images/**", "/live2d/**",
                                 "/mail/**", "/user/**",
                                 "/policy", "/simulation", "/setup"
                         ).permitAll()
@@ -60,8 +59,8 @@ public class SecurityConfig {
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
-                        .usernameParameter("email")   // 아이디 파라미터명
-                        .passwordParameter("userPw")  // 비밀번호 파라미터명
+                        .usernameParameter("email")
+                        .passwordParameter("userPw")
                         .successHandler(successHandler())
                         .permitAll()
                 )

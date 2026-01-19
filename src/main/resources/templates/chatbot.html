@@ -1,8 +1,20 @@
-<div th:fragment="chatbot">
+<div th:fragment="chatbot" xmlns:th="http://www.w3.org/1999/xhtml">
 
     <th:block th:if="${session.loginMember != null}">
 
         <link rel="stylesheet" th:href="@{/css/chatbot.css}">
+
+        <script src="https://cdn.jsdelivr.net/npm/live2dcubismcore@1.0.2/live2dcubismcore.min.js"></script>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/6.5.10/browser/pixi.min.js"></script>
+
+        <script>
+            // Pixi 플러그인이 window.PIXI를 참조하므로 명시적으로 할당
+            window.PIXI = PIXI;
+        </script>
+
+        <script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.4.0/dist/cubism4.min.js"></script>
+
 
         <div id="chatbot-container">
             <button id="chatbot-toggle-btn" aria-label="챗봇 열기">
@@ -13,6 +25,10 @@
                 <div class="chatbot-header">
                     <span>PoliSight AI 안내원</span>
                     <button id="chatbot-close-btn">&times;</button>
+                </div>
+
+                <div id="live2d-stage">
+                    <canvas id="live2d-canvas"></canvas>
                 </div>
 
                 <div id="chatbot-messages">
@@ -39,34 +55,57 @@
                 const input = document.getElementById('chatbot-input');
                 const messages = document.getElementById('chatbot-messages');
 
+                // Live2D 요소
+                const live2dCanvas = document.getElementById('live2d-canvas');
+                const stage = document.getElementById('live2d-stage');
+
+                let app = null;
+                let model = null;
+                let initialized = false;
+
                 if (!toggleBtn || !chatWindow) return;
 
-                toggleBtn.addEventListener('click', () => {
+                // ================= UI 이벤트 =================
+                toggleBtn.addEventListener('click', async () => {
                     chatWindow.classList.toggle('visible');
+
                     if (chatWindow.classList.contains('visible')) {
-                        setTimeout(() => input.focus(), 100);
+                        setTimeout(() => input?.focus(), 100);
+
+                        // 최초 1회 초기화
+                        if (!initialized) {
+                            initialized = true;
+                            await initLive2D();
+                        } else {
+                            // 이미 로드됐으면 리사이즈만 체크
+                            resizeLive2D();
+                        }
                     }
                 });
 
-                closeBtn.addEventListener('click', () => {
+                closeBtn?.addEventListener('click', () => {
                     chatWindow.classList.remove('visible');
                 });
 
                 function sendMessage() {
                     const text = input.value.trim();
                     if (!text) return;
-
                     addMessage(text, 'user-message');
                     input.value = '';
 
-                    // 임시 응답 (추후 Live2D 연동 시 로직 변경 가능)
+                    // AI 응답 시뮬레이션
                     setTimeout(() => {
                         addMessage("확인했습니다 👍\n곧 정책 조건에 맞춰 안내해 드릴게요.", 'bot-message');
+                        // 모션 재생 시도
+                        if (model) {
+                            try { model.motion('Idle'); } catch(e){}
+                            try { model.motion('Tap'); } catch(e){}
+                        }
                     }, 600);
                 }
 
-                sendBtn.addEventListener('click', sendMessage);
-                input.addEventListener('keypress', e => {
+                sendBtn?.addEventListener('click', sendMessage);
+                input?.addEventListener('keypress', e => {
                     if (e.key === 'Enter') sendMessage();
                 });
 
@@ -76,6 +115,108 @@
                     div.textContent = text;
                     messages.appendChild(div);
                     messages.scrollTop = messages.scrollHeight;
+                }
+
+                // ===========================================
+                // ✅ Live2D 초기화 로직 (디버깅 강화)
+                // ===========================================
+                async function initLive2D() {
+                    console.log("🚀 [Live2D] 초기화 시작");
+
+                    // 1. 라이브러리 로드 확인
+                    if (!window.PIXI) {
+                        console.error("❌ [Live2D] PIXI가 로드되지 않았습니다.");
+                        return;
+                    }
+                    if (!window.Live2DCubismCore) {
+                        console.error("❌ [Live2D] Live2DCubismCore가 로드되지 않았습니다.");
+                        return;
+                    }
+                    // 플러그인 로드 확인
+                    if (!window.PIXI.live2d) {
+                        console.error("❌ [Live2D] PIXI.live2d가 undefined입니다. 플러그인 스크립트를 확인하세요.");
+                        return;
+                    }
+
+                    try {
+                        const w = stage.clientWidth;
+                        const h = stage.clientHeight;
+
+                        // 2. Pixi Application 생성
+                        app = new PIXI.Application({
+                            view: live2dCanvas,
+                            width: w,
+                            height: h,
+                            transparent: true,
+                            antialias: true,
+                            autoDensity: true,
+                            resolution: window.devicePixelRatio || 1
+                        });
+
+                        // 3. 모델 경로
+                        const modelUrl = "/live2d/polia.model3.json";
+                        console.log("📂 [Live2D] 모델 로드 경로:", modelUrl);
+
+                        // 4. 모델 로드
+                        model = await PIXI.live2d.Live2DModel.from(modelUrl);
+
+                        // 5. 무대에 추가
+                        app.stage.addChild(model);
+
+                        // 6. 위치 조정
+                        fitModel();
+
+                        // 7. 인터랙션
+                        model.interactive = true;
+                        model.buttonMode = true;
+                        model.on('pointertap', () => {
+                            // 랜덤 모션 or Tap 모션
+                            try { model.motion('Tap'); } catch(e) { console.log("Tap motion 없음"); }
+                        });
+
+                        console.log("✅ [Live2D] 로딩 성공!");
+
+                        // 리사이즈 이벤트 등록
+                        window.addEventListener('resize', resizeLive2D);
+
+                    } catch (err) {
+                        console.error("❌ [Live2D] 로드 중 치명적 오류:", err);
+                    }
+                }
+
+                function resizeLive2D() {
+                    if (!app || !model) return;
+                    const w = stage.clientWidth;
+                    const h = stage.clientHeight;
+
+                    app.renderer.resize(w, h);
+                    fitModel();
+                }
+
+                function fitModel() {
+                    if (!model || !stage) return;
+                    const w = stage.clientWidth;
+                    const h = stage.clientHeight;
+
+                    // 모델 중앙 정렬
+                    model.x = w * 0.5;
+                    model.y = h * 0.95; // 바닥에서 약간 위
+
+                    // 크기 조절 (화면 크기에 비례)
+                    // Live2D 모델마다 기본 크기가 달라서 이 숫자는 조절이 필요할 수 있습니다.
+                    const scale = Math.min(w, h) / 1000;
+                    // 너무 작으면 아래 숫자를 1000 -> 800 등으로 줄이세요.
+
+                    model.scale.set(0.2); // 일단 강제로 0.2배 (일반적인 크기)
+
+                    if(model.width < 50) { // 너무 작게 나오면 키움
+                         model.scale.set(scale * 1.5);
+                    }
+
+                    // 앵커 설정 (바닥 중심)
+                    if (model.anchor) {
+                        model.anchor.set(0.5, 1.0);
+                    }
                 }
             });
         </script>
