@@ -372,7 +372,7 @@
         </div>
         <h3 class="text-lg font-bold text-slate-900 mb-2">조건 저장</h3>
         <p class="text-sm text-slate-500 mb-6 leading-relaxed">
-            현재 선택된 조건을 내 정보로 저장하시겠습니까?<br>
+            현재 선택된 조건을x 내 정보로 저장하시겠습니까?<br>
             저장된 조건은 마이페이지에서 수정 가능합니다.
         </p>
         <div class="flex gap-3">
@@ -497,6 +497,9 @@
                     const setupData = sessionStorage.getItem('userSetupData');
                     if (setupData) {
                         populateForm(JSON.parse(setupData));
+                        // [추가할 코드] 셋업 데이터가 있으면 폼을 바로 제출(검색)해버림
+                        sessionStorage.removeItem('userSetupData'); // 재실행 방지 위해 삭제
+                        document.getElementById('filter-form').submit(); // 강제 검색 실행
                     }
                 }, 20);
             }
