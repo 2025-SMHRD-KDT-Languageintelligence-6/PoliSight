@@ -1,6 +1,8 @@
 package com.simpol.polisight.dto;
 
+import com.simpol.polisight.type.*; // Enum 패키지 임포트
 import lombok.Data;
+import java.util.List;
 
 @Data
 public class PolicySearchCondition {
@@ -9,26 +11,35 @@ public class PolicySearchCondition {
     private String regionSi;
     private String regionGu;
 
-    // 2. 인적 사항
+    // 2. 인적 사항 (매핑 수정)
     private String gender;
     private String birthDate;
     private Integer age;
 
-    // 3. 사회적 상태
-    private String educationLevel;
-    private String employmentStatus;
-    private Boolean isBusinessOwner; // HTML: bizCheck / simulation: isBusinessOwner
+    // 3. 사회적 상태 (Enum으로 변경 추천)
+    // 사용자가 입력한 값(학력)을 DB의 SchoolType과 비교하기 위함
+    // 단일 선택일 수도 있고, "고졸이 갈 수 있는 곳" 처럼 범위 검색일 수도 있으므로 List 권장
+    private List<String> educationLevel;
+
+    // 취업 상태도 여러 개 선택 가능하므로 List
+    private List<String> employmentStatus;
+
+    private Boolean isBusinessOwner;
 
     // 4. 가구 사항
-    private String marry;          // Y, N
+    private MrgSttsType marry;     // 기존 String("Y/N") -> MrgSttsType(기혼/미혼)
     private Integer childCount;
-    private String house;          // Y, N
+    private String house;
     private Integer familySize;
 
     // 5. 소득
-    private Long income;           // 본인 소득
-    private Long householdIncome;  // 가구 소득
+    private Long income;
+    private Long householdIncome;
 
-    // 6. AI 시뮬레이션용 (추가됨)
+    // 6. [NEW] 상세 필터링 (사용자가 직접 체크박스로 검색할 때)
+    private List<MajorType> majorTypes; // 전공 필터
+    private List<SbizType> sbizTypes;   // 특화 필터 (장애인, 농업인 등)
+
+    // 7. AI 시뮬레이션용
     private String userPrompt;
 }

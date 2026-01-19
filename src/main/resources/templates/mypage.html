@@ -2,15 +2,16 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>PoliSight - 마이페이지</title>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
+          rel="stylesheet">
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
     <style>
         body { font-family: 'Noto Sans KR', sans-serif; }
@@ -59,7 +60,8 @@
 
                 <div class="flex items-center justify-center gap-2 mb-1">
                     <h2 class="text-xl font-bold text-slate-900" th:text="${session.loginMember.memberName}">사용자</h2>
-                    <button type="button" onclick="openNameChangeModal()" class="text-slate-400 hover:text-blue-600 transition p-1" title="이름 변경">
+                    <button class="text-slate-400 hover:text-blue-600 transition p-1" onclick="openNameChangeModal()"
+                            title="이름 변경" type="button">
                         <i class="fa-solid fa-arrows-rotate text-sm"></i>
                     </button>
                 </div>
@@ -69,13 +71,16 @@
 
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                 <nav class="flex flex-col">
-                    <a href="#conditions" class="px-6 py-4 text-sm font-bold text-slate-700 hover:bg-slate-50 border-l-4 border-blue-600 bg-blue-50/50 flex items-center gap-3">
+                    <a class="px-6 py-4 text-sm font-bold text-slate-700 hover:bg-slate-50 border-l-4 border-blue-600 bg-blue-50/50 flex items-center gap-3"
+                       href="#conditions">
                         <i class="fa-solid fa-sliders w-5 text-center"></i> 내 조건 관리
                     </a>
-                    <a href="#favorites" class="px-6 py-4 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 border-l-4 border-transparent transition flex items-center gap-3">
+                    <a class="px-6 py-4 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 border-l-4 border-transparent transition flex items-center gap-3"
+                       href="#favorites">
                         <i class="fa-solid fa-bookmark w-5 text-center"></i> 즐겨찾기 및 알림
                     </a>
-                    <a href="#account" class="px-6 py-4 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 border-l-4 border-transparent transition flex items-center gap-3">
+                    <a class="px-6 py-4 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 border-l-4 border-transparent transition flex items-center gap-3"
+                       href="#account">
                         <i class="fa-solid fa-key w-5 text-center"></i> 비밀번호 수정
                     </a>
                 </nav>
@@ -84,17 +89,19 @@
     </aside>
 
     <section class="lg:col-span-9 space-y-10">
-        <div id="conditions" class="scroll-mt-24">
+        <div class="scroll-mt-24" id="conditions">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-slate-900">내 조건 관리</h2>
-                <button onclick="openSetupModal()" class="text-lg text-blue-600 font-bold hover:underline transition flex items-center gap-1 group">
+                <button class="text-lg text-blue-600 font-bold hover:underline transition flex items-center gap-1 group"
+                        onclick="openSetupModal()">
                     <i class="fa-solid fa-pen-to-square group-hover:scale-110 transition-transform"></i> 전체 수정
                 </button>
             </div>
             <div class="bg-white rounded-2xl border border-blue-100 shadow-sm overflow-hidden">
                 <div class="bg-gradient-to-r from-slate-50 to-white p-6 border-b border-slate-100">
                     <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl shadow-inner"><i class="fa-solid fa-filter"></i></div>
+                        <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl shadow-inner">
+                            <i class="fa-solid fa-filter"></i></div>
                         <div>
                             <h3 class="font-bold text-lg text-slate-800">맞춤 정책 필터 데이터</h3>
                             <p class="text-sm text-slate-500">맞춤 정책 검색을 위한 필터 데이터입니다. (이제 DB에 저장됩니다)</p>
@@ -152,7 +159,7 @@
 
         <hr class="border-slate-200">
 
-        <div id="favorites" class="scroll-mt-24">
+        <div class="scroll-mt-24" id="favorites">
             <h2 class="text-2xl font-bold text-slate-900 mb-6">즐겨찾기 및 알림 관리</h2>
             <div class="bg-slate-50 p-8 rounded-xl text-center border border-slate-200 border-dashed text-slate-400">
                 <i class="fa-regular fa-bookmark text-2xl mb-2"></i>
@@ -162,7 +169,7 @@
 
         <hr class="border-slate-200">
 
-        <div id="account" class="scroll-mt-24">
+        <div class="scroll-mt-24" id="account">
             <h2 class="text-2xl font-bold text-slate-900 mb-6">비밀번호 수정</h2>
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
                 <form action="/updatePassword" method="post" onsubmit="return validateForm()">
@@ -179,41 +186,46 @@
                         <div class="space-y-5 max-w-lg mx-auto">
                             <div>
                                 <label class="block text-sm font-bold text-slate-700 mb-2">현재 비밀번호</label>
-                                <input type="password" name="currentPw" required placeholder="현재 비밀번호를 입력해 주세요"
-                                       class="w-full p-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm transition">
+                                <input class="w-full p-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm transition" name="currentPw" placeholder="현재 비밀번호를 입력해 주세요" required
+                                       type="password">
                             </div>
 
                             <div class="space-y-4 pt-2 border-t border-slate-100">
                                 <div>
                                     <label class="block text-sm font-bold text-slate-700 mb-2">새 비밀번호</label>
-                                    <input type="password" id="newPw" name="newPw" required placeholder="6~20자 (영문/숫자/특수문자 포함)"
-                                           class="w-full p-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm transition">
-                                    <p id="pwRuleError" class="text-xs text-red-500 mt-1 hidden font-medium">* 영문/숫자/특수문자 포함 6~20자로 입력해 주세요.</p>
+                                    <input class="w-full p-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm transition" id="newPw" name="newPw" placeholder="6~20자 (영문/숫자/특수문자 포함)"
+                                           required
+                                           type="password">
+                                    <p class="text-xs text-red-500 mt-1 hidden font-medium" id="pwRuleError">*
+                                        영문/숫자/특수문자 포함 6~20자로 입력해 주세요.</p>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-bold text-slate-700 mb-2">새 비밀번호 확인</label>
-                                    <input type="password" id="newPwConfirm" required placeholder="새로운 비밀번호 확인"
-                                           class="w-full p-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm transition">
-                                    <p id="pwMatchMsg" class="text-xs text-red-500 mt-1 hidden font-medium">* 비밀번호가 일치하지 않습니다.</p>
+                                    <input class="w-full p-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm transition" id="newPwConfirm" placeholder="새로운 비밀번호 확인" required
+                                           type="password">
+                                    <p class="text-xs text-red-500 mt-1 hidden font-medium" id="pwMatchMsg">* 비밀번호가 일치하지
+                                        않습니다.</p>
                                 </div>
                             </div>
 
                             <div class="pt-4">
-                                <button type="submit" class="w-full py-4 bg-slate-900 text-white font-bold rounded-xl hover:bg-black transition text-sm shadow-md flex items-center justify-center gap-2">
+                                <button class="w-full py-4 bg-slate-900 text-white font-bold rounded-xl hover:bg-black transition text-sm shadow-md flex items-center justify-center gap-2"
+                                        type="submit">
                                     <i class="fa-solid fa-check"></i> 비밀번호 변경하기
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    <div th:unless="${session.loginMember.provider == 'PoliSight'}"
-                         class="bg-slate-50 p-10 rounded-xl border border-slate-200 text-center flex flex-col items-center justify-center min-h-[300px]">
+                    <div class="bg-slate-50 p-10 rounded-xl border border-slate-200 text-center flex flex-col items-center justify-center min-h-[300px]"
+                         th:unless="${session.loginMember.provider == 'PoliSight'}">
                         <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-200 text-slate-500 mb-4 shadow-sm">
                             <i class="fa-solid fa-lock text-2xl"></i>
                         </div>
                         <h3 class="text-lg font-bold text-slate-800 mb-1">비밀번호 변경 불가</h3>
                         <p class="text-sm text-slate-500 mb-6">
-                            현재 회원님은 <span class="font-bold text-blue-600" th:text="${session.loginMember.provider}">Social</span> 계정으로 로그인 중입니다.<br>
+                            현재 회원님은 <span class="font-bold text-blue-600" th:text="${session.loginMember.provider}">Social</span>
+                            계정으로 로그인 중입니다.<br>
                             비밀번호 변경 및 계정 관리는 해당 소셜 서비스에서 가능합니다.
                         </p>
                         <div class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-400 font-medium">
@@ -224,7 +236,8 @@
 
                 <div class="mt-8 pt-6 border-t border-slate-100 flex justify-end items-center gap-2">
                     <span class="text-xs text-slate-400">더 이상 PoliSight를 이용하지 않으시나요?</span>
-                    <button type="button" onclick="openWithdrawStep1()" class="text-xs text-slate-400 font-medium hover:text-slate-600 hover:underline transition">
+                    <button class="text-xs text-slate-400 font-medium hover:text-slate-600 hover:underline transition" onclick="openWithdrawStep1()"
+                            type="button">
                         회원 탈퇴
                     </button>
                 </div>
@@ -236,39 +249,52 @@
 
 <th:block th:replace="~{HF :: footer}"></th:block>
 
-<div id="alert-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center" aria-modal="true">
+<div aria-modal="true" class="fixed inset-0 z-[60] hidden flex items-center justify-center" id="alert-modal">
     <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="closeAlertModal()"></div>
-    <div class="relative bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center transform scale-95 opacity-0 transition-all duration-200" id="alert-content">
+    <div class="relative bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center transform scale-95 opacity-0 transition-all duration-200"
+         id="alert-content">
         <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mx-auto mb-4 text-xl">
             <i class="fa-solid fa-circle-info"></i>
         </div>
         <h3 class="text-lg font-bold text-slate-800 mb-2">알림</h3>
         <p class="text-sm text-slate-500 mb-6 leading-relaxed" id="alert-msg">메시지 내용</p>
-        <button onclick="closeAlertModal()" class="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-black transition text-sm">확인</button>
+        <button class="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-black transition text-sm"
+                onclick="closeAlertModal()">확인
+        </button>
     </div>
 </div>
 
-<div id="name-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center" aria-modal="true">
+<div aria-modal="true" class="fixed inset-0 z-[60] hidden flex items-center justify-center" id="name-modal">
     <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="closeNameChangeModal()"></div>
-    <div class="relative bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 transform scale-95 opacity-0 transition-all duration-200" id="name-content">
+    <div class="relative bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 transform scale-95 opacity-0 transition-all duration-200"
+         id="name-content">
         <div class="flex justify-between items-center mb-5">
             <h3 class="text-lg font-bold text-slate-900">이름 변경</h3>
-            <button onclick="closeNameChangeModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <button class="text-slate-400 hover:text-slate-600" onclick="closeNameChangeModal()"><i
+                    class="fa-solid fa-xmark text-lg"></i></button>
         </div>
         <form action="/updateName" method="post" onsubmit="return validateNameChange()">
             <div class="mb-6">
                 <label class="block text-xs font-bold text-slate-500 mb-1.5">새로운 이름</label>
-                <input type="text" id="newNameInput" name="userName" class="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 font-bold text-slate-800" placeholder="변경할 이름을 입력하세요">
+                <input class="w-full p-3 rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 font-bold text-slate-800" id="newNameInput" name="userName"
+                       placeholder="변경할 이름을 입력하세요"
+                       type="text">
             </div>
             <div class="flex gap-3">
-                <button type="button" onclick="closeNameChangeModal()" class="flex-1 py-3 border border-slate-200 rounded-xl font-bold text-slate-600 hover:bg-slate-50 transition text-sm">취소</button>
-                <button type="submit" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition text-sm shadow-md">변경하기</button>
+                <button class="flex-1 py-3 border border-slate-200 rounded-xl font-bold text-slate-600 hover:bg-slate-50 transition text-sm" onclick="closeNameChangeModal()"
+                        type="button">
+                    취소
+                </button>
+                <button class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition text-sm shadow-md"
+                        type="submit">
+                    변경하기
+                </button>
             </div>
         </form>
     </div>
 </div>
 
-<div id="setup-modal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+<div aria-labelledby="modal-title" aria-modal="true" class="fixed inset-0 z-50 hidden" id="setup-modal" role="dialog">
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeSetupModal()"></div>
     <div class="fixed inset-0 z-10 overflow-y-auto">
         <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
@@ -278,7 +304,8 @@
                         <h3 class="text-xl font-bold text-slate-900">맞춤 조건 설정</h3>
                         <p class="text-xs text-slate-500 mt-1">저장 시 DB(member 테이블)에 반영됩니다.</p>
                     </div>
-                    <button type="button" onclick="closeSetupModal()" class="text-slate-400 hover:text-slate-600 transition p-2 bg-slate-50 rounded-full">
+                    <button class="text-slate-400 hover:text-slate-600 transition p-2 bg-slate-50 rounded-full" onclick="closeSetupModal()"
+                            type="button">
                         <i class="fa-solid fa-xmark text-lg"></i>
                     </button>
                 </div>
@@ -288,11 +315,11 @@
                             <h4 class="text-sm font-bold text-slate-800 mb-3">성별</h4>
                             <div class="flex bg-slate-100 p-1 rounded-xl">
                                 <label class="flex-1 cursor-pointer">
-                                    <input type="radio" name="modal-gender" value="M" class="peer sr-only">
+                                    <input class="peer sr-only" name="modal-gender" type="radio" value="M">
                                     <span class="block text-center py-2 text-sm font-bold text-slate-500 rounded-lg peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm transition-all">남성</span>
                                 </label>
                                 <label class="flex-1 cursor-pointer">
-                                    <input type="radio" name="modal-gender" value="F" class="peer sr-only">
+                                    <input class="peer sr-only" name="modal-gender" type="radio" value="F">
                                     <span class="block text-center py-2 text-sm font-bold text-slate-500 rounded-lg peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm transition-all">여성</span>
                                 </label>
                             </div>
@@ -300,12 +327,12 @@
                         <div>
                             <h4 class="text-sm font-bold text-slate-800 mb-3">생년월일</h4>
                             <div style="position: relative;">
-                                <input type="text" id="modal-birthDate" maxlength="8"
-                                       class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm font-medium pr-10"
-                                       placeholder="YYYYMMDD (예: 19950101)">
-                                <input type="date" id="hiddenDatePicker"
-                                       class="absolute inset-0 opacity-0 cursor-pointer -z-10"
-                                       style="width: 0; height: 0; border: 0; visibility: hidden;">
+                                <input class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm font-medium pr-10" id="modal-birthDate" maxlength="8"
+                                       placeholder="YYYYMMDD (예: 19950101)"
+                                       type="text">
+                                <input class="absolute inset-0 opacity-0 cursor-pointer -z-10" id="hiddenDatePicker"
+                                       style="width: 0; height: 0; border: 0; visibility: hidden;"
+                                       type="date">
                                 <i class="fa-regular fa-calendar absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 cursor-pointer text-lg hover:text-blue-600 transition"
                                    onclick="document.getElementById('hiddenDatePicker').showPicker()"></i>
                             </div>
@@ -314,13 +341,15 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <h4 class="text-sm font-bold text-slate-800 mb-3">거주 지역 (시/도)</h4>
-                            <select id="modal-regionSi" onchange="updateModalRegionGu()" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm custom-select">
+                            <select class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm custom-select" id="modal-regionSi"
+                                    onchange="updateModalRegionGu()">
                                 <option value="">시/도 선택</option>
                             </select>
                         </div>
                         <div>
                             <h4 class="text-sm font-bold text-slate-800 mb-3">거주 지역 (시/군/구)</h4>
-                            <select id="modal-regionGu" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm custom-select">
+                            <select class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm custom-select"
+                                    id="modal-regionGu">
                                 <option value="">시/군/구 선택</option>
                             </select>
                         </div>
@@ -329,18 +358,23 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <h4 class="text-sm font-bold text-slate-800 mb-3">최종 학력</h4>
-                            <select id="modal-educationLevel" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm custom-select">
+                            <select class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm custom-select"
+                                    id="modal-educationLevel">
                                 <option value="">선택</option>
-                                <option value="UNDER_HIGH_SCHOOL">고졸 미만</option>
-                                <option value="HIGH_SCHOOL">고등학교 졸업</option>
-                                <option value="UNIV_ATTENDING">대학교 재학/휴학</option>
-                                <option value="UNIV_GRAD">대학교 졸업 (예정)</option>
-                                <option value="MASTER_PHD">석/박사 (과정/졸업)</option>
+                                <option value="0049001">고졸 미만</option>
+                                <option value="0049002">고교 재학</option>
+                                <option value="0049003">고졸 예정</option>
+                                <option value="0049004">고교 졸업</option>
+                                <option value="0049005">대학 재학</option>
+                                <option value="0049006">대졸 예정</option>
+                                <option value="0049007">대학 졸업</option>
+                                <option value="0049008">석/박사</option>
                             </select>
                         </div>
                         <div>
                             <h4 class="text-sm font-bold text-slate-800 mb-3">고용 상태</h4>
-                            <select id="modal-employmentStatus" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm custom-select">
+                            <select class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm custom-select"
+                                    id="modal-employmentStatus">
                                 <option value="">선택</option>
                                 <option value="UNEMPLOYED">미취업 (구직자)</option>
                                 <option value="EMPLOYED">직장인 (계약/정규직)</option>
@@ -348,8 +382,10 @@
                                 <option value="STUDENT">학생</option>
                             </select>
                             <div class="mt-2 flex items-center gap-2">
-                                <input type="checkbox" id="modal-bizCheck" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300">
-                                <label for="modal-bizCheck" class="text-xs font-bold text-slate-600 cursor-pointer">사업자 등록증 보유</label>
+                                <input class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300" id="modal-bizCheck"
+                                       type="checkbox">
+                                <label class="text-xs font-bold text-slate-600 cursor-pointer" for="modal-bizCheck">사업자
+                                    등록증 보유</label>
                             </div>
                         </div>
                     </div>
@@ -359,18 +395,19 @@
                             <h4 class="text-sm font-bold text-slate-800 mb-3">결혼 여부</h4>
                             <div class="flex bg-slate-100 p-1 rounded-xl">
                                 <label class="flex-1 cursor-pointer">
-                                    <input type="radio" name="modal-marry" value="false" class="peer sr-only">
+                                    <input class="peer sr-only" name="modal-marry" type="radio" value="false">
                                     <span class="block text-center py-2 text-sm font-bold text-slate-500 rounded-lg peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm transition-all">미혼</span>
                                 </label>
                                 <label class="flex-1 cursor-pointer">
-                                    <input type="radio" name="modal-marry" value="true" class="peer sr-only">
+                                    <input class="peer sr-only" name="modal-marry" type="radio" value="true">
                                     <span class="block text-center py-2 text-sm font-bold text-slate-500 rounded-lg peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm transition-all">기혼</span>
                                 </label>
                             </div>
                         </div>
                         <div>
                             <h4 class="text-sm font-bold text-slate-800 mb-3">자녀 수 (명)</h4>
-                            <input type="number" id="modal-childCount" min="0" value="0" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm font-medium text-right">
+                            <input class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm font-medium text-right" id="modal-childCount" min="0" type="number"
+                                   value="0">
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -378,50 +415,64 @@
                             <h4 class="text-sm font-bold text-slate-800 mb-3">주택 소유</h4>
                             <div class="flex bg-slate-100 p-1 rounded-xl">
                                 <label class="flex-1 cursor-pointer">
-                                    <input type="radio" name="modal-house" value="false" class="peer sr-only">
+                                    <input class="peer sr-only" name="modal-house" type="radio" value="false">
                                     <span class="block text-center py-2 text-sm font-bold text-slate-500 rounded-lg peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm transition-all">미소유</span>
                                 </label>
                                 <label class="flex-1 cursor-pointer">
-                                    <input type="radio" name="modal-house" value="true" class="peer sr-only">
+                                    <input class="peer sr-only" name="modal-house" type="radio" value="true">
                                     <span class="block text-center py-2 text-sm font-bold text-slate-500 rounded-lg peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm transition-all">소유</span>
                                 </label>
                             </div>
                         </div>
                         <div>
                             <h4 class="text-sm font-bold text-slate-800 mb-3">가구원 수 (명)</h4>
-                            <input type="number" id="modal-familyCount" min="1" value="1" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm font-medium text-right">
+                            <input class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-blue-500 text-sm font-medium text-right" id="modal-familyCount" min="1" type="number"
+                                   value="1">
                         </div>
                     </div>
                     <hr class="border-slate-100">
                     <div>
                         <h4 class="text-sm font-bold text-slate-800 mb-3">본인 월 소득 (세전)</h4>
                         <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 mb-2 flex items-center gap-2">
-                            <input type="number" id="modal-myIncomeText" class="flex-1 min-w-0 bg-transparent font-bold text-slate-800 text-sm focus:outline-none text-right" placeholder="0">
+                            <input class="flex-1 min-w-0 bg-transparent font-bold text-slate-800 text-sm focus:outline-none text-right" id="modal-myIncomeText"
+                                   placeholder="0"
+                                   type="number">
                             <span class="text-xs font-bold text-slate-500">만원</span>
                         </div>
-                        <input type="range" id="modal-myIncomeSlider" min="0" max="1500" step="10" value="0" class="w-full">
+                        <input class="w-full" id="modal-myIncomeSlider" max="1500" min="0" step="10" type="range"
+                               value="0">
                     </div>
                     <div>
                         <h4 class="text-sm font-bold text-slate-800 mb-3">가구 합산 월 소득 (세전)</h4>
                         <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 mb-2 flex items-center gap-2">
-                            <input type="number" id="modal-hhIncomeText" class="flex-1 min-w-0 bg-transparent font-bold text-slate-800 text-sm focus:outline-none text-right" placeholder="0">
+                            <input class="flex-1 min-w-0 bg-transparent font-bold text-slate-800 text-sm focus:outline-none text-right" id="modal-hhIncomeText"
+                                   placeholder="0"
+                                   type="number">
                             <span class="text-xs font-bold text-slate-500">만원</span>
                         </div>
-                        <input type="range" id="modal-hhIncomeSlider" min="0" max="2000" step="10" value="0" class="w-full">
+                        <input class="w-full" id="modal-hhIncomeSlider" max="2000" min="0" step="10" type="range"
+                               value="0">
                     </div>
                 </div>
                 <div class="bg-slate-50 px-6 py-4 flex justify-end gap-3 border-t border-slate-100 sticky bottom-0 z-10">
-                    <button type="button" onclick="closeSetupModal()" class="px-5 py-3 rounded-xl border border-slate-300 bg-white font-bold text-slate-600 hover:bg-slate-50 transition text-sm">취소</button>
-                    <button type="button" onclick="saveConditions()" class="px-5 py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200 text-sm">변경사항 저장</button>
+                    <button class="px-5 py-3 rounded-xl border border-slate-300 bg-white font-bold text-slate-600 hover:bg-slate-50 transition text-sm" onclick="closeSetupModal()"
+                            type="button">
+                        취소
+                    </button>
+                    <button class="px-5 py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200 text-sm" onclick="saveConditions()"
+                            type="button">
+                        변경사항 저장
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<div id="withdraw-step1-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center" aria-modal="true">
+<div aria-modal="true" class="fixed inset-0 z-[60] hidden flex items-center justify-center" id="withdraw-step1-modal">
     <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="closeWithdrawModal()"></div>
-    <div class="relative bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center transform scale-95 opacity-0 transition-all duration-200" id="withdraw-step1-content">
+    <div class="relative bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center transform scale-95 opacity-0 transition-all duration-200"
+         id="withdraw-step1-content">
         <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center mx-auto mb-4 text-xl">
             <i class="fa-solid fa-triangle-exclamation"></i>
         </div>
@@ -431,15 +482,22 @@
             탈퇴 시 모든 정보가 삭제되며 복구할 수 없습니다.
         </p>
         <div class="flex gap-3">
-            <button onclick="closeWithdrawModal()" class="flex-1 py-3 border border-slate-200 bg-white text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition text-sm">취소</button>
-            <button onclick="openWithdrawStep2()" class="flex-1 py-3 bg-slate-800 text-white font-bold rounded-xl hover:bg-black transition text-sm">계속</button>
+            <button class="flex-1 py-3 border border-slate-200 bg-white text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition text-sm"
+                    onclick="closeWithdrawModal()">
+                취소
+            </button>
+            <button class="flex-1 py-3 bg-slate-800 text-white font-bold rounded-xl hover:bg-black transition text-sm"
+                    onclick="openWithdrawStep2()">
+                계속
+            </button>
         </div>
     </div>
 </div>
 
-<div id="withdraw-step2-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center" aria-modal="true">
+<div aria-modal="true" class="fixed inset-0 z-[60] hidden flex items-center justify-center" id="withdraw-step2-modal">
     <div class="fixed inset-0 bg-red-900/40 backdrop-blur-sm transition-opacity" onclick="closeWithdrawModal()"></div>
-    <div class="relative bg-red-50 w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center border-2 border-red-100 transform scale-95 opacity-0 transition-all duration-200" id="withdraw-step2-content">
+    <div class="relative bg-red-50 w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center border-2 border-red-100 transform scale-95 opacity-0 transition-all duration-200"
+         id="withdraw-step2-content">
         <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-4 text-xl">
             <i class="fa-solid fa-skull-crossbones"></i>
         </div>
@@ -449,10 +507,16 @@
             계정을 영구적으로 삭제하시겠습니까?
         </p>
         <div class="flex gap-3">
-            <form action="/withdraw" method="post" class="flex-1">
-                <button type="submit" class="w-full py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition text-sm shadow-md shadow-red-200">탈퇴하기</button>
+            <form action="/withdraw" class="flex-1" method="post">
+                <button class="w-full py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition text-sm shadow-md shadow-red-200"
+                        type="submit">
+                    탈퇴하기
+                </button>
             </form>
-            <button onclick="closeWithdrawModal()" class="flex-1 py-3 border border-red-200 bg-white text-slate-500 font-bold rounded-xl hover:bg-slate-50 transition text-sm">취소</button>
+            <button class="flex-1 py-3 border border-red-200 bg-white text-slate-500 font-bold rounded-xl hover:bg-slate-50 transition text-sm"
+                    onclick="closeWithdrawModal()">
+                취소
+            </button>
         </div>
     </div>
 </div>
@@ -484,9 +548,15 @@
             familyIncome: [[${session.loginMember.familyIncome}]]
         };
 
-        const eduCodeMap = { "UNDER_HIGH_SCHOOL": 1, "HIGH_SCHOOL": 2, "UNIV_ATTENDING": 3, "UNIV_GRAD": 4, "MASTER_PHD": 5 };
+        const eduCodeMap = {
+        "0049001": 1, "0049002": 2, "0049003": 3, "0049004": 4,
+        "0049005": 5, "0049006": 6, "0049007": 7, "0049008": 8
+    };
         const empCodeMap = { "UNEMPLOYED": 1, "EMPLOYED": 2, "SELF_EMPLOYED": 3, "STUDENT": 4 };
-        const eduKeyByCode = { 1: "UNDER_HIGH_SCHOOL", 2: "HIGH_SCHOOL", 3: "UNIV_ATTENDING", 4: "UNIV_GRAD", 5: "MASTER_PHD" };
+        const eduKeyByCode = {
+        1: "0049001", 2: "0049002", 3: "0049003", 4: "0049004",
+        5: "0049005", 6: "0049006", 7: "0049007", 8: "0049008"
+    };
         const empKeyByCode = { 1: "UNEMPLOYED", 2: "EMPLOYED", 3: "SELF_EMPLOYED", 4: "STUDENT" };
 
         function formatBirthDate(dateStr) {
@@ -652,10 +722,18 @@
         }
 
         function eduText(code) {
-            switch (parseInt(code)) {
-                case 1: return '고졸 미만'; case 2: return '고등학교 졸업'; case 3: return '대학교 재학/휴학'; case 4: return '대학교 졸업(예정)'; case 5: return '석/박사'; default: return '-';
-            }
+        switch (parseInt(code)) {
+            case 1: return '고졸 미만';
+            case 2: return '고교 재학';
+            case 3: return '고졸 예정';
+            case 4: return '고교 졸업';
+            case 5: return '대학 재학';
+            case 6: return '대졸 예정';
+            case 7: return '대학 졸업';
+            case 8: return '석/박사';
+            default: return '-';
         }
+    }
         function empText(code) {
             switch (parseInt(code)) {
                 case 1: return '미취업'; case 2: return '직장인'; case 3: return '자영업/프리랜서'; case 4: return '학생'; default: return '-';

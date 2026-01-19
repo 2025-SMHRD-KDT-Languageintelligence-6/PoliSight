@@ -10,17 +10,59 @@
         <result property="lclsfNm" column="lclsfNm"/>
         <result property="bizPrdBgngYmd" column="bizPrdBgngYmd"/>
         <result property="bizPrdEndYmd" column="bizPrdEndYmd"/>
+
+        <result property="aplyPrdSeCd" column="aplyPrdSeCd"
+                typeHandler="com.simpol.polisight.handler.CodeEnumTypeHandler"
+                javaType="com.simpol.polisight.type.AplyPrdType"/>
+
+        <result property="bizPrdSeCd" column="bizPrdSeCd"
+                typeHandler="com.simpol.polisight.handler.CodeEnumTypeHandler"
+                javaType="com.simpol.polisight.type.BizPrdType"/>
+
+        <result property="mrgSttsCd" column="mrgSttsCd"
+                typeHandler="com.simpol.polisight.handler.CodeEnumTypeHandler"
+                javaType="com.simpol.polisight.type.MrgSttsType"/>
+
+        <result property="earnCndSeCd" column="earnCndSeCd"
+                typeHandler="com.simpol.polisight.handler.CodeEnumTypeHandler"
+                javaType="com.simpol.polisight.type.EarnCndType"/>
+
+        <result property="plcyMajorCd" column="plcyMajorCd"
+                typeHandler="com.simpol.polisight.handler.JsonListTypeHandler"
+                javaType="com.simpol.polisight.type.MajorType"/>
+
+        <result property="jobCd" column="jobCd"
+                typeHandler="com.simpol.polisight.handler.JsonListTypeHandler"
+                javaType="com.simpol.polisight.type.JobType"/>
+
+        <result property="schoolCd" column="schoolCd"
+                typeHandler="com.simpol.polisight.handler.JsonListTypeHandler"
+                javaType="com.simpol.polisight.type.SchoolType"/>
+
+        <result property="sbizCd" column="sbizCd"
+                typeHandler="com.simpol.polisight.handler.JsonListTypeHandler"
+                javaType="com.simpol.polisight.type.SbizType"/>
     </resultMap>
 
     <select id="selectPoliciesByCondition"
             parameterType="com.simpol.polisight.dto.PolicySearchCondition"
-            resultMap="PolicyResultMap"> SELECT
+            resultMap="PolicyResultMap">
+        SELECT
         p.plcyNo,
         p.plcyNm,
         p.plcyExplnCn,
         p.lclsfNm,
         p.bizPrdBgngYmd,
-        p.bizPrdEndYmd
+        p.bizPrdEndYmd,
+        -- [NEW] 새로 추가된 컬럼들을 반드시 SELECT 절에 포함해야 ResultMap이 작동합니다.
+        p.aplyPrdSeCd,
+        p.bizPrdSeCd,
+        p.mrgSttsCd,
+        p.earnCndSeCd,
+        p.plcyMajorCd,
+        p.jobCd,
+        p.schoolCd,
+        p.sbizCd
         FROM policy p
         <where>
             <if test="keyword != null and keyword != ''">
@@ -32,16 +74,15 @@
 
             <if test="regionSi != null and regionSi != ''">
                 AND (
-                -- A. 특정 지역 매칭 (EXISTS 서브쿼리 사용)
                 EXISTS (
                 SELECT 1
                 FROM region r
-                WHERE r.province = #{regionSi}  <if test="regionGu != null and regionGu != ''">
-                AND r.city = #{regionGu}    </if>
-                -- 정책의 JSON 배열에 지역 코드가 포함되어 있는지 확인
+                WHERE r.province = #{regionSi}
+                <if test="regionGu != null and regionGu != ''">
+                    AND r.city = #{regionGu}
+                </if>
                 AND JSON_CONTAINS(p.zipCd, CAST(CONCAT('"', r.zipCd, '"') AS JSON))
                 )
-                -- B. 혹은 '전국' 대상 정책 (zipCd가 NULL이거나 비어있으면 전국으로 간주하는 경우)
                 OR p.zipCd IS NULL
                 OR JSON_LENGTH(p.zipCd) = 0
                 )
@@ -56,11 +97,34 @@
                 AND (p.earnMaxAmt IS NULL OR p.earnMaxAmt >= #{income})
             </if>
 
-            <if test="educationLevel != null and educationLevel != ''">
-                AND (p.schoolCd IS NULL OR JSON_SEARCH(p.schoolCd, 'one', #{educationLevel}) IS NOT NULL)
+            <if test="educationLevel != null and educationLevel.size > 0">
+                AND (
+                p.schoolCd IS NULL
+
+                -- [필수 포함 1] 기타 (0049009)
+                OR JSON_SEARCH(p.schoolCd, 'one', '0049009') IS NOT NULL
+
+                -- [필수 포함 2] 제한없음 (0049010)
+                OR JSON_SEARCH(p.schoolCd, 'one', '0049010') IS NOT NULL
+
+                -- [사용자 선택 값] (예: 고교 졸업 등)
+                OR
+                <foreach collection="educationLevel" item="item" open="(" close=")" separator=" OR ">
+                    JSON_SEARCH(p.schoolCd, 'one', #{item}) IS NOT NULL
+                </foreach>
+                )
             </if>
-            <if test="employmentStatus != null and employmentStatus != ''">
-                AND (p.jobCd IS NULL OR JSON_SEARCH(p.jobCd, 'one', #{employmentStatus}) IS NOT NULL)
+
+            <if test="employmentStatus != null and employmentStatus.size > 0">
+                AND (
+                p.jobCd IS NULL
+                OR
+                <foreach collection="employmentStatus" item="item" open="(" close=")" separator=" OR ">
+                    JSON_SEARCH(p.jobCd, 'one', #{item}) IS NOT NULL
+                </foreach>
+                OR JSON_SEARCH(p.jobCd, 'one', '0013010') IS NOT NULL
+                OR JSON_SEARCH(p.jobCd, 'one', '0013009') IS NOT NULL
+                )
             </if>
 
             AND (p.bizPrdEndYmd IS NULL OR p.bizPrdEndYmd >= CURDATE())
@@ -78,7 +142,16 @@
         plcyExplnCn,
         lclsfNm,
         bizPrdBgngYmd,
-        bizPrdEndYmd
+        bizPrdEndYmd,
+        -- [NEW] 여기서도 새 컬럼들을 조회해야 상세 페이지에서 정보를 볼 수 있습니다.
+        aplyPrdSeCd,
+        bizPrdSeCd,
+        mrgSttsCd,
+        earnCndSeCd,
+        plcyMajorCd,
+        jobCd,
+        schoolCd,
+        sbizCd
         FROM policy
         WHERE plcyNo = #{id}
     </select>

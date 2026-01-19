@@ -7,7 +7,8 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;800&display=swap"
+          rel="stylesheet">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -104,7 +105,8 @@
                 <h2 class="text-base font-extrabold flex items-center gap-2">
                     <i class="fa-solid fa-sliders text-blue-600"></i> 내 조건 설정
                 </h2>
-                <button type="button" onclick="resetConditions()" class="text-xs text-slate-500 hover:text-slate-700 font-bold flex items-center gap-1 transition">
+                <button type="button" onclick="resetConditions()"
+                        class="text-xs text-slate-500 hover:text-slate-700 font-bold flex items-center gap-1 transition">
                     <i class="fa-solid fa-rotate-right"></i> 초기화
                 </button>
             </div>
@@ -128,8 +130,10 @@
                     <div>
                         <label class="block text-xs font-extrabold text-slate-700 mb-1.5">생년월일</label>
                         <div class="relative">
-                            <input type="text" id="birthDate" name="birthDate" class="sidebar-input pr-8" placeholder="YYYYMMDD">
-                            <input type="date" id="hiddenDatePicker" class="absolute inset-0 opacity-0 cursor-pointer -z-10" tabindex="-1">
+                            <input type="text" id="birthDate" name="birthDate" class="sidebar-input pr-8"
+                                   placeholder="YYYYMMDD">
+                            <input type="date" id="hiddenDatePicker"
+                                   class="absolute inset-0 opacity-0 cursor-pointer -z-10" tabindex="-1">
                             <i class="fa-regular fa-calendar absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 cursor-pointer"
                                onclick="document.getElementById('hiddenDatePicker').showPicker()"></i>
                         </div>
@@ -155,11 +159,14 @@
                         <label class="block text-xs font-extrabold text-slate-700 mb-1.5">최종 학력</label>
                         <select id="educationLevel" name="educationLevel" class="sidebar-input">
                             <option value="">전체</option>
-                            <option value="UNDER_HIGH_SCHOOL">고졸 미만</option>
-                            <option value="HIGH_SCHOOL">고등학교 졸업</option>
-                            <option value="UNIV_ATTENDING">대학교 재학/휴학</option>
-                            <option value="UNIV_GRAD">대학교 졸업 (예정)</option>
-                            <option value="MASTER_PHD">석/박사 (과정/졸업)</option>
+                            <option value="0049001">고졸 미만</option>
+                            <option value="0049002">고교 재학</option>
+                            <option value="0049003">고졸 예정</option>
+                            <option value="0049004">고교 졸업</option>
+                            <option value="0049005">대학 재학</option>
+                            <option value="0049006">대졸 예정</option>
+                            <option value="0049007">대학 졸업</option>
+                            <option value="0049008">석/박사</option>
                         </select>
                     </div>
 
@@ -175,7 +182,8 @@
                     </div>
 
                     <div class="flex items-center gap-2 p-2 bg-slate-50 border border-slate-200 rounded-lg">
-                        <input type="checkbox" id="bizCheck" name="isBusinessOwner" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300">
+                        <input type="checkbox" id="bizCheck" name="isBusinessOwner"
+                               class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300">
                         <label for="bizCheck" class="text-xs font-bold text-slate-600 cursor-pointer">사업자 등록증 보유</label>
                     </div>
                 </div>
@@ -206,8 +214,10 @@
                         <div>
                             <label class="block text-xs font-extrabold text-slate-700 mb-1.5">주택 소유</label>
                             <div class="flex gap-1">
-                                <label class="choice-btn flex-1"><input type="radio" name="house" value="N"><span>X</span></label>
-                                <label class="choice-btn flex-1"><input type="radio" name="house" value="Y"><span>O</span></label>
+                                <label class="choice-btn flex-1"><input type="radio" name="house"
+                                                                        value="N"><span>X</span></label>
+                                <label class="choice-btn flex-1"><input type="radio" name="house"
+                                                                        value="Y"><span>O</span></label>
                             </div>
                         </div>
                     </div>
@@ -220,10 +230,13 @@
                         <label class="block text-xs font-extrabold text-slate-700 mb-1.5">본인 월 소득 (세전)</label>
                         <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 focus-within:border-blue-500 transition">
                             <div class="flex items-center gap-2 mb-2">
-                                <input type="number" id="my_income_text" name="income" value="0" class="flex-1 min-w-0 bg-transparent font-bold text-slate-800 text-sm focus:outline-none text-right" placeholder="0">
+                                <input type="number" id="my_income_text" name="income" value="0"
+                                       class="flex-1 min-w-0 bg-transparent font-bold text-slate-800 text-sm focus:outline-none text-right"
+                                       placeholder="0">
                                 <span class="text-xs font-bold text-slate-500 whitespace-nowrap">만원</span>
                             </div>
-                            <input type="range" id="my_income_range" min="0" max="1500" step="10" value="0" class="block w-full">
+                            <input type="range" id="my_income_range" min="0" max="1500" step="10" value="0"
+                                   class="block w-full">
                         </div>
                         <p class="text-[10px] text-blue-500 mt-1.5 text-right font-medium">* 0원 설정 시 '소득 없음'</p>
                     </div>
@@ -232,10 +245,13 @@
                         <label class="block text-xs font-extrabold text-slate-700 mb-1.5">가구 합산 월 소득</label>
                         <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 focus-within:border-blue-500 transition">
                             <div class="flex items-center gap-2 mb-2">
-                                <input type="number" id="household_income_text" name="householdIncome" value="0" class="flex-1 min-w-0 bg-transparent font-bold text-slate-800 text-sm focus:outline-none text-right" placeholder="0">
+                                <input type="number" id="household_income_text" name="householdIncome" value="0"
+                                       class="flex-1 min-w-0 bg-transparent font-bold text-slate-800 text-sm focus:outline-none text-right"
+                                       placeholder="0">
                                 <span class="text-xs font-bold text-slate-500 whitespace-nowrap">만원</span>
                             </div>
-                            <input type="range" id="household_income_range" min="0" max="2000" step="10" value="0" class="block w-full">
+                            <input type="range" id="household_income_range" min="0" max="2000" step="10" value="0"
+                                   class="block w-full">
                         </div>
                     </div>
 
@@ -263,7 +279,8 @@
                         <i class="fa-solid fa-cloud-arrow-down"></i> 내 조건 불러오기
                     </button>
 
-                    <button type="submit" class="w-full py-3 bg-slate-900 text-white rounded-lg font-bold hover:bg-black transition text-xs shadow-md">
+                    <button type="submit"
+                            class="w-full py-3 bg-slate-900 text-white rounded-lg font-bold hover:bg-black transition text-xs shadow-md">
                         조건에 맞는 정책 검색
                     </button>
                 </div>
@@ -279,14 +296,16 @@
                    class="flex-grow p-2.5 bg-transparent focus:outline-none font-medium min-w-0 text-sm"
                    onkeydown="if(event.key === 'Enter') searchWithKeyword()">
 
-            <button onclick="searchWithKeyword()" class="bg-blue-600 text-white px-5 py-2 rounded-lg font-bold hover:bg-blue-700 transition flex-shrink-0 whitespace-nowrap text-xs">
+            <button onclick="searchWithKeyword()"
+                    class="bg-blue-600 text-white px-5 py-2 rounded-lg font-bold hover:bg-blue-700 transition flex-shrink-0 whitespace-nowrap text-xs">
                 검색
             </button>
         </div>
 
         <div class="flex justify-between items-center mb-3">
             <h3 class="font-extrabold text-lg">정책 검색 결과
-                <span class="text-blue-600" th:text="${policyList != null ? #lists.size(policyList) + '건' : '0건'}">0건</span>
+                <span class="text-blue-600"
+                      th:text="${policyList != null ? #lists.size(policyList) + '건' : '0건'}">0건</span>
             </h3>
         </div>
 
@@ -311,7 +330,8 @@
                      onclick="selectPolicy(this)">
 
                     <div class="flex justify-between items-start mb-2">
-                        <span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-1 rounded" th:text="${policy.department}">고용노동부</span>
+                        <span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-1 rounded"
+                              th:text="${policy.department}">고용노동부</span>
 
                         <span class="text-xs font-bold"
                               th:classappend="${policy.dDay < 0 ? 'text-gray-400' : (policy.dDay <= 7 ? 'text-red-500' : 'text-blue-500')}"
@@ -328,7 +348,8 @@
                         <span class="bg-slate-100 px-2 py-1 rounded">#지원</span>
                     </div>
 
-                    <button onclick="openDetail(event, this)" class="absolute bottom-5 right-5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs px-3 py-1.5 rounded-lg transition z-10">
+                    <button onclick="openDetail(event, this)"
+                            class="absolute bottom-5 right-5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs px-3 py-1.5 rounded-lg transition z-10">
                         자세히
                     </button>
                 </div>
@@ -338,18 +359,23 @@
     </section>
 </main>
 
-<div class="fixed bottom-0 left-0 w-full bg-white border-t p-3 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] z-50 transition-transform translate-y-full" id="action-bar">
+<div class="fixed bottom-0 left-0 w-full bg-white border-t p-3 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] z-50 transition-transform translate-y-full"
+     id="action-bar">
     <div class="max-w-6xl mx-auto flex justify-between items-center px-4">
         <p class="font-bold text-slate-800 text-sm" id="selected-title">선택된 정책 없음</p>
-        <button onclick="goToSimulation()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-bold transition shadow-lg flex items-center gap-2 text-sm">
+        <button onclick="goToSimulation()"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-bold transition shadow-lg flex items-center gap-2 text-sm">
             <i class="fa-solid fa-wand-magic-sparkles"></i> AI 시뮬레이션 시작
         </button>
     </div>
 </div>
 
-<div id="policy-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+<div id="policy-modal"
+     class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300">
     <div class="bg-white w-full max-w-xl rounded-2xl shadow-2xl transform scale-95 transition-transform duration-300 p-6 relative mx-4">
-        <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition bg-slate-100 rounded-full w-7 h-7 flex items-center justify-center"><i class="fa-solid fa-xmark text-sm"></i></button>
+        <button onclick="closeModal()"
+                class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition bg-slate-100 rounded-full w-7 h-7 flex items-center justify-center">
+            <i class="fa-solid fa-xmark text-sm"></i></button>
         <div class="mb-5">
             <span class="text-blue-600 font-bold text-[10px] bg-blue-50 px-2 py-0.5 rounded-md mb-1.5 inline-block">정책 상세 정보</span>
             <h3 class="text-xl font-extrabold text-slate-900" id="modal-title">정책 제목</h3>
@@ -359,10 +385,14 @@
             <p id="modal-desc-easy" class="text-slate-800 leading-relaxed font-bold text-base hidden"></p>
         </div>
         <div class="flex gap-3">
-            <button id="btn-easy-toggle" onclick="toggleEasyMode()" class="flex-1 py-3 rounded-xl font-bold border-2 border-blue-600 text-blue-600 hover:bg-blue-50 transition flex justify-center items-center gap-2 text-sm">
+            <button id="btn-easy-toggle" onclick="toggleEasyMode()"
+                    class="flex-1 py-3 rounded-xl font-bold border-2 border-blue-600 text-blue-600 hover:bg-blue-50 transition flex justify-center items-center gap-2 text-sm">
                 <i class="fa-solid fa-face-smile"></i> <span>쉬운 말로 보기</span>
             </button>
-            <button onclick="closeModal()" class="flex-1 py-3 bg-slate-800 text-white rounded-xl font-bold hover:bg-black transition text-sm">확인</button>
+            <button onclick="closeModal()"
+                    class="flex-1 py-3 bg-slate-800 text-white rounded-xl font-bold hover:bg-black transition text-sm">
+                확인
+            </button>
         </div>
     </div>
 </div>
@@ -380,8 +410,14 @@
             저장된 조건은 마이페이지에서 수정 가능합니다.
         </p>
         <div class="flex gap-3">
-            <button onclick="closeSaveModal()" class="flex-1 py-3 border border-slate-200 bg-white text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition text-sm">취소</button>
-            <button onclick="performSaveConditions()" class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition text-sm">확인</button>
+            <button onclick="closeSaveModal()"
+                    class="flex-1 py-3 border border-slate-200 bg-white text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition text-sm">
+                취소
+            </button>
+            <button onclick="performSaveConditions()"
+                    class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition text-sm">
+                확인
+            </button>
         </div>
     </div>
 </div>
@@ -397,7 +433,9 @@
             조건이 성공적으로 저장되었습니다.<br>
             <span class="text-xs text-blue-500">* 추후 마이페이지에서 상세 수정이 가능합니다.</span>
         </p>
-        <button onclick="closeSuccessModal()" class="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-black transition text-sm">확인</button>
+        <button onclick="closeSuccessModal()"
+                class="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-black transition text-sm">확인
+        </button>
     </div>
 </div>
 
@@ -428,7 +466,10 @@
         };
 
         // DB 저장을 위한 매핑
-        const eduCodeMap = { "UNDER_HIGH_SCHOOL": 1, "HIGH_SCHOOL": 2, "UNIV_ATTENDING": 3, "UNIV_GRAD": 4, "MASTER_PHD": 5 };
+        const eduCodeMap = {
+        "0049001": 1, "0049002": 2, "0049003": 3, "0049004": 4,
+        "0049005": 5, "0049006": 6, "0049007": 7, "0049008": 8
+    };
         const empCodeMap = { "UNEMPLOYED": 1, "EMPLOYED": 2, "SELF_EMPLOYED": 3, "STUDENT": 4 };
 
         // ✅ 선택된 정책 ID 저장용
@@ -629,10 +670,17 @@
                 if(radio) radio.checked = true;
             }
 
-            const eduCode = data.educationLevel || data.eduLevelCode;
-            const eduMap = { 1: 'UNDER_HIGH_SCHOOL', 2: 'HIGH_SCHOOL', 3: 'UNIV_ATTENDING', 4: 'UNIV_GRAD', 5: 'MASTER_PHD' };
-            const eduVal = (typeof eduCode === 'number') ? eduMap[eduCode] : eduCode;
-            if(eduVal) document.getElementById('educationLevel').value = eduVal;
+            // 학력 설정 (DB ID -> 화면 코드)
+        const eduCode = data.educationLevel || data.eduLevelCode;
+        const idToCodeMap = {
+            1: '0049001', 2: '0049002', 3: '0049003', 4: '0049004',
+            5: '0049005', 6: '0049006', 7: '0049007', 8: '0049008'
+        };
+        const eduVal = (typeof eduCode === 'number') ? idToCodeMap[eduCode] : eduCode;
+        if(eduVal) {
+            const el = document.getElementById('educationLevel');
+            if(el.querySelector(`option[value="${eduVal}"]`)) el.value = eduVal;
+        }
 
             const empCode = data.employmentStatus || data.empStatusCode;
             const jobMap = { 1: 'UNEMPLOYED', 2: 'EMPLOYED', 3: 'SELF_EMPLOYED', 4: 'STUDENT' };
