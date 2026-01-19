@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<div th:fragment="chatbot">
+
+    <th:block th:if="${session.loginMember != null}">
+
+        <link rel="stylesheet" th:href="@{/css/chatbot.css}">
+
+        <div id="chatbot-container">
+            <button id="chatbot-toggle-btn">💬</button>
+
+            <div id="chatbot-window">
+                <div class="chatbot-header">
+                    <span>AI 도우미</span>
+                    <button id="chatbot-close-btn">&times;</button>
+                </div>
+
+                <div id="chatbot-messages">
+                    <div class="message bot-message">안녕하세요! 무엇을 도와드릴까요?</div>
+                </div>
+
+                <div class="chatbot-input-area">
+                    <input type="text" id="chatbot-input" placeholder="질문을 입력하세요...">
+                    <button id="chatbot-send-btn">전송</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const toggleBtn = document.getElementById('chatbot-toggle-btn');
+                const closeBtn = document.getElementById('chatbot-close-btn');
+                const chatWindow = document.getElementById('chatbot-window');
+                const sendBtn = document.getElementById('chatbot-send-btn');
+                const input = document.getElementById('chatbot-input');
+                const messages = document.getElementById('chatbot-messages');
+
+                // 토글 (열기/닫기)
+                toggleBtn.addEventListener('click', () => {
+                    chatWindow.classList.toggle('visible');
+                    if(chatWindow.classList.contains('visible')) input.focus();
+                });
+
+                // 닫기 버튼
+                closeBtn.addEventListener('click', () => {
+                    chatWindow.classList.remove('visible');
+                });
+
+                // 메시지 전송 기능
+                function sendMessage() {
+                    const text = input.value.trim();
+                    if (!text) return;
+
+                    addMessage(text, 'user-message');
+                    input.value = '';
+
+                    // (모의) 서버 응답
+                    setTimeout(() => {
+                        addMessage("서버 응답: " + text, 'bot-message');
+                    }, 500);
+                }
+
+                // 이벤트 리스너들
+                sendBtn.addEventListener('click', sendMessage);
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') sendMessage();
+                });
+
+                function addMessage(text, type) {
+                    const div = document.createElement('div');
+                    div.classList.add('message', type);
+                    div.textContent = text;
+                    messages.appendChild(div);
+                    messages.scrollTop = messages.scrollHeight;
+                }
+            });
+        </script>
+
+    </th:block> </div>
+</html>

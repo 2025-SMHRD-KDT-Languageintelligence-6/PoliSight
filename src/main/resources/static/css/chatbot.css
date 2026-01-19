@@ -1,0 +1,118 @@
+/* chatbot.css */
+
+/* 챗봇 컨테이너 (우측 하단 고정) */
+#chatbot-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    font-family: 'Malgun Gothic', 'Noto Sans KR', sans-serif;
+}
+
+/* 토글 버튼 */
+#chatbot-toggle-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    font-size: 30px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#chatbot-toggle-btn:hover { transform: scale(1.1); }
+
+/* 채팅창 본문 */
+#chatbot-window {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    width: 350px;
+    height: 500px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    
+    /* 숨김 처리 기본값 */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+}
+
+/* 채팅창 보이기 상태 */
+#chatbot-window.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* 헤더 */
+.chatbot-header {
+    background: #007bff;
+    color: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+}
+#chatbot-close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 25px;
+    cursor: pointer;
+}
+
+/* 메시지 영역 */
+#chatbot-messages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background: #f1f3f5;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.message {
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 14px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+.bot-message { background: white; border: 1px solid #ddd; align-self: flex-start; }
+.user-message { background: #007bff; color: white; align-self: flex-end; }
+
+/* 입력창 영역 */
+.chatbot-input-area {
+    padding: 10px;
+    border-top: 1px solid #ddd;
+    display: flex;
+    background: white;
+}
+#chatbot-input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    outline: none;
+}
+#chatbot-send-btn {
+    margin-left: 10px;
+    padding: 0 15px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
