@@ -73,6 +73,22 @@ public class PolicyService {
             condition.setEmploymentStatus(expandedCodes);
         }
 
+        // 4. 결혼 여부 매핑
+        if (condition.getMarry() != null && !condition.getMarry().isEmpty()) {
+            String val = condition.getMarry();
+
+            if ("Y".equalsIgnoreCase(val) || "1".equals(val) || "true".equalsIgnoreCase(val)) {
+                condition.setMarry("0055001"); // 기혼 코드 설정
+            }
+            else if ("N".equalsIgnoreCase(val) || "0".equals(val) || "false".equalsIgnoreCase(val)) {
+                condition.setMarry("0055002"); // 미혼 코드 설정
+            }
+            else {
+                // "전체"나 이상한 값이 오면 null로 만들어 검색 조건에서 제외 (다 보여줌)
+                condition.setMarry(null);
+            }
+        }
+
         return policyMapper.selectPoliciesByCondition(condition);
     }
 

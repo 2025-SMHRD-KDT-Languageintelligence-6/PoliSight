@@ -131,6 +131,20 @@
                 )
             </if>
 
+            <if test="marry != null and marry != ''">
+                AND (
+                -- 1. [내 선택] Service에서 변환된 코드 (기혼:0055001 또는 미혼:0055002)가 포함된 정책
+                p.mrgSttsCd LIKE CONCAT('%', #{marry}, '%')
+
+                -- 2. [공통] '제한없음(0055003)' 코드가 포함된 정책 (누구나 가능)
+                OR p.mrgSttsCd LIKE '%0055003%'
+
+                -- 3. [공통] 결혼 조건 데이터가 아예 없는 정책 (보통 누구나 가능)
+                OR p.mrgSttsCd IS NULL
+                OR p.mrgSttsCd = ''
+                )
+            </if>
+
             AND (p.bizPrdEndYmd IS NULL OR p.bizPrdEndYmd >= CURDATE())
         </where>
 

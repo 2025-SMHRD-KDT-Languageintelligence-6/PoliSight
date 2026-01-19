@@ -24,10 +24,9 @@ public class PolicySearchCondition {
     // 취업 상태도 여러 개 선택 가능하므로 List
     private List<String> employmentStatus;
 
-    private Boolean isBusinessOwner;
 
     // 4. 가구 사항
-    private MrgSttsType marry;     // 기존 String("Y/N") -> MrgSttsType(기혼/미혼)
+    private String marry;
     private Integer childCount;
     private String house;
     private Integer familySize;

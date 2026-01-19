@@ -466,7 +466,9 @@
         "0049001": 1, "0049002": 2, "0049003": 3, "0049004": 4,
         "0049005": 5, "0049006": 6, "0049007": 7, "0049008": 8
     };
-        const empCodeMap = { "UNEMPLOYED": 1, "EMPLOYED": 2, "SELF_EMPLOYED": 3, "STUDENT": 4 };
+        const empCodeMap = {
+            "UNEMPLOYED": 1, "EMPLOYED": 2, "SELF_EMPLOYED": 3, "FREELANCER": 4, "FOUNDER": 5
+        };
 
         // ✅ 선택된 정책 ID 저장용
         let selectedPolicyId = null;
@@ -591,8 +593,6 @@
                 educationLevel: getSelectVal("educationLevel"),
                 employmentStatus: getSelectVal("employmentStatus"),
 
-                isBusinessOwner: document.getElementById("bizCheck")?.checked === true,
-
                 income: getInputVal("income"),
                 householdIncome: getInputVal("householdIncome")
             };
@@ -683,9 +683,6 @@
             const jobVal = (typeof empCode === 'number') ? jobMap[empCode] : empCode;
             if(jobVal) document.getElementById('employmentStatus').value = jobVal;
 
-            const isBiz = (data.isBusinessOwner !== undefined) ? data.isBusinessOwner : data.businessRegistered;
-            if (isBiz === true) document.getElementById('bizCheck').checked = true;
-
             const marryVal = (data.married === true) ? 'Y' : 'N';
             const marryRadio = document.querySelector(`input[name="marry"][value="${marryVal}"]`);
             if(marryRadio) marryRadio.checked = true;
@@ -738,9 +735,6 @@
                 if (val) document.querySelector(`select[name="${name}"]`).value = val;
             });
 
-            const biz = params.get('isBusinessOwner');
-            if (biz === 'on' || biz === 'true') document.getElementById('bizCheck').checked = true;
-
             const si = params.get('regionSi');
             if (si) {
                 document.getElementById('regionSi').value = si;
@@ -781,8 +775,6 @@
             const educationLevel = eduCodeMap[eduKey] ?? null;
             const employmentStatus = empCodeMap[empKey] ?? null;
 
-            const isBusinessOwner = document.getElementById('bizCheck').checked;
-
             const marryVal = document.querySelector('input[name="marry"]:checked')?.value;
             const married = (marryVal === 'Y');
 
@@ -802,7 +794,6 @@
                 regionGu: regionGu,
                 educationLevel: educationLevel,
                 employmentStatus: employmentStatus,
-                isBusinessOwner: isBusinessOwner,
                 married: married,
                 home: home,
                 child: child,
