@@ -32,8 +32,8 @@ public class PolicySearchCondition {
     private Integer familySize;
 
     // 5. 소득
-    private Long income;
-    private Long householdIncome;
+    private int income;
+    private int householdIncome;
 
     // 6. [NEW] 상세 필터링 (사용자가 직접 체크박스로 검색할 때)
     private List<MajorType> majorTypes; // 전공 필터

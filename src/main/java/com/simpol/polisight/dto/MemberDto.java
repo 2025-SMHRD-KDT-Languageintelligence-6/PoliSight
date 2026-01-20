@@ -17,8 +17,8 @@ public class MemberDto {
     private String gender;
     private String birthDate;
 
-    private Long personalIncome;
-    private Long familyIncome;
+    private int personalIncome;
+    private int familyIncome;
     private Integer familySize;
 
     private Integer eduLevelCode;
