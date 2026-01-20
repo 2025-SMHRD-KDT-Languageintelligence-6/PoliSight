@@ -32,7 +32,7 @@ public class PolicySearchCondition {
     private Integer familySize;
 
     // 5. 소득
-    private Integer income;
+    private int income;
     private Integer householdIncome;
 
     // 6. [NEW] 상세 필터링 (사용자가 직접 체크박스로 검색할 때)
