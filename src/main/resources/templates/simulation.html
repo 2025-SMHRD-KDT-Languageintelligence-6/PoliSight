@@ -17,13 +17,16 @@
                 extend: {
                     colors: {
                         slate: {
-                            900: '#070F22', // (7, 15, 34)
-                            800: '#162133', // (22, 33, 51)
-                            700: '#2B394D', // (43, 57, 77)
-                            600: '#3F4D61', // (63, 77, 97)
-                            500: '#57677E', // (87, 103, 126)
-                            400: '#8796AB', // (135, 150, 171)
+                            900: '#070F22',
+                            800: '#162133',
+                            700: '#2B394D',
+                            600: '#3F4D61',
+                            500: '#57677E',
+                            400: '#8796AB',
                         }
+                    },
+                    animation: {
+                        'spin-slow': 'spin 3s linear infinite',
                     }
                 }
             }
@@ -71,7 +74,7 @@
 
 <nav th:replace="~{HF :: nav}" class="sticky top-0 z-40 bg-white/90 border-b border-slate-200 backdrop-blur-md">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-14 items-center"><span>Loading...</span></div>
+        <div class="flex justify-between h-14 items-center"><span>PoliSight</span></div>
     </div>
 </nav>
 
@@ -132,7 +135,7 @@
                 <p class="text-slate-500 text-sm">조건을 수정하거나 프롬프트로 상황을 입력해 달라지는 결과를 시뮬레이션 해 보세요.</p>
             </div>
 
-            <form th:action="@{/simulation/analyze}" th:object="${simulationForm}" method="post" class="space-y-8">
+            <form id="simulationForm" th:action="@{/simulation/analyze}" th:object="${simulationForm}" method="post" class="space-y-8">
 
                 <input type="hidden" name="policyId" th:value="${policy != null ? policy.id : ''}" />
 
@@ -349,6 +352,26 @@
     </div>
 </footer>
 
+<div id="loadingModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden">
+    <div class="bg-white rounded-2xl p-8 shadow-2xl flex flex-col items-center justify-center max-w-sm w-full mx-4 border border-slate-100 transform transition-all animate-fade-in">
+        <div class="relative mb-6">
+            <div class="w-16 h-16 border-4 border-blue-100 rounded-full"></div>
+            <div class="w-16 h-16 border-4 border-blue-600 rounded-full animate-spin absolute top-0 border-t-transparent"></div>
+            <div class="absolute inset-0 flex items-center justify-center text-blue-600">
+                <i class="fa-solid fa-robot text-lg animate-pulse"></i>
+            </div>
+        </div>
+
+        <h3 class="text-xl font-bold text-slate-800 mb-2">AI 정밀 분석 중...</h3>
+        <p class="text-slate-500 text-sm text-center leading-relaxed">
+            입력하신 조건과 최신 정책 데이터를<br>
+            대조하고 있습니다.<br>
+        </p>
+    </div>
+</div>
+
+<div th:replace="~{chatbot :: chatbot}"></div>
+
 <script th:inline="javascript">
     /*<![CDATA[*/
 
@@ -510,12 +533,20 @@
             setupIncomeInput('household_income_range', 'household_income_text');
 
             loadPrevConditions();
+
+            // ✅ 폼 전송 시 로딩 모달 띄우기 이벤트 추가
+            const form = document.getElementById('simulationForm');
+            if (form) {
+                form.addEventListener('submit', function() {
+                    document.getElementById('loadingModal').classList.remove('hidden');
+                    // 스크롤 방지
+                    document.body.style.overflow = 'hidden';
+                });
+            }
         });
 
     /*]]>*/
 </script>
-
-<div th:replace="~{chatbot :: chatbot}"></div>
 
 </body>
 </html>
