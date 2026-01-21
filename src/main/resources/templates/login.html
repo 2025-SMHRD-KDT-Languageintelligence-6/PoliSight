@@ -310,8 +310,8 @@
                 // --- 매핑 시작 ---
 
                 // 1. 지역 정보
-                addHiddenInfo('province', data.region);
-                addHiddenInfo('city', data.subRegion);
+                addHiddenInfo('province', data.regionSi);
+                addHiddenInfo('city', data.regionGu);
 
                 // 2. 성별
                 addHiddenInfo('gender', data.gender);
@@ -324,18 +324,18 @@
                 }
 
                 // 4. 소득 (문자열 안전 변환 후 계산)
-                if(data.myIncome) {
-                    const val = String(data.myIncome).replace(/,/g, '');
-                    addHiddenInfo('personalIncome', parseInt(val) * 10000);
+                if(data.income) {
+                    const val = String(data.income).replace(/,/g, '');
+                    addHiddenInfo('personalIncome', parseInt(val));
                 }
                 if(data.householdIncome) {
                     const val = String(data.householdIncome).replace(/,/g, '');
-                    addHiddenInfo('familyIncome', parseInt(val) * 10000);
+                    addHiddenInfo('familyIncome', parseInt(val));
                 }
 
                 // 5. 가구 정보
-                addHiddenInfo('familySize', data.familyCount);
-                addHiddenInfo('child', data.childCount);
+                addHiddenInfo('familySize', data.familySize);
+                addHiddenInfo('child', data.child);
 
                 // 6. 학력 코드
                 const eduMap = {

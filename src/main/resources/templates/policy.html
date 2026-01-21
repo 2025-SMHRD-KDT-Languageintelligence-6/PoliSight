@@ -696,14 +696,14 @@
 
             const pIncome = (data.personalIncome !== undefined) ? data.personalIncome : data.income;
             if(pIncome != null) {
-                const val = (pIncome >= 10000) ? Math.floor(pIncome / 10000) : pIncome;
+                const val = pIncome;
                 document.getElementById('my_income_text').value = val;
                 document.getElementById('my_income_range').value = val;
             }
 
             const fIncome = (data.familyIncome !== undefined) ? data.familyIncome : data.householdIncome;
             if(fIncome != null) {
-                const val = (fIncome >= 10000) ? Math.floor(fIncome / 10000) : fIncome;
+                const val = fIncome;
                 document.getElementById('household_income_text').value = val;
                 document.getElementById('household_income_range').value = val;
             }
@@ -798,8 +798,8 @@
                 home: home,
                 child: child,
                 familySize: familySize,
-                personalIncome: pIncomeMan * 10000,
-                familyIncome: fIncomeMan * 10000
+                personalIncome: pIncomeMan,
+                familyIncome: fIncomeMan
             };
 
             fetch('/updateConditions', {

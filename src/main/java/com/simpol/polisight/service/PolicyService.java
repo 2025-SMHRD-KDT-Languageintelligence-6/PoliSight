@@ -40,10 +40,10 @@ public class PolicyService {
 
         // 2. 소득 단위 변환 (만원 -> 원)
         if (condition.getIncome() != null) {
-            condition.setIncome(condition.getIncome() * 10000);
+            condition.setIncome(condition.getIncome());
         }
         if (condition.getHouseholdIncome() != null) {
-            condition.setHouseholdIncome(condition.getHouseholdIncome() * 10000);
+            condition.setHouseholdIncome(condition.getHouseholdIncome());
         }
 
         // 3. 고용 상태 매핑

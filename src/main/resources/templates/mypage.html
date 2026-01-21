@@ -533,7 +533,6 @@
             city: [[${session.loginMember.city}]],
             eduLevelCode: [[${session.loginMember.eduLevelCode}]],
             empStatusCode: [[${session.loginMember.empStatusCode}]],
-            businessRegistered: [[${session.loginMember.businessRegistered}]],
             married: [[${session.loginMember.married}]],
             child: [[${session.loginMember.child}]],
             home: [[${session.loginMember.home}]],
@@ -705,7 +704,7 @@
             if (won === null || won === undefined) return 0;
             const n = parseInt(won);
             if (isNaN(n)) return 0;
-            return Math.floor(n / 10000);
+            return n;
         }
 
         function loadServerConditionsToView() {
@@ -787,8 +786,8 @@
             const familySize = parseInt(getValue('modal-familyCount')) || 1;
             const myIncomeMan = parseInt(getValue('modal-myIncomeText')) || 0;
             const hhIncomeMan = parseInt(getValue('modal-hhIncomeText')) || 0;
-            const personalIncome = myIncomeMan * 10000;
-            const familyIncome = hhIncomeMan * 10000;
+            const personalIncome = myIncomeMan;
+            const familyIncome = hhIncomeMan;
 
             const data = { gender, birthDate, regionSi, regionGu, educationLevel, employmentStatus, married, home, child, familySize, personalIncome, familyIncome };
 
