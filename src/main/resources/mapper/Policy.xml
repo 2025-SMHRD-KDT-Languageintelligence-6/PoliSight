@@ -94,7 +94,23 @@
             </if>
 
             <if test="income != null">
+                AND (
+                -- 1. 소득 데이터가 아예 없는 경우 (제한 없음 간주)
+                p.earnCndSeCd IS NULL
+
+                -- 2. [0043001] 소득 무관
+                OR p.earnCndSeCd = '0043001'
+
+                -- 3. [0043003] 소득 요건이 복잡하거나 기타인 경우 (일단 통과)
+                OR p.earnCndSeCd = '0043003'
+
+                -- 4. [0043002] 기준 소득 이하만 지원 (핵심 로직)
+                -- 조건: (구분코드가 0043002 이면서) AND (정책상한액 >= 내 소득)
+                OR (
+                p.earnCndSeCd = '0043002'
                 AND (p.earnMaxAmt IS NULL OR p.earnMaxAmt >= #{income})
+                )
+                )
             </if>
 
             <if test="educationLevel != null and educationLevel.size > 0">
