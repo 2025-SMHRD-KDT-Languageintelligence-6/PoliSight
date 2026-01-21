@@ -94,7 +94,7 @@
                     <div>
                         <span class="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded"
                               th:text="${policy != null ? policy.region : '전국'}">지역</span>
-                        <h2 class="font-bold text-xl text-slate-900 leading-tight mt-1"
+                        <h2 id="display-policy-title" class="font-bold text-xl text-slate-900 leading-tight mt-1"
                             th:text="${policy != null ? policy.title : '정책 선택 필요'}">정책명</h2>
                     </div>
                 </div>
@@ -138,6 +138,7 @@
             <form id="simulationForm" th:action="@{/simulation/analyze}" th:object="${simulationForm}" method="post" class="space-y-8">
 
                 <input type="hidden" name="policyId" th:value="${policy != null ? policy.id : ''}" />
+                <input type="hidden" name="keyword" th:value="${policy != null ? policy.title : ''}" />
 
                 <div>
                     <h3 class="font-bold text-base text-slate-800 mb-3 flex items-center gap-2">
