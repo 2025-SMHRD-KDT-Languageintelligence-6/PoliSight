@@ -19,14 +19,14 @@ public class PolicyService {
     private final PolicyMapper policyMapper;
 
     // ✅ [신규] 나이 계산 유틸 메서드 (컨트롤러에서도 사용 가능)
-    public int calculateAge(String birthDateStr) {
-        if (birthDateStr == null || birthDateStr.length() != 8) return 0;
+    public Integer calculateAge(String birthDateStr) {
+        if (birthDateStr == null || birthDateStr.length() != 8) return null;
         try {
             LocalDate birthDate = LocalDate.parse(birthDateStr, DateTimeFormatter.ofPattern("yyyyMMdd"));
             LocalDate currentDate = LocalDate.now();
             return Period.between(birthDate, currentDate).getYears();
         } catch (Exception e) {
-            return 0;
+            return null;
         }
     }
 
