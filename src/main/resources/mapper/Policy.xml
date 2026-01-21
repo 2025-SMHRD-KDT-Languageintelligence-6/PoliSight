@@ -72,6 +72,13 @@
                 )
             </if>
 
+            <if test="gender != null and (gender == 'male')">
+                AND (
+                p.sbizCd IS NULL
+                OR JSON_SEARCH(p.sbizCd, 'one', '0014002') IS NULL
+                )
+            </if>
+
             <if test="regionSi != null and regionSi != ''">
                 AND (
                 EXISTS (
