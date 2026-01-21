@@ -339,23 +339,24 @@
 
                 // 6. 학력 코드
                 const eduMap = {
-                    'UNDER_HIGH_SCHOOL': 1, 'HIGH_SCHOOL': 2,
-                    'UNIV_ATTENDING': 3, 'UNIV_GRAD': 4, 'MASTER_PHD': 5
+                    "0049001": 1, "0049002": 2, "0049003": 3, "0049004": 4,
+                    "0049005": 5, "0049006": 6, "0049007": 7, "0049008": 8
                 };
                 if(data.educationLevel) addHiddenInfo('eduLevelCode', eduMap[data.educationLevel] || 0);
 
                 // 7. 고용 상태 코드
                 const empMap = {
-                    'UNEMPLOYED': 1,    // 미취업
-                    'EMPLOYED': 2,      // 직장인
-                    'SELF_EMPLOYED': 3, // 자영업
-                    'STUDENT': 4        // 학생
+                    "UNEMPLOYED": 1,    // 미취업
+                    "EMPLOYED": 2,      // 직장인
+                    "SELF_EMPLOYED": 3, // 자영업
+                    "FREELANCER": 4,    // 프리랜서
+                    "FOUNDER": 5        // 창업자
                 };
                 if(data.employmentStatus) addHiddenInfo('empStatusCode', empMap[data.employmentStatus] || 0);
 
                 // 8. 결혼/주택 (boolean)
-                addHiddenInfo('married', data.marry === 'Y');
-                addHiddenInfo('home', data.house === 'Y');
+                addHiddenInfo('married', data.married);
+                addHiddenInfo('home', data.home);
 
             } catch (e) {
                 console.error("데이터 매핑 중 오류 발생:", e);
