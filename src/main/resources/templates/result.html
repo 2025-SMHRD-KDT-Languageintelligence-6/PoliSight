@@ -17,6 +17,11 @@
         .scrollbar-hide::-webkit-scrollbar-track { background: transparent; }
         .scrollbar-hide::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
 
+        /* 커스텀 스크롤바 (프롬프트 박스용) */
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
         /* 애니메이션 */
         .animate-fade-in { animation: fadeIn 0.8s ease-out forwards; opacity: 0; transform: translateY(10px); }
         .delay-100 { animation-delay: 0.1s; }
@@ -40,7 +45,7 @@
 
 <nav th:replace="~{HF :: nav}" class="sticky top-0 z-40 bg-white/90 border-b border-slate-200 backdrop-blur-md">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-14 items-center"><span>PoliSight</span></div>
+        <div class="flex justify-between h-14 items-center"><span>Loading...</span></div>
     </div>
 </nav>
 
@@ -51,7 +56,7 @@
                 <i class="fa-solid fa-wand-magic-sparkles"></i> AI Analysis Report
             </span>
         <h1 class="text-3xl font-bold text-slate-900">시뮬레이션 분석 결과</h1>
-        <p class="text-slate-500 mt-2">입력하신 핵심 조건을 바탕으로 산출된 결과입니다.</p>
+        <p class="text-slate-500 mt-2">입력하신 모든 조건과 상황을 분석하여 도출된 결과입니다.</p>
     </div>
 
     <div class="grid lg:grid-cols-12 gap-8">
@@ -64,52 +69,141 @@
                     <a href="/simulation" class="text-xs text-blue-600 hover:underline">조건 수정</a>
                 </div>
 
-                <div class="space-y-4">
-                    <div class="border-b border-slate-100 pb-4">
-                        <h4 class="text-xs font-bold text-slate-400 mb-2">기본 인적 사항</h4>
-                        <ul class="space-y-3">
-                            <li class="flex items-center justify-between text-sm">
-                                <span class="text-slate-600"><i class="fa-solid fa-venus-mars w-5 text-center text-slate-400"></i> 성별</span>
-                                <span class="font-bold text-slate-800" th:text="${gender} ?: '남성'">남성</span>
+                <div class="space-y-6 divide-y divide-slate-100">
+
+                    <div class="pt-0">
+                        <h4 class="text-xs font-bold text-slate-400 mb-3">기본 인적 사항</h4>
+                        <ul class="space-y-2">
+                            <li class="flex justify-between text-sm">
+                                <span class="text-slate-500">성별</span>
+                                <span class="font-bold text-slate-800" th:text="${condition.gender == 'male' ? '남성' : '여성'}">남성</span>
                             </li>
-                            <li class="flex items-center justify-between text-sm">
-                                <span class="text-slate-600"><i class="fa-solid fa-cake-candles w-5 text-center text-slate-400"></i> 나이</span>
-                                <span class="font-bold text-blue-600" th:text="${age} ? |만 ${age}세| : '만 26세'">만 26세</span>
-                                <i class="fa-solid fa-circle-check text-green-500 ml-1"></i>
+                            <li class="flex justify-between text-sm">
+                                <span class="text-slate-500">나이 (만)</span>
+                                <span class="font-bold text-blue-600" th:text="|${age}세|">26세</span>
                             </li>
-                            <li class="flex items-center justify-between text-sm">
-                                <span class="text-slate-600"><i class="fa-solid fa-map-location-dot w-5 text-center text-slate-400"></i> 거주지역</span>
-                                <span class="font-bold text-blue-600">서울특별시 <i class="fa-solid fa-circle-check text-green-500 ml-1"></i></span>
+                            <li class="flex justify-between text-sm">
+                                <span class="text-slate-500">거주지역</span>
+                                <span class="font-bold text-slate-800">
+                                    <span th:text="${condition.regionSi}">서울</span>
+                                    <span th:text="${condition.regionGu}">강남구</span>
+                                </span>
                             </li>
                         </ul>
                     </div>
 
-                    <div>
-                        <h4 class="text-xs font-bold text-slate-400 mb-2">직업 정보</h4>
-                        <ul class="space-y-3">
-                            <li class="flex items-center justify-between text-sm">
-                                <span class="text-slate-600"><i class="fa-solid fa-briefcase w-5 text-center text-slate-400"></i> 사업자 여부</span>
-                                <span class="font-bold text-blue-600">미등록 <i class="fa-solid fa-circle-check text-green-500 ml-1"></i></span>
+                    <div class="pt-4">
+                        <h4 class="text-xs font-bold text-slate-400 mb-3">사회적 상태</h4>
+                        <ul class="space-y-2">
+                            <li class="flex justify-between text-sm">
+                                <span class="text-slate-500">최종 학력</span>
+                                <span class="font-bold text-slate-800"
+                                      th:with="eduVal=${#strings.toString(condition.educationLevel).replace('[','').replace(']','')}"
+                                      th:switch="${eduVal}">
+                                    <span th:case="'0049001'">중졸 이하</span>
+                                    <span th:case="'0049002'">고교 재학</span>
+                                    <span th:case="'0049003'">고졸 예정</span>
+                                    <span th:case="'0049004'">고교 졸업</span>
+                                    <span th:case="'0049005'">대학 재학</span>
+                                    <span th:case="'0049006'">대졸 예정</span>
+                                    <span th:case="'0049007'">대학 졸업</span>
+                                    <span th:case="'0049008'">석/박사</span>
+                                    <span th:case="*">-</span>
+                                </span>
+                            </li>
+                            <li class="flex justify-between text-sm">
+                                <span class="text-slate-500">고용 상태</span>
+                                <span class="font-bold text-blue-600"
+                                      th:with="empVal=${#strings.toString(condition.employmentStatus).replace('[','').replace(']','')}"
+                                      th:switch="${empVal}">
+                                    <span th:case="'UNEMPLOYED'">미취업 (구직자)</span>
+                                    <span th:case="'EMPLOYED'">직장인</span>
+                                    <span th:case="'SELF_EMPLOYED'">자영업/소상공인</span>
+                                    <span th:case="'FREELANCER'">프리랜서</span>
+                                    <span th:case="'FOUNDER'">(예비) 창업자</span>
+                                    <span th:case="*">기타</span>
+                                </span>
                             </li>
                         </ul>
                     </div>
+
+                    <div class="pt-4">
+                        <h4 class="text-xs font-bold text-slate-400 mb-3">가구 및 주거</h4>
+                        <ul class="space-y-2">
+                            <li class="flex justify-between text-sm">
+                                <span class="text-slate-500">결혼 여부</span>
+                                <span class="font-bold text-slate-800" th:text="${condition.marry == 'Y' ? '기혼' : '미혼'}">미혼</span>
+                            </li>
+                            <li class="flex justify-between text-sm">
+                                <span class="text-slate-500">자녀 수</span>
+                                <span class="font-bold text-slate-800" th:text="|${condition.childCount}명|">0명</span>
+                            </li>
+                            <li class="flex justify-between text-sm">
+                                <span class="text-slate-500">가구원 수</span>
+                                <span class="font-bold text-slate-800" th:text="|${condition.familySize}명 (본인포함)|">1명</span>
+                            </li>
+                            <li class="flex justify-between text-sm">
+                                <span class="text-slate-500">주택 소유</span>
+                                <span class="font-bold text-blue-600" th:text="${condition.house == 'Y' ? '소유 (자가)' : '미소유 (전/월세)'}">미소유</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="pt-4">
+                        <h4 class="text-xs font-bold text-slate-400 mb-3">경제 상황 (월 소득)</h4>
+                        <ul class="space-y-2">
+                            <li class="flex justify-between text-sm">
+                                <span class="text-slate-500">본인 소득</span>
+                                <span class="font-bold text-slate-800" th:text="|${#numbers.formatInteger(condition.income, 0, 'COMMA')} 만원|">0 만원</span>
+                            </li>
+                            <li class="flex justify-between text-sm">
+                                <span class="text-slate-500">가구 합산</span>
+                                <span class="font-bold text-slate-800" th:text="|${#numbers.formatInteger(condition.householdIncome, 0, 'COMMA')} 만원|">0 만원</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="pt-4">
+                        <h4 class="text-xs font-bold text-indigo-500 mb-2 flex items-center gap-1">
+                            <i class="fa-solid fa-robot"></i> 사용자 요청 상황
+                        </h4>
+                        <div class="bg-slate-50 rounded-lg border border-slate-200 p-3">
+                            <div class="text-xs text-slate-600 leading-relaxed max-h-24 overflow-y-auto custom-scroll whitespace-pre-wrap break-words"
+                                 th:text="${#strings.isEmpty(condition.userPrompt) ? '없음' : condition.userPrompt}">
+                                사용자가 입력한 내용이 없습니다.
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
-            <div class="bg-blue-50/50 rounded-2xl border border-blue-100 p-5 animate-fade-in delay-100">
+            <div class="bg-blue-50/50 rounded-2xl border border-blue-100 p-5 animate-fade-in delay-100" th:if="${policy != null}">
                 <div class="flex items-center gap-3 mb-2">
                     <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-blue-600 shadow-sm">
                         <i class="fa-solid fa-landmark"></i>
                     </div>
                     <div>
                         <span class="text-[10px] font-bold text-blue-500">TARGET POLICY</span>
-                        <h4 class="font-bold text-slate-800">청년 월세 특별 지원</h4>
+                        <h4 class="font-bold text-slate-800" th:text="${policy.title}">정책 제목</h4>
                     </div>
                 </div>
-                <p class="text-xs text-slate-500 leading-relaxed pl-1">
-                    만 19~34세 무주택 청년 대상, 월 최대 20만원 임대료 지원 (생애 1회)
-                </p>
+                <div class="space-y-1 mt-3 pl-1">
+                    <p class="text-xs text-slate-500 flex justify-between">
+                        <span>지역</span>
+                        <span class="font-bold text-slate-700" th:text="${policy.region}">전국</span>
+                    </p>
+                    <p class="text-xs text-slate-500 flex justify-between">
+                        <span>마감일</span>
+                        <span class="font-bold text-orange-500" th:text="${policy.bizPrdEndYmd}">2025-12-31</span>
+                    </p>
+                </div>
             </div>
+
+            <div class="bg-slate-100 rounded-2xl p-5 animate-fade-in delay-100 text-center" th:unless="${policy != null}">
+                <p class="text-xs text-slate-500">선택된 정책 정보가 없습니다.</p>
+            </div>
+
         </aside>
 
         <section class="lg:col-span-8 space-y-8">
@@ -144,6 +238,7 @@
                 <div class="p-8">
                     <p class="text-slate-600 leading-relaxed mb-6">
                         <strong class="text-slate-800">축하합니다!</strong> 입력하신 <span class="bg-slate-100 px-1 rounded font-bold text-slate-700">7가지 필수 조건</span>이 모두 정책 기준에 부합합니다.
+                        특히 소득 요건과 거주 요건이 완벽하게 충족되어, 선정 확률이 매우 높습니다.
                     </p>
                     <div class="flex gap-3">
                         <a href="#" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white py-3 rounded-xl font-bold text-center transition shadow-lg shadow-slate-200">
@@ -236,7 +331,6 @@
 </main>
 
 <footer th:replace="~{HF :: footer}"></footer>
-
 <div th:replace="~{chatbot :: chatbot}"></div>
 
 </body>
