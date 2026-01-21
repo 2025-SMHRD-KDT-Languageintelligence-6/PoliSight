@@ -35,21 +35,5 @@ public class PolicyController {
         return "policy";
     }
 
-    // 3. 시뮬레이션 페이지 (수정됨)
-    @GetMapping("/simulation")
-    public String showSimulation(
-            @RequestParam(name = "policyId", required = false) String policyId, // String 타입으로 받음
-            Model model) {
 
-        // 정책 ID가 넘어왔다면 DB에서 조회하여 'policy' 키로 모델에 담음
-        if (policyId != null) {
-            PolicyDto selectedPolicy = policyService.getPolicyById(policyId);
-            model.addAttribute("policy", selectedPolicy);
-        }
-
-        // 시뮬레이션 페이지의 폼 바인딩을 위한 빈 객체 전달 (이름: simulationForm)
-        model.addAttribute("simulationForm", new PolicySearchCondition());
-
-        return "simulation";
-    }
 }
