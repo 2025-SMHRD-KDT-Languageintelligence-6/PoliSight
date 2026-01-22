@@ -179,13 +179,17 @@
 
                     <div class="flex justify-between items-start mb-2">
                 <span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-1 rounded"
-                      th:text="${policy.department}">부서명</span>
+                      th:text="${policy.lclsfNm}">분류</span>
+
                         <span class="text-xs font-bold text-blue-500"
-                              th:text="'D-' + ${policy.dDay}">D-Day</span>
+                              th:text="${policy.bizPrdEndYmd}">날짜</span>
                     </div>
 
-                    <h4 class="font-bold text-slate-800 text-lg mb-1 truncate" th:text="${policy.title}">정책 제목</h4>
-                    <p class="text-xs text-slate-500 line-clamp-2 h-8 mb-4" th:text="${policy.description}">정책 내용</p>
+                    <h4 class="font-bold text-slate-800 text-lg mb-1 truncate"
+                        th:text="${policy.plcyNm}">정책 제목</h4>
+
+                    <p class="text-xs text-slate-500 line-clamp-2 h-8 mb-4"
+                       th:text="${policy.plcyExplnCn}">정책 내용</p>
 
                     <div class="flex justify-end gap-2">
                         <button type="button"
