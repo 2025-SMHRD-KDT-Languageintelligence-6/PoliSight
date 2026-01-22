@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AiSimulationService {
 
+    // application properties 에 작성해보기
     private final String AI_SERVER_URL = "http://localhost:8000/ask";
 
     public String getPolicyRecommendation(PolicySearchCondition condition) {
@@ -55,7 +56,10 @@ public class AiSimulationService {
         String employment = listToString(c.getEmploymentStatus());
         String incomeStr = (c.getIncome() != null) ? c.getIncome() + "만원" : "정보 없음";
 
+
+
         // Enum 리스트 처리
+        // , 다음 공백 고민
         String majors = (c.getMajorTypes() != null && !c.getMajorTypes().isEmpty()) ?
                 c.getMajorTypes().stream().map(String::valueOf).collect(Collectors.joining(", ")) : "해당 없음";
         String sbiz = (c.getSbizTypes() != null && !c.getSbizTypes().isEmpty()) ?
