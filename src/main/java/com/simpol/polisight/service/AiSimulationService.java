@@ -61,7 +61,7 @@ public class AiSimulationService {
         String sbiz = (c.getSbizTypes() != null && !c.getSbizTypes().isEmpty()) ?
                 c.getSbizTypes().stream().map(String::valueOf).collect(Collectors.joining(", ")) : "해당 없음";
 
-        // ★ [핵심] 시뮬레이션 전용 강력 프롬프트
+        // 시뮬레이션 전용 프롬프트
         return String.format(
                 "========================================\n" +
                         "[1. 시뮬레이션 타겟 정책 (고정)]\n" +
