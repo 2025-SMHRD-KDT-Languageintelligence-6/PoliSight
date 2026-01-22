@@ -72,7 +72,7 @@ public class MemberService implements UserDetailsService {
             dto.setBirthDate(null);
         }
 
-        dto.setProvider("PoliSight");
+        dto.setProvider("polisight");
         memberMapper.insertMember(dto);
     }
 
