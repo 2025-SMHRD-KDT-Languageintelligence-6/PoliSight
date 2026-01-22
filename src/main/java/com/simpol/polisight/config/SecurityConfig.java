@@ -47,12 +47,14 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // ▼▼▼ 여기에 "/live2d/**"를 꼭 추가해야 합니다! ▼▼▼
+                        // ✅ [수정 포인트] 뒤에 /**를 붙여야 하위 경로까지 모두 허용됩니다.
                         .requestMatchers(
                                 "/", "/login", "/join",
                                 "/css/**", "/js/**", "/images/**", "/live2d/**",
                                 "/mail/**", "/user/**",
-                                "/policy", "/simulation", "/setup"
+                                "/policy/**",       // /policy 관련 모든 하위 경로 허용
+                                "/simulation/**",   // ✅ /simulation/analyze 포함 모든 하위 경로 허용
+                                "/setup"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
