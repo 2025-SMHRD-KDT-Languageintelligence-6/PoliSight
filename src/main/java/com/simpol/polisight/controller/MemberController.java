@@ -109,22 +109,6 @@ public class MemberController {
         return "redirect:/mypage";
     }
 
-    // ==========================================
-    // (기존) 회원정보 수정
-    // ==========================================
-    @PostMapping("/updateMember")
-    public String updateMemberProcess(MemberDto memberDto, HttpSession session, RedirectAttributes rttr) {
-        try {
-            MemberDto updatedMember = memberService.updateMember(memberDto);
-            if (updatedMember != null) {
-                session.setAttribute("loginMember", updatedMember);
-                rttr.addFlashAttribute("msg", "회원 정보가 수정되었습니다.");
-            }
-        } catch (IllegalArgumentException e) {
-            rttr.addFlashAttribute("msg", e.getMessage());
-        }
-        return "redirect:/mypage";
-    }
 
     // ==========================================
     // ✅ 마이페이지 "내 조건" 저장 (JSON fetch 대응)

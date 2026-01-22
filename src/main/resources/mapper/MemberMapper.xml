@@ -34,15 +34,11 @@
         WHERE email = #{email}
     </select>
 
-    <update id="updateMember" parameterType="com.simpol.polisight.dto.MemberDto">
+    <update id="updateMemberName">
         UPDATE member
         SET
-        memberName = #{memberName},
-        birthDate = #{birthDate},
-        updatedAt = NOW()
-        <if test="passwordHash != null and passwordHash != ''">
-            , passwordHash = #{passwordHash}
-        </if>
+        memberName = #{name}
+        , updatedAt = NOW()
         WHERE email = #{email}
     </update>
 

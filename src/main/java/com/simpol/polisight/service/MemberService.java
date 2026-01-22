@@ -85,15 +85,17 @@ public class MemberService implements UserDetailsService {
         return null;
     }
 
-    // 이름 변경
+    // [수정] 이름 변경 (기존 updateMember 호출하던 것을 교체)
     public MemberDto updateName(String email, String newName) {
+        // DB 조회 확인 (없으면 null)
         MemberDto member = memberMapper.selectMemberByEmail(email);
-        if (member != null) {
-            member.setMemberName(newName);
-            memberMapper.updateMember(member);
-            return memberMapper.selectMemberByEmail(email);
-        }
-        return null;
+        if (member == null) return null;
+
+        // ★ 여기서 새 메서드 호출! (DTO 세팅 필요 없음)
+        memberMapper.updateMemberName(email, newName);
+
+        // 변경된 정보 다시 조회해서 반환
+        return memberMapper.selectMemberByEmail(email);
     }
 
     // 비밀번호 변경 (마이페이지)
@@ -108,33 +110,6 @@ public class MemberService implements UserDetailsService {
         return true;
     }
 
-    // (기존) 회원 정보 수정
-    public MemberDto updateMember(MemberDto dto) {
-        MemberDto dbMember = memberMapper.selectMemberByEmail(dto.getEmail());
-        if (dbMember == null) return null;
-
-        dto.setMemberName(dto.getUserName());
-
-        if (isValidDateInput(dto)) {
-            String combinedDate = combineDate(dto.getBirthYear(), dto.getBirthMonth(), dto.getBirthDay());
-            dto.setBirthDate(combinedDate);
-        } else {
-            dto.setBirthDate(dbMember.getBirthDate());
-        }
-
-        if (dto.getNewPw() != null && !dto.getNewPw().trim().isEmpty()) {
-            if (!passwordEncoder.matches(dto.getCurrentPw(), dbMember.getPasswordHash())) {
-                throw new IllegalArgumentException("기존 비밀번호가 일치하지 않습니다.");
-            }
-            String encodedNewPw = passwordEncoder.encode(dto.getNewPw());
-            dto.setPasswordHash(encodedNewPw);
-        } else {
-            dto.setPasswordHash(null);
-        }
-
-        memberMapper.updateMember(dto);
-        return memberMapper.selectMemberByEmail(dto.getEmail());
-    }
 
     // 비밀번호 재설정(이메일)
     public void updatePassword(String email, String newPw) {
