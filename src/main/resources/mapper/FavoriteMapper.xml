@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.simpol.polisight.mapper.FavoriteMapper">
+
+    <select id="countByMemberIdxAndPlcyNo" resultType="int">
+        SELECT COUNT(*)
+        FROM favorite
+        WHERE memberIdx = #{memberIdx} AND plcyNo = #{plcyNo}
+    </select>
+
+    <insert id="insertFavorite">
+        INSERT INTO favorite (memberIdx, plcyNo, enabled, createdAt)
+        VALUES (#{memberIdx}, #{plcyNo}, 1, NOW())
+    </insert>
+
+    <delete id="deleteFavorite">
+        DELETE FROM favorite
+        WHERE memberIdx = #{memberIdx} AND plcyNo = #{plcyNo}
+    </delete>
+
+    <select id="selectPlcyNosByMemberIdx" resultType="string">
+        SELECT plcyNo
+        FROM favorite
+        WHERE memberIdx = #{memberIdx}
+    </select>
+
+    <select id="selectFavoritePoliciesDetails" resultType="com.simpol.polisight.dto.PolicyDto">
+        SELECT p.*
+        FROM policy p
+        JOIN favorite f ON p.plcyNo = f.plcyNo
+        WHERE f.memberIdx = #{memberIdx}
+        ORDER BY f.createdAt DESC
+    </select>
+
+</mapper>

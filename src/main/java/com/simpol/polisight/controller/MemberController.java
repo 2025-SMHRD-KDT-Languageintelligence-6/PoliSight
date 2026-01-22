@@ -1,6 +1,8 @@
 package com.simpol.polisight.controller;
 
 import com.simpol.polisight.dto.MemberDto;
+import com.simpol.polisight.dto.PolicyDto;
+import com.simpol.polisight.service.FavoriteService;
 import com.simpol.polisight.service.MemberService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,11 +12,16 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.List;
+
 @Controller
 public class MemberController {
 
     @Autowired
     private MemberService memberService;
+
+    @Autowired
+    private FavoriteService favoriteService; // ✅ [추가] 즐겨찾기 서비스 주입
 
     @GetMapping("/login")
     public String loginPage() { return "login"; }
@@ -32,12 +39,24 @@ public class MemberController {
     }
 
     @GetMapping("/mypage")
-    public String myPage(HttpSession session) {
+    public String myPage(HttpSession session, Model model) { // ✅ [추가] Model 파라미터 필요
+
+        // 1. 로그인 체크 (기존 코드)
         MemberDto loginMember = (MemberDto) session.getAttribute("loginMember");
         if (loginMember == null) return "redirect:/login";
 
+        // 2. 회원 정보 갱신 (기존 코드)
         MemberDto fresh = memberService.getMemberByEmail(loginMember.getEmail());
-        if (fresh != null) session.setAttribute("loginMember", fresh);
+        if (fresh != null) {
+            session.setAttribute("loginMember", fresh);
+            loginMember = fresh; // 갱신된 정보로 변수 업데이트
+        }
+
+        // 3. ✅ [추가] 즐겨찾기 목록 가져오기
+        List<PolicyDto> favoriteList = favoriteService.getFavoritePolicies(loginMember.getMemberIdx());
+
+        // 4. ✅ [추가] 화면으로 전달
+        model.addAttribute("favoriteList", favoriteList);
 
         return "mypage";
     }

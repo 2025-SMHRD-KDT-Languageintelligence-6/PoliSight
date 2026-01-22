@@ -161,9 +161,40 @@
 
         <div class="scroll-mt-24" id="favorites">
             <h2 class="text-2xl font-bold text-slate-900 mb-6">즐겨찾기 및 알림 관리</h2>
-            <div class="bg-slate-50 p-8 rounded-xl text-center border border-slate-200 border-dashed text-slate-400">
+
+            <div th:if="${favoriteList == null or #lists.isEmpty(favoriteList)}"
+                 id="empty-favorites-msg"
+                 class="bg-slate-50 p-8 rounded-xl text-center border border-slate-200 border-dashed text-slate-400">
                 <i class="fa-regular fa-bookmark text-2xl mb-2"></i>
                 <p class="text-sm">즐겨찾기한 정책이 여기에 표시됩니다.</p>
+            </div>
+
+            <div th:unless="${favoriteList == null or #lists.isEmpty(favoriteList)}"
+                 id="favorites-container"
+                 class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                <div th:each="policy : ${favoriteList}"
+                     class="fav-card bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition relative"
+                     th:id="'fav-card-' + ${policy.plcyNo}">
+
+                    <div class="flex justify-between items-start mb-2">
+                <span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-1 rounded"
+                      th:text="${policy.department}">부서명</span>
+                        <span class="text-xs font-bold text-blue-500"
+                              th:text="'D-' + ${policy.dDay}">D-Day</span>
+                    </div>
+
+                    <h4 class="font-bold text-slate-800 text-lg mb-1 truncate" th:text="${policy.title}">정책 제목</h4>
+                    <p class="text-xs text-slate-500 line-clamp-2 h-8 mb-4" th:text="${policy.description}">정책 내용</p>
+
+                    <div class="flex justify-end gap-2">
+                        <button type="button"
+                                th:onclick="removeFavorite([[${policy.plcyNo}]])"
+                                class="px-3 py-1.5 bg-slate-100 text-slate-500 rounded-lg text-xs font-bold hover:bg-red-50 hover:text-red-500 transition flex items-center gap-1">
+                            <i class="fa-solid fa-trash-can"></i> 삭제
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -889,6 +920,59 @@
             }
             return true;
         }
+
+        // --- [신규 추가] 마이페이지 즐겨찾기 삭제 기능 ---
+    function removeFavorite(plcyNo) {
+        if (!confirm("정말 즐겨찾기에서 삭제하시겠습니까?")) return;
+
+        // 기존에 만든 토글 API 재사용 (이미 찜한 상태에서 호출하면 삭제됨)
+        fetch(`/api/favorite/${plcyNo}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            // data.favorited가 false여야 삭제된 것
+            if (data.favorited === false) {
+                // 1. 화면에서 카드 부드럽게 제거
+                const card = document.getElementById(`fav-card-${plcyNo}`);
+                if (card) {
+                    card.style.transition = 'all 0.3s';
+                    card.style.opacity = '0';
+                    card.style.transform = 'scale(0.9)';
+                    setTimeout(() => {
+                        card.remove();
+                        checkEmptyFavorites(); // 목록 비었는지 확인
+                    }, 300);
+                }
+            } else {
+                alert("삭제 처리에 실패했습니다.");
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("오류가 발생했습니다.");
+        });
+    }
+
+    // 카드가 다 지워지면 '데이터 없음' 메시지 보여주기
+    function checkEmptyFavorites() {
+        const container = document.getElementById('favorites-container');
+        if (container && container.children.length === 0) {
+            container.remove(); // 컨테이너 제거
+
+            // 빈 상태 메시지 생성 및 추가
+            const emptyMsg = `
+                <div id="empty-favorites-msg" class="bg-slate-50 p-8 rounded-xl text-center border border-slate-200 border-dashed text-slate-400">
+                    <i class="fa-regular fa-bookmark text-2xl mb-2"></i>
+                    <p class="text-sm">즐겨찾기한 정책이 없습니다.</p>
+                </div>
+            `;
+            // 제목(h2) 바로 뒤에 추가하기 위해 insertAdjacentHTML 사용
+            const header = document.querySelector('#favorites h2');
+            header.insertAdjacentHTML('afterend', emptyMsg);
+        }
+    }
 
         // --- [신규 추가] 회원탈퇴 모달 제어 함수 ---
         function openWithdrawStep1() {
