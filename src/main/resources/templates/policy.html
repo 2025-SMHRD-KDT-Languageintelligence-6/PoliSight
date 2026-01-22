@@ -92,6 +92,13 @@
     }
 
     .sidebar-input:focus { border-color: #2563EB; background: #fff; }
+
+    /* 즐겨찾기 버튼 활성화 스타일 */
+    .fav-btn.active {
+        background-color: #FEF3C7;
+        border-color: #FCD34D;
+        color: #D97706;
+    }
 </style>
 
 <div th:replace="HF :: header('search')"></div>
@@ -348,10 +355,18 @@
                         </th:block>
                     </div>
 
-                    <button onclick="openDetail(event, this)"
-                            class="absolute bottom-5 right-5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs px-3 py-1.5 rounded-lg transition z-10">
-                        자세히
-                    </button>
+                    <div class="absolute bottom-5 right-5 flex gap-2 z-10">
+                        <button onclick="openDetail(event, this)"
+                                class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs px-3 py-1.5 rounded-lg transition">
+                            자세히
+                        </button>
+
+                        <button th:if="${session.loginMember != null}"
+                                onclick="toggleFavorite(event, this)"
+                                class="fav-btn w-[30px] h-[29px] bg-slate-100 hover:bg-slate-200 text-slate-400 border border-transparent rounded-lg flex items-center justify-center transition">
+                            <i class="fa-regular fa-star"></i>
+                        </button>
+                    </div>
                 </div>
             </th:block>
 
@@ -394,6 +409,25 @@
                 확인
             </button>
         </div>
+    </div>
+</div>
+
+<div id="fav-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center" aria-modal="true">
+    <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="closeFavModal()"></div>
+    <div class="relative bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center transform scale-95 transition-all duration-200">
+        <div class="w-12 h-12 rounded-full bg-yellow-100 text-yellow-500 flex items-center justify-center mx-auto mb-4 text-xl">
+            <i class="fa-solid fa-star"></i>
+        </div>
+        <h3 class="text-lg font-bold text-slate-900 mb-2">즐겨찾기에 추가되었습니다.</h3>
+
+        <p class="text-sm font-bold text-blue-600 mb-6 leading-relaxed">
+            * 마이페이지에서 관리 및 알림 설정이 가능합니다.
+        </p>
+
+        <button onclick="closeFavModal()"
+                class="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-black transition text-sm">
+            확인
+        </button>
     </div>
 </div>
 
@@ -522,17 +556,53 @@
             });
         }
 
-        // ✅ 정책 카드 선택
+        // ✅ [수정] 정책 카드 선택 (토글 기능 적용)
         function selectPolicy(card) {
-            document.querySelectorAll('.policy-card').forEach(el => el.classList.remove('selected'));
-            card.classList.add('selected');
+            const clickedId = card.dataset.id;
 
-            selectedPolicyId = card.dataset.id;
-            const title = card.dataset.title || "선택된 정책";
-            document.getElementById('selected-title').innerText = title;
+            // 이미 선택된 카드를 다시 클릭한 경우 -> 선택 해제
+            if (selectedPolicyId === clickedId) {
+                card.classList.remove('selected');
+                selectedPolicyId = null;
+                document.getElementById('selected-title').innerText = '선택된 정책 없음';
+                document.getElementById('action-bar').classList.add('translate-y-full'); // 바 숨기기
+            }
+            // 새로운 카드를 선택한 경우
+            else {
+                document.querySelectorAll('.policy-card').forEach(el => el.classList.remove('selected'));
+                card.classList.add('selected');
+                selectedPolicyId = clickedId;
+                const title = card.dataset.title || "선택된 정책";
+                document.getElementById('selected-title').innerText = title;
+                document.getElementById('action-bar').classList.remove('translate-y-full'); // 바 보이기
+            }
+        }
 
-            const bar = document.getElementById('action-bar');
-            bar.classList.remove('translate-y-full');
+        // ✅ [추가] 즐겨찾기 토글 기능
+        function toggleFavorite(event, btn) {
+            event.stopPropagation(); // 카드 선택 이벤트 방지
+
+            const icon = btn.querySelector('i');
+            const isActive = btn.classList.contains('active');
+
+            if (isActive) {
+                // 즐겨찾기 해제
+                btn.classList.remove('active');
+                icon.classList.remove('fa-solid', 'text-yellow-500');
+                icon.classList.add('fa-regular');
+            } else {
+                // 즐겨찾기 추가
+                btn.classList.add('active');
+                icon.classList.remove('fa-regular');
+                icon.classList.add('fa-solid', 'text-yellow-500'); // 노란 별
+
+                // 모달 띄우기
+                document.getElementById('fav-modal').classList.remove('hidden');
+            }
+        }
+
+        function closeFavModal() {
+            document.getElementById('fav-modal').classList.add('hidden');
         }
 
         // ✅ 상세 모달
