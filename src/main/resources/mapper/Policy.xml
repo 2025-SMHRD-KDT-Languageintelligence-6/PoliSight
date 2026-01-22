@@ -11,6 +11,8 @@
         <result property="bizPrdBgngYmd" column="bizPrdBgngYmd"/>
         <result property="bizPrdEndYmd" column="bizPrdEndYmd"/>
 
+        <result property="plcyKywdNm" column="plcyKywdNm"/>
+
         <result property="aplyPrdSeCd" column="aplyPrdSeCd"
                 typeHandler="com.simpol.polisight.handler.CodeEnumTypeHandler"
                 javaType="com.simpol.polisight.type.AplyPrdType"/>
@@ -54,7 +56,10 @@
         p.lclsfNm,
         p.bizPrdBgngYmd,
         p.bizPrdEndYmd,
-        -- [NEW] 새로 추가된 컬럼들을 반드시 SELECT 절에 포함해야 ResultMap이 작동합니다.
+
+        -- ✅ [수정] DB 컬럼명 plcyKywdNm을 그대로 사용
+        p.plcyKywdNm,
+
         p.aplyPrdSeCd,
         p.bizPrdSeCd,
         p.mrgSttsCd,
@@ -69,6 +74,8 @@
                 AND (
                 p.plcyNm LIKE CONCAT('%', #{keyword}, '%')
                 OR p.plcyExplnCn LIKE CONCAT('%', #{keyword}, '%')
+                -- ✅ [수정] 검색 조건에서도 plcyKywdNm 사용
+                OR p.plcyKywdNm LIKE CONCAT('%', #{keyword}, '%')
                 )
             </if>
 
@@ -102,17 +109,9 @@
 
             <if test="income != null">
                 AND (
-                -- 1. 소득 데이터가 아예 없는 경우 (제한 없음 간주)
                 p.earnCndSeCd IS NULL
-
-                -- 2. [0043001] 소득 무관
                 OR p.earnCndSeCd = '0043001'
-
-                -- 3. [0043003] 소득 요건이 복잡하거나 기타인 경우 (일단 통과)
                 OR p.earnCndSeCd = '0043003'
-
-                -- 4. [0043002] 기준 소득 이하만 지원 (핵심 로직)
-                -- 조건: (구분코드가 0043002 이면서) AND (정책상한액 >= 내 소득)
                 OR (
                 p.earnCndSeCd = '0043002'
                 AND (p.earnMaxAmt IS NULL OR p.earnMaxAmt >= #{income})
@@ -123,14 +122,8 @@
             <if test="educationLevel != null and educationLevel.size > 0">
                 AND (
                 p.schoolCd IS NULL
-
-                -- [필수 포함 1] 기타 (0049009)
                 OR JSON_SEARCH(p.schoolCd, 'one', '0049009') IS NOT NULL
-
-                -- [필수 포함 2] 제한없음 (0049010)
                 OR JSON_SEARCH(p.schoolCd, 'one', '0049010') IS NOT NULL
-
-                -- [사용자 선택 값] (예: 고교 졸업 등)
                 OR
                 <foreach collection="educationLevel" item="item" open="(" close=")" separator=" OR ">
                     JSON_SEARCH(p.schoolCd, 'one', #{item}) IS NOT NULL
@@ -141,12 +134,8 @@
             <if test="employmentStatus != null and employmentStatus.size > 0">
                 AND (
                 p.jobCd IS NULL
-
-                -- [무조건 포함] 기타(0013009) + 제한없음(0013010)
                 OR JSON_SEARCH(p.jobCd, 'one', '0013009') IS NOT NULL
                 OR JSON_SEARCH(p.jobCd, 'one', '0013010') IS NOT NULL
-
-                -- [사용자 선택 값] (Service에서 확장된 코드들: 재직자, 일용직 등)
                 OR
                 <foreach collection="employmentStatus" item="item" open="(" close=")" separator=" OR ">
                     JSON_SEARCH(p.jobCd, 'one', #{item}) IS NOT NULL
@@ -156,13 +145,8 @@
 
             <if test="marry != null and marry != ''">
                 AND (
-                -- 1. [내 선택] Service에서 변환된 코드 (기혼:0055001 또는 미혼:0055002)가 포함된 정책
                 p.mrgSttsCd LIKE CONCAT('%', #{marry}, '%')
-
-                -- 2. [공통] '제한없음(0055003)' 코드가 포함된 정책 (누구나 가능)
                 OR p.mrgSttsCd LIKE '%0055003%'
-
-                -- 3. [공통] 결혼 조건 데이터가 아예 없는 정책 (보통 누구나 가능)
                 OR p.mrgSttsCd IS NULL
                 OR p.mrgSttsCd = ''
                 )
@@ -184,7 +168,10 @@
         lclsfNm,
         bizPrdBgngYmd,
         bizPrdEndYmd,
-        -- [NEW] 여기서도 새 컬럼들을 조회해야 상세 페이지에서 정보를 볼 수 있습니다.
+
+        -- ✅ [수정] 상세 조회도 plcyKywdNm 사용
+        plcyKywdNm,
+
         aplyPrdSeCd,
         bizPrdSeCd,
         mrgSttsCd,

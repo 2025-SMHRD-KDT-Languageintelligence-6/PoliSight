@@ -13,7 +13,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- ✅ 챗봇 스타일/스크립트 (static 폴더 기준) -->
     <link rel="stylesheet" th:href="@{/css/chatbot.css}">
 </head>
 
@@ -181,7 +180,6 @@
                             <option value="FOUNDER">(예비) 창업자</option>
                         </select>
                     </div>
-
                 </div>
 
                 <hr class="border-slate-100">
@@ -339,9 +337,15 @@
                     <h4 class="font-bold text-slate-800 text-lg mb-1" th:text="${policy.title}">정책명</h4>
                     <p class="text-xs text-slate-500 line-clamp-2" th:text="${policy.description}">내용이 들어갑니다.</p>
 
-                    <div class="mt-4 flex gap-2 text-[11px] text-slate-500 font-medium">
-                        <span class="bg-slate-100 px-2 py-1 rounded">#청년</span>
-                        <span class="bg-slate-100 px-2 py-1 rounded">#지원</span>
+                    <div class="mt-4 flex flex-wrap gap-2 text-[11px] text-slate-500 font-medium">
+                        <th:block th:if="${policy.plcyKywdNm != null and !#strings.isEmpty(policy.plcyKywdNm)}">
+                            <th:block th:each="tag : ${#strings.arraySplit(policy.plcyKywdNm, ',')}">
+                                <span class="bg-slate-100 px-2 py-1 rounded"
+                                      th:text="${tag.contains('#') ? tag.trim() : '#' + tag.trim()}">
+                                    #키워드
+                                </span>
+                            </th:block>
+                        </th:block>
                     </div>
 
                     <button onclick="openDetail(event, this)"
@@ -393,7 +397,6 @@
     </div>
 </div>
 
-<!-- 저장 모달들 -->
 <div id="save-confirm-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center" aria-modal="true">
     <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="closeSaveModal()"></div>
     <div class="relative bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center transform scale-95 transition-all duration-200">
@@ -858,7 +861,6 @@
     /*]]>*/
 </script>
 
-<!-- ✅ 정책검색 페이지에도 챗봇 프래그먼트 적용 -->
 <div th:replace="~{chatbot :: chatbot}"></div>
 
 </body>
