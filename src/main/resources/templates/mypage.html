@@ -209,7 +209,7 @@
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
                 <form action="/updatePassword" method="post" onsubmit="return validateForm()">
 
-                    <div th:if="${session.loginMember.provider == 'PoliSight'}">
+                    <div th:if="${session.loginMember.provider == 'polisight'}">
                         <div class="text-center mb-8">
                             <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 text-blue-600 mb-3">
                                 <i class="fa-solid fa-shield-halved text-xl"></i>
@@ -253,7 +253,7 @@
                     </div>
 
                     <div class="bg-slate-50 p-10 rounded-xl border border-slate-200 text-center flex flex-col items-center justify-center min-h-[300px]"
-                         th:unless="${session.loginMember.provider == 'PoliSight'}">
+                         th:unless="${session.loginMember.provider == 'polisight'}">
                         <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-200 text-slate-500 mb-4 shadow-sm">
                             <i class="fa-solid fa-lock text-2xl"></i>
                         </div>
