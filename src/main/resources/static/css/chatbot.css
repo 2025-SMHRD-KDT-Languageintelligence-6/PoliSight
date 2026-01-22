@@ -1,7 +1,7 @@
-/* chatbot.css - 가로형(Wide) + 높이 축소 버전 */
+/* chatbot.css - 가로형(Wide) + 높이 축소 버전 + 모바일 최적화 */
 
 /* =========================
-   챗봇 컨테이너
+   1. 챗봇 컨테이너 (공통)
 ========================= */
 #chatbot-container {
     position: fixed;
@@ -12,7 +12,7 @@
 }
 
 /* =========================
-   토글 버튼 (90px)
+   2. 토글 버튼 (90px)
 ========================= */
 #chatbot-toggle-btn {
     width: 90px;
@@ -58,14 +58,14 @@
 }
 
 /* =========================
-   ✅ 채팅창 (가로형 구조, 높이 수정됨)
+   3. 채팅창 (PC 기준)
 ========================= */
 #chatbot-window {
     position: absolute;
     bottom: 120px;
     right: 5px;
 
-    /* 가로 750px 유지, 세로 585px로 축소 (화면 잘림 방지) */
+    /* PC: 가로 750px, 세로 585px */
     width: 750px;
     height: 585px;
 
@@ -73,7 +73,6 @@
     border-radius: 16px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.25);
 
-    /* 가로 배치를 위해 row 설정 */
     display: flex;
     flex-direction: row;
     overflow: hidden;
@@ -91,12 +90,12 @@
 }
 
 /* =========================
-   ✅ 왼쪽: 캐릭터 영역 (Live2D)
+   4. 왼쪽: 캐릭터 영역 (Live2D)
 ========================= */
 #live2d-stage {
-    width: 300px;        /* 너비 고정 */
-    height: 100%;        /* 전체 높이 */
-    background: #eef2f8; /* 배경색 구분 */
+    width: 300px;
+    height: 100%;
+    background: #eef2f8;
     border-right: 1px solid #e5e7eb;
     position: relative;
     overflow: hidden;
@@ -109,10 +108,10 @@
 }
 
 /* =========================
-   ✅ 오른쪽: 채팅 UI 영역
+   5. 오른쪽: 채팅 UI 영역
 ========================= */
 #chatbot-right-panel {
-    flex: 1; /* 남은 공간 모두 차지 */
+    flex: 1;
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -209,4 +208,88 @@
 
 #chatbot-send-btn:hover {
     background: #1D4ED8;
+}
+
+/* =========================================================
+   ✅ [Mobile Responsive] 모바일 화면 최적화 (768px 이하)
+   - 캐릭터 영역 숨김
+   - 화면 전체를 덮는 바텀 시트 스타일 적용
+========================================================= */
+@media (max-width: 768px) {
+
+    /* 1. 챗봇 버튼 위치 조정 (우측 하단) */
+    #chatbot-container {
+        bottom: 15px;
+        right: 15px;
+    }
+
+    /* 2. 토글 버튼 크기 축소 */
+    #chatbot-toggle-btn {
+        width: 60px;
+        height: 60px;
+    }
+
+    /* 3. [핵심] 채팅창을 화면 꽉 차게 변경 (바텀 시트 스타일) */
+    #chatbot-window {
+        position: fixed !important; /* 부모 무시하고 화면 기준 배치 */
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+
+        /* 상단 80px 정도 남기고 아래 꽉 채움 (키보드 대응 자동) */
+        top: 80px !important;
+
+        width: 100% !important;
+        height: auto !important; /* top, bottom에 의해 높이 자동 결정 */
+
+        border-radius: 20px 20px 0 0 !important;
+        box-shadow: 0 -5px 25px rgba(0,0,0,0.2);
+        margin: 0 !important;
+
+        /* 애니메이션 방향 변경 (아래에서 위로) */
+        transform: translateY(120%);
+        transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+
+        flex-direction: column; /* 세로 정렬 */
+        z-index: 10000;
+    }
+
+    /* 열렸을 때 위치 복구 */
+    #chatbot-window.visible {
+        transform: translateY(0);
+    }
+
+    /* 4. 모바일에서는 Live2D 캐릭터 숨김 (공간 확보) */
+    #live2d-stage {
+        display: none !important;
+    }
+
+    /* 5. 오른쪽 패널 100% 확장 */
+    #chatbot-right-panel {
+        width: 100% !important;
+        height: 100% !important;
+        border-radius: 20px 20px 0 0;
+    }
+
+    /* 6. 터치 편의성을 위한 여백/폰트 조정 */
+    .chatbot-header {
+        padding: 15px;
+        font-size: 16px;
+    }
+
+    #chatbot-close-btn {
+        font-size: 24px;
+        padding: 5px;
+    }
+
+    .chatbot-input-area {
+        padding: 12px;
+        background: #fff; /* 키보드 위 배경색 */
+        padding-bottom: max(12px, env(safe-area-inset-bottom)); /* 아이폰 하단 바 대응 */
+    }
+
+    #chatbot-input {
+        font-size: 16px; /* 모바일 확대 방지 */
+        padding: 12px;
+    }
 }
