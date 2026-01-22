@@ -11,8 +11,8 @@
     </select>
 
     <insert id="insertFavorite">
-        INSERT INTO favorite (memberIdx, plcyNo, enabled, createdAt)
-        VALUES (#{memberIdx}, #{plcyNo}, 1, NOW())
+        INSERT INTO favorite (memberIdx, plcyNo, createdAt)
+        VALUES (#{memberIdx}, #{plcyNo}, NOW())
     </insert>
 
     <delete id="deleteFavorite">
