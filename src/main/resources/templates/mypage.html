@@ -160,7 +160,24 @@
         <hr class="border-slate-200">
 
         <div class="scroll-mt-24" id="favorites">
-            <h2 class="text-2xl font-bold text-slate-900 mb-6">즐겨찾기 및 알림 관리</h2>
+            <div class="flex justify-between items-end mb-6">
+                <h2 class="text-2xl font-bold text-slate-900">즐겨찾기 및 알림 관리</h2>
+
+                <div class="flex gap-2" th:unless="${favoriteList == null or #lists.isEmpty(favoriteList)}">
+                    <button onclick="selectAllFavs()" type="button"
+                            class="px-3 py-1.5 border border-slate-200 bg-white rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition flex items-center gap-1">
+                        <i class="fa-solid fa-check"></i> 전체선택
+                    </button>
+                    <button onclick="deselectAllFavs()" type="button"
+                            class="px-3 py-1.5 border border-slate-200 bg-white rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition flex items-center gap-1">
+                        <i class="fa-solid fa-xmark"></i> 선택해제
+                    </button>
+                    <button onclick="confirmDeleteFavs()" type="button"
+                            class="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-red-50 hover:text-red-500 transition flex items-center gap-1">
+                        <i class="fa-solid fa-trash-can"></i> 삭제
+                    </button>
+                </div>
+            </div>
 
             <div th:if="${favoriteList == null or #lists.isEmpty(favoriteList)}"
                  id="empty-favorites-msg"
@@ -174,12 +191,14 @@
                  class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                 <div th:each="policy : ${favoriteList}"
-                     class="fav-card bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition relative"
+                     class="fav-card bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition relative group"
                      th:id="'fav-card-' + ${policy.plcyNo}">
 
                     <div class="flex justify-between items-start mb-2">
-                <span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-1 rounded"
-                      th:text="${policy.lclsfNm}">분류</span>
+                        <div class="flex items-center h-6">
+                            <input type="checkbox" name="favCheckbox" th:value="${policy.plcyNo}"
+                                   class="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer transition">
+                        </div>
 
                         <span class="text-xs font-bold text-blue-500"
                               th:text="${policy.bizPrdEndYmd}">날짜</span>
@@ -192,10 +211,9 @@
                        th:text="${policy.plcyExplnCn}">정책 내용</p>
 
                     <div class="flex justify-end gap-2">
-                        <button type="button"
-                                th:onclick="removeFavorite([[${policy.plcyNo}]])"
-                                class="px-3 py-1.5 bg-slate-100 text-slate-500 rounded-lg text-xs font-bold hover:bg-red-50 hover:text-red-500 transition flex items-center gap-1">
-                            <i class="fa-solid fa-trash-can"></i> 삭제
+                        <button type="button" onclick="toggleNotification(this)"
+                                class="px-3 py-1.5 bg-slate-100 text-slate-500 rounded-lg text-xs font-bold hover:bg-yellow-50 hover:text-yellow-600 transition flex items-center gap-1 group-btn">
+                            <i class="fa-regular fa-bell group-btn-hover:fa-solid"></i> 알림
                         </button>
                     </div>
                 </div>
@@ -288,7 +306,7 @@
     <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="closeAlertModal()"></div>
     <div class="relative bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center transform scale-95 opacity-0 transition-all duration-200"
          id="alert-content">
-        <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mx-auto mb-4 text-xl">
+        <div id="alert-icon-container" class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mx-auto mb-4 text-xl">
             <i class="fa-solid fa-circle-info"></i>
         </div>
         <h3 class="text-lg font-bold text-slate-800 mb-2">알림</h3>
@@ -296,6 +314,30 @@
         <button class="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-black transition text-sm"
                 onclick="closeAlertModal()">확인
         </button>
+    </div>
+</div>
+
+<div aria-modal="true" class="fixed inset-0 z-[60] hidden flex items-center justify-center" id="delete-confirm-modal">
+    <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="closeDeleteModal()"></div>
+    <div class="relative bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center transform scale-95 opacity-0 transition-all duration-200"
+         id="delete-confirm-content">
+        <div class="w-12 h-12 rounded-full bg-red-100 text-red-500 flex items-center justify-center mx-auto mb-4 text-xl">
+            <i class="fa-solid fa-trash-can"></i>
+        </div>
+        <h3 class="text-lg font-bold text-slate-900 mb-2">삭제</h3>
+        <p class="text-sm text-slate-500 mb-6 leading-relaxed" id="delete-confirm-msg">
+            선택한 항목을 삭제하시겠습니까?
+        </p>
+        <div class="flex gap-3">
+            <button class="flex-1 py-3 border border-slate-200 bg-white text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition text-sm"
+                    onclick="closeDeleteModal()">
+                취소
+            </button>
+            <button class="flex-1 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition text-sm shadow-md shadow-red-200"
+                    onclick="executeDeleteFavs()">
+                삭제
+            </button>
+        </div>
     </div>
 </div>
 
@@ -553,214 +595,215 @@
 <script th:inline="javascript">
     /*<![CDATA[*/
 
-        const serverMsg = [[${msg}]];
-        if (serverMsg) {
-            window.addEventListener('DOMContentLoaded', () => {
-                showCustomAlert(serverMsg);
-            });
-        }
+    const serverMsg = [[${msg}]];
+    if (serverMsg) {
+        window.addEventListener('DOMContentLoaded', () => {
+            showCustomAlert(serverMsg);
+        });
+    }
 
-        // ... (기존 변수 및 함수들은 모두 그대로 유지) ...
-        const serverMember = {
-            gender: [[${session.loginMember.gender}]],
-            birthDate: [[${session.loginMember.birthDate}]],
-            province: [[${session.loginMember.province}]],
-            city: [[${session.loginMember.city}]],
-            eduLevelCode: [[${session.loginMember.eduLevelCode}]],
-            empStatusCode: [[${session.loginMember.empStatusCode}]],
-            married: [[${session.loginMember.married}]],
-            child: [[${session.loginMember.child}]],
-            home: [[${session.loginMember.home}]],
-            familySize: [[${session.loginMember.familySize}]],
-            personalIncome: [[${session.loginMember.personalIncome}]],
-            familyIncome: [[${session.loginMember.familyIncome}]]
-        };
+    const serverMember = {
+        gender: [[${session.loginMember.gender}]],
+        birthDate: [[${session.loginMember.birthDate}]],
+        province: [[${session.loginMember.province}]],
+        city: [[${session.loginMember.city}]],
+        eduLevelCode: [[${session.loginMember.eduLevelCode}]],
+        empStatusCode: [[${session.loginMember.empStatusCode}]],
+        married: [[${session.loginMember.married}]],
+        child: [[${session.loginMember.child}]],
+        home: [[${session.loginMember.home}]],
+        familySize: [[${session.loginMember.familySize}]],
+        personalIncome: [[${session.loginMember.personalIncome}]],
+        familyIncome: [[${session.loginMember.familyIncome}]]
+    };
 
-        const eduCodeMap = {
+    const eduCodeMap = {
         "0049001": 1, "0049002": 2, "0049003": 3, "0049004": 4,
         "0049005": 5, "0049006": 6, "0049007": 7, "0049008": 8
     };
-        const empCodeMap = {
-        "UNEMPLOYED": 1,    // 미취업
-        "EMPLOYED": 2,      // 직장인
-        "SELF_EMPLOYED": 3, // 자영업
-        "FREELANCER": 4,    // 프리랜서
-        "FOUNDER": 5        // 창업자
+    const empCodeMap = {
+        "UNEMPLOYED": 1, "EMPLOYED": 2, "SELF_EMPLOYED": 3, "FREELANCER": 4, "FOUNDER": 5
     };
-        const eduKeyByCode = {
+    const eduKeyByCode = {
         1: "0049001", 2: "0049002", 3: "0049003", 4: "0049004",
         5: "0049005", 6: "0049006", 7: "0049007", 8: "0049008"
     };
-        const empKeyByCode = {
-        1: "UNEMPLOYED",
-        2: "EMPLOYED",
-        3: "SELF_EMPLOYED",
-        4: "FREELANCER",
-        5: "FOUNDER"
+    const empKeyByCode = {
+        1: "UNEMPLOYED", 2: "EMPLOYED", 3: "SELF_EMPLOYED", 4: "FREELANCER", 5: "FOUNDER"
     };
 
-        function formatBirthDate(dateStr) {
-            if (!dateStr) return '-';
-            const cleanStr = String(dateStr).replace(/[^0-9]/g, '');
-            if (cleanStr.length === 8) {
-                return cleanStr.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3');
-            }
-            return String(dateStr);
+    function formatBirthDate(dateStr) {
+        if (!dateStr) return '-';
+        const cleanStr = String(dateStr).replace(/[^0-9]/g, '');
+        if (cleanStr.length === 8) {
+            return cleanStr.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3');
+        }
+        return String(dateStr);
+    }
+
+    function unformatBirthDate(dateStr) {
+        if (!dateStr) return '';
+        return String(dateStr).replace(/[^0-9]/g, '');
+    }
+
+    function yyyymmddToDate(yyyymmdd) {
+        if (!yyyymmdd) return null;
+        const s = String(yyyymmdd).replace(/[^0-9]/g, '');
+        if (s.length !== 8) return null;
+        return `${s.substring(0,4)}-${s.substring(4,6)}-${s.substring(6,8)}`;
+    }
+
+    document.getElementById('hiddenDatePicker').addEventListener('change', function() {
+        if(this.value) {
+            const dateStr = this.value.replace(/-/g, '');
+            document.getElementById('modal-birthDate').value = dateStr;
+        }
+    });
+
+    // [수정] 알림 모달 호출 함수 - 아이콘 타입 추가 (default: 'info')
+    function showCustomAlert(msg, type = 'info') {
+        const modal = document.getElementById('alert-modal');
+        const content = document.getElementById('alert-content');
+        const iconContainer = document.getElementById('alert-icon-container');
+
+        // 아이콘 변경 로직
+        if (type === 'bell') {
+            iconContainer.innerHTML = '<i class="fa-regular fa-bell"></i>'; // [수정 2] 종 모양
+        } else {
+            iconContainer.innerHTML = '<i class="fa-solid fa-circle-info"></i>'; // 기본 i 모양
         }
 
-        function unformatBirthDate(dateStr) {
-            if (!dateStr) return '';
-            return String(dateStr).replace(/[^0-9]/g, '');
+        document.getElementById('alert-msg').innerText = msg;
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            content.classList.remove('scale-95', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
+        }, 10);
+    }
+
+    function closeAlertModal() {
+        const modal = document.getElementById('alert-modal');
+        const content = document.getElementById('alert-content');
+        content.classList.remove('scale-100', 'opacity-100');
+        content.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => modal.classList.add('hidden'), 200);
+    }
+
+    function openNameChangeModal() {
+        const modal = document.getElementById('name-modal');
+        const content = document.getElementById('name-content');
+        document.getElementById('newNameInput').value = [[${session.loginMember.memberName}]];
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            content.classList.remove('scale-95', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
+        }, 10);
+        setTimeout(() => document.getElementById('newNameInput').focus(), 100);
+    }
+
+    function closeNameChangeModal() {
+        const modal = document.getElementById('name-modal');
+        const content = document.getElementById('name-content');
+        content.classList.remove('scale-100', 'opacity-100');
+        content.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => modal.classList.add('hidden'), 200);
+    }
+
+    function validateNameChange() {
+        const nameInput = document.getElementById('newNameInput');
+        if (nameInput.value.trim() === "") {
+            showCustomAlert("이름을 입력해주세요.");
+            nameInput.focus();
+            return false;
         }
+        return true;
+    }
 
-        function yyyymmddToDate(yyyymmdd) {
-          if (!yyyymmdd) return null;
-          const s = String(yyyymmdd).replace(/[^0-9]/g, '');
-          if (s.length !== 8) return null;
-          return `${s.substring(0,4)}-${s.substring(4,6)}-${s.substring(6,8)}`;
+    const areaData = {
+        "서울특별시": ["종로구","중구","용산구","성동구","광진구","동대문구","중랑구","성북구","강북구","도봉구","노원구","은평구","서대문구","마포구","양천구","강서구","구로구","금천구","영등포구","동작구","관악구","서초구","강남구","송파구","강동구"],
+        "부산광역시": ["중구","서구","동구","영도구","부산진구","동래구","남구","북구","해운대구","사하구","금정구","강서구","연제구","수영구","사상구","기장군"],
+        "대구광역시": ["중구","동구","서구","남구","북구","수성구","달서구","달성군","군위군"],
+        "인천광역시": ["중구","동구","미추홀구","연수구","남동구","부평구","계양구","서구","강화군","옹진군"],
+        "광주광역시": ["동구","서구","남구","북구","광산구"],
+        "대전광역시": ["동구","중구","서구","유성구","대덕구"],
+        "울산광역시": ["중구","남구","동구","북구","울주군"],
+        "세종특별자치시": ["세종특별자치시"],
+        "경기도": ["수원시","성남시","의정부시","안양시","부천시","광명시","평택시","동두천시","안산시","고양시","과천시","구리시","남양주시","오산시","시흥시","군포시","의왕시","하남시","용인시","파주시","이천시","안성시","김포시","화성시","광주시","양주시","포천시","여주시","연천군","가평군","양평군"],
+        "강원특별자치도": ["춘천시","원주시","강릉시","동해시","태백시","속초시","삼척시","홍천군","횡성군","영월군","평창군","정선군","철원군","화천군","양구군","인제군","고성군","양양군"],
+        "충청북도": ["청주시","충주시","제천시","보은군","옥천군","영동군","증평군","진천군","괴산군","음성군","단양군"],
+        "충청남도": ["천안시","공주시","보령시","아산시","서산시","논산시","계룡시","당진시","금산군","부여군","서천군","청양군","홍성군","예산군","태안군"],
+        "전북특별자치도": ["전주시","군산시","익산시","정읍시","남원시","김제시","완주군","진안군","무주군","장수군","임실군","순창군","고창군","부안군"],
+        "전라남도": ["목포시","여수시","순천시","나주시","광양시","담양군","곡성군","구례군","고흥군","보성군","화순군","장흥군","강진군","해남군","영암군","무안군","함평군","영광군","장성군","완도군","진도군","신안군"],
+        "경상북도": ["포항시","경주시","김천시","안동시","구미시","영주시","영천시","상주시","문경시","경산시","의성군","청송군","영양군","영덕군","청도군","고령군","성주군","칠곡군","예천군","봉화군","울진군","울릉군"],
+        "경상남도": ["창원시","진주시","통영시","사천시","김해시","밀양시","거제시","양산시","의령군","함안군","창녕군","고성군","남해군","하동군","산청군","함양군","거창군","합천군"],
+        "제주특별자치도": ["제주시","서귀포시"]
+    };
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const siSelect = document.getElementById("modal-regionSi");
+        for (const si in areaData) {
+            const option = document.createElement("option");
+            option.value = si;
+            option.text = si;
+            siSelect.appendChild(option);
         }
+        syncSlider('modal-myIncomeSlider', 'modal-myIncomeText');
+        syncSlider('modal-hhIncomeSlider', 'modal-hhIncomeText');
+        loadServerConditionsToView();
+    });
 
-        document.getElementById('hiddenDatePicker').addEventListener('change', function() {
-            if(this.value) {
-                const dateStr = this.value.replace(/-/g, '');
-                document.getElementById('modal-birthDate').value = dateStr;
-            }
-        });
-
-        function showCustomAlert(msg) {
-            const modal = document.getElementById('alert-modal');
-            const content = document.getElementById('alert-content');
-            document.getElementById('alert-msg').innerText = msg;
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                content.classList.remove('scale-95', 'opacity-0');
-                content.classList.add('scale-100', 'opacity-100');
-            }, 10);
-        }
-
-        function closeAlertModal() {
-            const modal = document.getElementById('alert-modal');
-            const content = document.getElementById('alert-content');
-            content.classList.remove('scale-100', 'opacity-100');
-            content.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => modal.classList.add('hidden'), 200);
-        }
-
-        function openNameChangeModal() {
-            const modal = document.getElementById('name-modal');
-            const content = document.getElementById('name-content');
-            document.getElementById('newNameInput').value = [[${session.loginMember.memberName}]];
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                content.classList.remove('scale-95', 'opacity-0');
-                content.classList.add('scale-100', 'opacity-100');
-            }, 10);
-            setTimeout(() => document.getElementById('newNameInput').focus(), 100);
-        }
-
-        function closeNameChangeModal() {
-            const modal = document.getElementById('name-modal');
-            const content = document.getElementById('name-content');
-            content.classList.remove('scale-100', 'opacity-100');
-            content.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => modal.classList.add('hidden'), 200);
-        }
-
-        function validateNameChange() {
-            const nameInput = document.getElementById('newNameInput');
-            if (nameInput.value.trim() === "") {
-                showCustomAlert("이름을 입력해주세요.");
-                nameInput.focus();
-                return false;
-            }
-            return true;
-        }
-
-        const areaData = {
-            "서울특별시": ["종로구","중구","용산구","성동구","광진구","동대문구","중랑구","성북구","강북구","도봉구","노원구","은평구","서대문구","마포구","양천구","강서구","구로구","금천구","영등포구","동작구","관악구","서초구","강남구","송파구","강동구"],
-            "부산광역시": ["중구","서구","동구","영도구","부산진구","동래구","남구","북구","해운대구","사하구","금정구","강서구","연제구","수영구","사상구","기장군"],
-            "대구광역시": ["중구","동구","서구","남구","북구","수성구","달서구","달성군","군위군"],
-            "인천광역시": ["중구","동구","미추홀구","연수구","남동구","부평구","계양구","서구","강화군","옹진군"],
-            "광주광역시": ["동구","서구","남구","북구","광산구"],
-            "대전광역시": ["동구","중구","서구","유성구","대덕구"],
-            "울산광역시": ["중구","남구","동구","북구","울주군"],
-            "세종특별자치시": ["세종특별자치시"],
-            "경기도": ["수원시","성남시","의정부시","안양시","부천시","광명시","평택시","동두천시","안산시","고양시","과천시","구리시","남양주시","오산시","시흥시","군포시","의왕시","하남시","용인시","파주시","이천시","안성시","김포시","화성시","광주시","양주시","포천시","여주시","연천군","가평군","양평군"],
-            "강원특별자치도": ["춘천시","원주시","강릉시","동해시","태백시","속초시","삼척시","홍천군","횡성군","영월군","평창군","정선군","철원군","화천군","양구군","인제군","고성군","양양군"],
-            "충청북도": ["청주시","충주시","제천시","보은군","옥천군","영동군","증평군","진천군","괴산군","음성군","단양군"],
-            "충청남도": ["천안시","공주시","보령시","아산시","서산시","논산시","계룡시","당진시","금산군","부여군","서천군","청양군","홍성군","예산군","태안군"],
-            "전북특별자치도": ["전주시","군산시","익산시","정읍시","남원시","김제시","완주군","진안군","무주군","장수군","임실군","순창군","고창군","부안군"],
-            "전라남도": ["목포시","여수시","순천시","나주시","광양시","담양군","곡성군","구례군","고흥군","보성군","화순군","장흥군","강진군","해남군","영암군","무안군","함평군","영광군","장성군","완도군","진도군","신안군"],
-            "경상북도": ["포항시","경주시","김천시","안동시","구미시","영주시","영천시","상주시","문경시","경산시","의성군","청송군","영양군","영덕군","청도군","고령군","성주군","칠곡군","예천군","봉화군","울진군","울릉군"],
-            "경상남도": ["창원시","진주시","통영시","사천시","김해시","밀양시","거제시","양산시","의령군","함안군","창녕군","고성군","남해군","하동군","산청군","함양군","거창군","합천군"],
-            "제주특별자치도": ["제주시","서귀포시"]
-        };
-
-        document.addEventListener("DOMContentLoaded", function() {
-            const siSelect = document.getElementById("modal-regionSi");
-            for (const si in areaData) {
+    function updateModalRegionGu() {
+        const siSelect = document.getElementById("modal-regionSi");
+        const guSelect = document.getElementById("modal-regionGu");
+        const selectedSi = siSelect.value;
+        guSelect.innerHTML = '<option value="">시/군/구 선택</option>';
+        if (selectedSi && areaData[selectedSi]) {
+            areaData[selectedSi].forEach(function(gu) {
                 const option = document.createElement("option");
-                option.value = si;
-                option.text = si;
-                siSelect.appendChild(option);
-            }
-            syncSlider('modal-myIncomeSlider', 'modal-myIncomeText');
-            syncSlider('modal-hhIncomeSlider', 'modal-hhIncomeText');
-            loadServerConditionsToView();
-        });
-
-        function updateModalRegionGu() {
-            const siSelect = document.getElementById("modal-regionSi");
-            const guSelect = document.getElementById("modal-regionGu");
-            const selectedSi = siSelect.value;
-            guSelect.innerHTML = '<option value="">시/군/구 선택</option>';
-            if (selectedSi && areaData[selectedSi]) {
-                areaData[selectedSi].forEach(function(gu) {
-                    const option = document.createElement("option");
-                    option.value = gu;
-                    option.text = gu;
-                    guSelect.appendChild(option);
-                });
-            }
-        }
-
-        function syncSlider(sliderId, textId) {
-            const slider = document.getElementById(sliderId);
-            const text = document.getElementById(textId);
-            slider.addEventListener('input', () => text.value = slider.value);
-            text.addEventListener('input', () => {
-                 let val = parseInt(text.value) || 0;
-                 if(val > parseInt(slider.max)) val = slider.max;
-                 slider.value = val;
+                option.value = gu;
+                option.text = gu;
+                guSelect.appendChild(option);
             });
         }
+    }
 
-        function wonToManwon(won) {
-            if (won === null || won === undefined) return 0;
-            const n = parseInt(won);
-            if (isNaN(n)) return 0;
-            return n;
-        }
+    function syncSlider(sliderId, textId) {
+        const slider = document.getElementById(sliderId);
+        const text = document.getElementById(textId);
+        slider.addEventListener('input', () => text.value = slider.value);
+        text.addEventListener('input', () => {
+            let val = parseInt(text.value) || 0;
+            if(val > parseInt(slider.max)) val = slider.max;
+            slider.value = val;
+        });
+    }
 
-        function loadServerConditionsToView() {
-            const gender = (serverMember.gender === 'M') ? '남성' : (serverMember.gender === 'F' ? '여성' : '-');
-            const birth = formatBirthDate(serverMember.birthDate);
-            document.getElementById('view-basic').innerText = `${gender} / ${birth}`;
-            const region = (serverMember.province || '-') + ' ' + (serverMember.city || '');
-            document.getElementById('view-region').innerText = region.trim();
-            const eduLabel = eduText(serverMember.eduLevelCode);
-            document.getElementById('view-edu').innerText = eduLabel;
-            const jobLabel = empText(serverMember.empStatusCode);
-            document.getElementById('view-job').innerText = (jobLabel || '-');
-            const marry = (serverMember.married === true) ? '기혼' : '미혼';
-            document.getElementById('view-family').innerText = `${marry} / 자녀 ${(serverMember.child ?? 0)}명`;
-            const house = (serverMember.home === true) ? '자가' : '전/월세';
-            document.getElementById('view-house').innerText = `${house} / 가구원 ${(serverMember.familySize ?? 1)}명`;
-            document.getElementById('view-myIncome').innerText = wonToManwon(serverMember.personalIncome) + '만원';
-            document.getElementById('view-hhIncome').innerText = wonToManwon(serverMember.familyIncome) + '만원';
-        }
+    function wonToManwon(won) {
+        if (won === null || won === undefined) return 0;
+        const n = parseInt(won);
+        if (isNaN(n)) return 0;
+        return n;
+    }
 
-        function eduText(code) {
+    function loadServerConditionsToView() {
+        const gender = (serverMember.gender === 'M') ? '남성' : (serverMember.gender === 'F' ? '여성' : '-');
+        const birth = formatBirthDate(serverMember.birthDate);
+        document.getElementById('view-basic').innerText = `${gender} / ${birth}`;
+        const region = (serverMember.province || '-') + ' ' + (serverMember.city || '');
+        document.getElementById('view-region').innerText = region.trim();
+        const eduLabel = eduText(serverMember.eduLevelCode);
+        document.getElementById('view-edu').innerText = eduLabel;
+        const jobLabel = empText(serverMember.empStatusCode);
+        document.getElementById('view-job').innerText = (jobLabel || '-');
+        const marry = (serverMember.married === true) ? '기혼' : '미혼';
+        document.getElementById('view-family').innerText = `${marry} / 자녀 ${(serverMember.child ?? 0)}명`;
+        const house = (serverMember.home === true) ? '자가' : '전/월세';
+        document.getElementById('view-house').innerText = `${house} / 가구원 ${(serverMember.familySize ?? 1)}명`;
+        document.getElementById('view-myIncome').innerText = wonToManwon(serverMember.personalIncome) + '만원';
+        document.getElementById('view-hhIncome').innerText = wonToManwon(serverMember.familyIncome) + '만원';
+    }
+
+    function eduText(code) {
         switch (parseInt(code)) {
             case 1: return '고졸 미만';
             case 2: return '고교 재학';
@@ -773,7 +816,7 @@
             default: return '-';
         }
     }
-        function empText(code) {
+    function empText(code) {
         switch (parseInt(code)) {
             case 1: return '미취업';
             case 2: return '직장인';
@@ -784,53 +827,53 @@
         }
     }
 
-        function openSetupModal() {
-            const modal = document.getElementById('setup-modal');
-            setRadio('modal-gender', serverMember.gender);
-            setValue('modal-birthDate', unformatBirthDate(serverMember.birthDate));
-            setValue('modal-regionSi', serverMember.province);
-            updateModalRegionGu();
-            setValue('modal-regionGu', serverMember.city);
-            setValue('modal-educationLevel', eduKeyByCode[parseInt(serverMember.eduLevelCode)] || '');
-            setValue('modal-employmentStatus', empKeyByCode[parseInt(serverMember.empStatusCode)] || '');
-            setRadio('modal-marry', String(serverMember.married === true));
-            setValue('modal-childCount', (serverMember.child ?? 0));
-            setRadio('modal-house', String(serverMember.home === true));
-            setValue('modal-familyCount', (serverMember.familySize ?? 1));
-            setSlider('modal-myIncomeSlider', 'modal-myIncomeText', wonToManwon(serverMember.personalIncome));
-            setSlider('modal-hhIncomeSlider', 'modal-hhIncomeText', wonToManwon(serverMember.familyIncome));
-            modal.classList.remove('hidden');
-        }
+    function openSetupModal() {
+        const modal = document.getElementById('setup-modal');
+        setRadio('modal-gender', serverMember.gender);
+        setValue('modal-birthDate', unformatBirthDate(serverMember.birthDate));
+        setValue('modal-regionSi', serverMember.province);
+        updateModalRegionGu();
+        setValue('modal-regionGu', serverMember.city);
+        setValue('modal-educationLevel', eduKeyByCode[parseInt(serverMember.eduLevelCode)] || '');
+        setValue('modal-employmentStatus', empKeyByCode[parseInt(serverMember.empStatusCode)] || '');
+        setRadio('modal-marry', String(serverMember.married === true));
+        setValue('modal-childCount', (serverMember.child ?? 0));
+        setRadio('modal-house', String(serverMember.home === true));
+        setValue('modal-familyCount', (serverMember.familySize ?? 1));
+        setSlider('modal-myIncomeSlider', 'modal-myIncomeText', wonToManwon(serverMember.personalIncome));
+        setSlider('modal-hhIncomeSlider', 'modal-hhIncomeText', wonToManwon(serverMember.familyIncome));
+        modal.classList.remove('hidden');
+    }
 
-        function closeSetupModal() {
-            document.getElementById('setup-modal').classList.add('hidden');
-        }
+    function closeSetupModal() {
+        document.getElementById('setup-modal').classList.add('hidden');
+    }
 
-        function saveConditions() {
-            const gender = getRadio('modal-gender');
-            const birthDate = yyyymmddToDate(getValue('modal-birthDate'));
-            const regionSi = getValue('modal-regionSi');
-            const regionGu = getValue('modal-regionGu');
-            const eduKey = getValue('modal-educationLevel');
-            const empKey = getValue('modal-employmentStatus');
-            const educationLevel = eduCodeMap[eduKey] ?? null;
-            const employmentStatus = empCodeMap[empKey] ?? null;
-            const married = (getRadio('modal-marry') === 'true');
-            const home = (getRadio('modal-house') === 'true');
-            const child = parseInt(getValue('modal-childCount')) || 0;
-            const familySize = parseInt(getValue('modal-familyCount')) || 1;
-            const myIncomeMan = parseInt(getValue('modal-myIncomeText')) || 0;
-            const hhIncomeMan = parseInt(getValue('modal-hhIncomeText')) || 0;
-            const personalIncome = myIncomeMan;
-            const familyIncome = hhIncomeMan;
+    function saveConditions() {
+        const gender = getRadio('modal-gender');
+        const birthDate = yyyymmddToDate(getValue('modal-birthDate'));
+        const regionSi = getValue('modal-regionSi');
+        const regionGu = getValue('modal-regionGu');
+        const eduKey = getValue('modal-educationLevel');
+        const empKey = getValue('modal-employmentStatus');
+        const educationLevel = eduCodeMap[eduKey] ?? null;
+        const employmentStatus = empCodeMap[empKey] ?? null;
+        const married = (getRadio('modal-marry') === 'true');
+        const home = (getRadio('modal-house') === 'true');
+        const child = parseInt(getValue('modal-childCount')) || 0;
+        const familySize = parseInt(getValue('modal-familyCount')) || 1;
+        const myIncomeMan = parseInt(getValue('modal-myIncomeText')) || 0;
+        const hhIncomeMan = parseInt(getValue('modal-hhIncomeText')) || 0;
+        const personalIncome = myIncomeMan;
+        const familyIncome = hhIncomeMan;
 
-            const data = { gender, birthDate, regionSi, regionGu, educationLevel, employmentStatus, married, home, child, familySize, personalIncome, familyIncome };
+        const data = { gender, birthDate, regionSi, regionGu, educationLevel, employmentStatus, married, home, child, familySize, personalIncome, familyIncome };
 
-            fetch('/updateConditions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            })
+        fetch('/updateConditions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
             .then(res => res.text())
             .then(result => {
                 if(result === 'success') {
@@ -847,190 +890,258 @@
                 console.error(err);
                 showCustomAlert("오류가 발생했습니다.");
             });
-        }
-
-        function getValue(id) { return document.getElementById(id).value; }
-        function setValue(id, val) { if(val !== undefined && val !== null) document.getElementById(id).value = val; }
-        function getRadio(name) {
-            const el = document.querySelector(`input[name="${name}"]:checked`);
-            return el ? el.value : '';
-        }
-        function setRadio(name, val) {
-            if(val === undefined || val === null || val === '') return;
-            const el = document.querySelector(`input[name="${name}"][value="${val}"]`);
-            if(el) el.checked = true;
-        }
-        function setSlider(sliderId, textId, val) {
-            const v = val || 0;
-            document.getElementById(sliderId).value = v;
-            document.getElementById(textId).value = v;
-        }
-
-        const newPw = document.getElementById('newPw');
-        const newPwConfirm = document.getElementById('newPwConfirm');
-        const pwMatchMsg = document.getElementById('pwMatchMsg');
-        const pwRuleError = document.getElementById('pwRuleError');
-
-        if (newPw && newPwConfirm) {
-            function checkPwValidation() {
-                const val = newPw.value;
-                const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{6,20}$/;
-                if(val.length > 0 && !regex.test(val)) {
-                    pwRuleError.classList.remove('hidden');
-                    newPw.classList.add('border-red-500');
-                } else {
-                    pwRuleError.classList.add('hidden');
-                    newPw.classList.remove('border-red-500');
-                }
-                checkPasswordMatch();
-            }
-            function checkPasswordMatch() {
-                if (newPwConfirm.value.length === 0) {
-                    pwMatchMsg.classList.add('hidden');
-                    newPwConfirm.classList.remove('border-red-500');
-                    return;
-                }
-                if (newPw.value !== newPwConfirm.value) {
-                    pwMatchMsg.classList.remove('hidden');
-                    newPwConfirm.classList.add('border-red-500');
-                } else {
-                    pwMatchMsg.classList.add('hidden');
-                    newPwConfirm.classList.remove('border-red-500');
-                }
-            }
-            newPw.addEventListener('input', checkPwValidation);
-            newPwConfirm.addEventListener('input', checkPasswordMatch);
-        }
-
-        function validateForm() {
-            if(newPw && newPw.value.length > 0) {
-                const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{6,20}$/;
-                if (!regex.test(newPw.value)) {
-                    showCustomAlert('비밀번호 형식이 올바르지 않습니다.');
-                    newPw.focus();
-                    return false;
-                }
-                if(newPw.value !== newPwConfirm.value) {
-                    showCustomAlert('새 비밀번호가 일치하지 않습니다.');
-                    newPwConfirm.focus();
-                    return false;
-                }
-                const currentPw = document.querySelector('input[name="currentPw"]');
-                if(currentPw && currentPw.value.length === 0) {
-                    showCustomAlert('비밀번호를 변경하려면 기존 비밀번호를 입력해야 합니다.');
-                    currentPw.focus();
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        // --- [신규 추가] 마이페이지 즐겨찾기 삭제 기능 ---
-    function removeFavorite(plcyNo) {
-        if (!confirm("정말 즐겨찾기에서 삭제하시겠습니까?")) return;
-
-        // 기존에 만든 토글 API 재사용 (이미 찜한 상태에서 호출하면 삭제됨)
-        fetch(`/api/favorite/${plcyNo}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-        })
-        .then(res => res.json())
-        .then(data => {
-            // data.favorited가 false여야 삭제된 것
-            if (data.favorited === false) {
-                // 1. 화면에서 카드 부드럽게 제거
-                const card = document.getElementById(`fav-card-${plcyNo}`);
-                if (card) {
-                    card.style.transition = 'all 0.3s';
-                    card.style.opacity = '0';
-                    card.style.transform = 'scale(0.9)';
-                    setTimeout(() => {
-                        card.remove();
-                        checkEmptyFavorites(); // 목록 비었는지 확인
-                    }, 300);
-                }
-            } else {
-                alert("삭제 처리에 실패했습니다.");
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            alert("오류가 발생했습니다.");
-        });
     }
 
-    // 카드가 다 지워지면 '데이터 없음' 메시지 보여주기
+    function getValue(id) { return document.getElementById(id).value; }
+    function setValue(id, val) { if(val !== undefined && val !== null) document.getElementById(id).value = val; }
+    function getRadio(name) {
+        const el = document.querySelector(`input[name="${name}"]:checked`);
+        return el ? el.value : '';
+    }
+    function setRadio(name, val) {
+        if(val === undefined || val === null || val === '') return;
+        const el = document.querySelector(`input[name="${name}"][value="${val}"]`);
+        if(el) el.checked = true;
+    }
+    function setSlider(sliderId, textId, val) {
+        const v = val || 0;
+        document.getElementById(sliderId).value = v;
+        document.getElementById(textId).value = v;
+    }
+
+    const newPw = document.getElementById('newPw');
+    const newPwConfirm = document.getElementById('newPwConfirm');
+    const pwMatchMsg = document.getElementById('pwMatchMsg');
+    const pwRuleError = document.getElementById('pwRuleError');
+
+    if (newPw && newPwConfirm) {
+        function checkPwValidation() {
+            const val = newPw.value;
+            const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{6,20}$/;
+            if(val.length > 0 && !regex.test(val)) {
+                pwRuleError.classList.remove('hidden');
+                newPw.classList.add('border-red-500');
+            } else {
+                pwRuleError.classList.add('hidden');
+                newPw.classList.remove('border-red-500');
+            }
+            checkPasswordMatch();
+        }
+        function checkPasswordMatch() {
+            if (newPwConfirm.value.length === 0) {
+                pwMatchMsg.classList.add('hidden');
+                newPwConfirm.classList.remove('border-red-500');
+                return;
+            }
+            if (newPw.value !== newPwConfirm.value) {
+                pwMatchMsg.classList.remove('hidden');
+                newPwConfirm.classList.add('border-red-500');
+            } else {
+                pwMatchMsg.classList.add('hidden');
+                newPwConfirm.classList.remove('border-red-500');
+            }
+        }
+        newPw.addEventListener('input', checkPwValidation);
+        newPwConfirm.addEventListener('input', checkPasswordMatch);
+    }
+
+    function validateForm() {
+        if(newPw && newPw.value.length > 0) {
+            const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{6,20}$/;
+            if (!regex.test(newPw.value)) {
+                showCustomAlert('비밀번호 형식이 올바르지 않습니다.');
+                newPw.focus();
+                return false;
+            }
+            if(newPw.value !== newPwConfirm.value) {
+                showCustomAlert('새 비밀번호가 일치하지 않습니다.');
+                newPwConfirm.focus();
+                return false;
+            }
+            const currentPw = document.querySelector('input[name="currentPw"]');
+            if(currentPw && currentPw.value.length === 0) {
+                showCustomAlert('비밀번호를 변경하려면 기존 비밀번호를 입력해야 합니다.');
+                currentPw.focus();
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // --- 즐겨찾기 관리 스크립트 ---
+
+    function selectAllFavs() {
+        const checkboxes = document.querySelectorAll('input[name="favCheckbox"]');
+        checkboxes.forEach(cb => cb.checked = true);
+    }
+
+    function deselectAllFavs() {
+        const checkboxes = document.querySelectorAll('input[name="favCheckbox"]');
+        checkboxes.forEach(cb => cb.checked = false);
+    }
+
+    // [수정 2] 알림 토글 로직: ON일 때만 모달(bell 아이콘), OFF는 모달 없음
+    function toggleNotification(btn) {
+        const icon = btn.querySelector('i');
+
+        if (icon.classList.contains('fa-regular')) {
+            // 알림 켜기
+            icon.classList.remove('fa-regular');
+            icon.classList.add('fa-solid', 'text-yellow-500');
+            btn.classList.add('text-yellow-600', 'bg-yellow-50');
+            showCustomAlert("알림이 설정되었습니다.", 'bell'); // 'bell' 타입 전달
+        } else {
+            // 알림 끄기 (조용히 처리)
+            icon.classList.remove('fa-solid', 'text-yellow-500');
+            icon.classList.add('fa-regular');
+            btn.classList.remove('text-yellow-600', 'bg-yellow-50');
+            // showCustomAlert 호출 안 함
+        }
+    }
+
+    // [수정 3] 삭제 버튼 클릭 시 -> 모달 열기
+    function confirmDeleteFavs() {
+        const checkboxes = document.querySelectorAll('input[name="favCheckbox"]:checked');
+        if (checkboxes.length === 0) {
+            showCustomAlert("삭제할 항목을 선택해주세요.");
+            return;
+        }
+
+        // 모달 메시지 업데이트 및 열기
+        document.getElementById('delete-confirm-msg').innerText = `선택한 ${checkboxes.length}개의 항목을 삭제하시겠습니까?`;
+        openDeleteModal();
+    }
+
+    // 삭제 모달 열기
+    function openDeleteModal() {
+        const modal = document.getElementById('delete-confirm-modal');
+        const content = document.getElementById('delete-confirm-content');
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            content.classList.remove('scale-95', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
+        }, 10);
+    }
+
+    // 삭제 모달 닫기
+    function closeDeleteModal() {
+        const modal = document.getElementById('delete-confirm-modal');
+        const content = document.getElementById('delete-confirm-content');
+        content.classList.remove('scale-100', 'opacity-100');
+        content.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => modal.classList.add('hidden'), 200);
+    }
+
+    // [수정 3] 실제 삭제 실행 (모달 내부 '삭제' 버튼에서 호출)
+    async function executeDeleteFavs() {
+        closeDeleteModal(); // 모달 닫기
+
+        const checkboxes = document.querySelectorAll('input[name="favCheckbox"]:checked');
+        let successCount = 0;
+
+        const deletePromises = Array.from(checkboxes).map(async (cb) => {
+            const plcyNo = cb.value;
+            try {
+                const res = await fetch(`/api/favorite/${plcyNo}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await res.json();
+
+                if (data.favorited === false) {
+                    const card = document.getElementById(`fav-card-${plcyNo}`);
+                    if (card) {
+                        card.style.transition = 'all 0.3s';
+                        card.style.opacity = '0';
+                        card.style.transform = 'scale(0.9)';
+                        setTimeout(() => card.remove(), 300);
+                    }
+                    successCount++;
+                }
+            } catch (err) {
+                console.error(`삭제 실패 (ID: ${plcyNo})`, err);
+            }
+        });
+
+        await Promise.all(deletePromises);
+
+        if (successCount > 0) {
+            setTimeout(() => {
+                showCustomAlert(`${successCount}개의 항목이 삭제되었습니다.`);
+                checkEmptyFavorites();
+            }, 350);
+        } else {
+            showCustomAlert("삭제 처리에 실패했습니다.");
+        }
+    }
+
     function checkEmptyFavorites() {
         const container = document.getElementById('favorites-container');
-        if (container && container.children.length === 0) {
-            container.remove(); // 컨테이너 제거
-
-            // 빈 상태 메시지 생성 및 추가
+        if (container && container.querySelectorAll('.fav-card').length === 0) {
+            container.remove();
             const emptyMsg = `
                 <div id="empty-favorites-msg" class="bg-slate-50 p-8 rounded-xl text-center border border-slate-200 border-dashed text-slate-400">
                     <i class="fa-regular fa-bookmark text-2xl mb-2"></i>
                     <p class="text-sm">즐겨찾기한 정책이 없습니다.</p>
                 </div>
             `;
-            // 제목(h2) 바로 뒤에 추가하기 위해 insertAdjacentHTML 사용
-            const header = document.querySelector('#favorites h2');
+            const header = document.querySelector('#favorites h2').parentNode;
             header.insertAdjacentHTML('afterend', emptyMsg);
+            const btnGroup = header.querySelector('div');
+            if(btnGroup) btnGroup.style.display = 'none';
         }
     }
 
-        // --- [신규 추가] 회원탈퇴 모달 제어 함수 ---
-        function openWithdrawStep1() {
-            const modal = document.getElementById('withdraw-step1-modal');
-            const content = document.getElementById('withdraw-step1-content');
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                content.classList.remove('scale-95', 'opacity-0');
-                content.classList.add('scale-100', 'opacity-100');
-            }, 10);
+    // --- 회원탈퇴 모달 제어 함수 ---
+    function openWithdrawStep1() {
+        const modal = document.getElementById('withdraw-step1-modal');
+        const content = document.getElementById('withdraw-step1-content');
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            content.classList.remove('scale-95', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
+        }, 10);
+    }
+
+    function openWithdrawStep2() {
+        const modal1 = document.getElementById('withdraw-step1-modal');
+        modal1.classList.add('hidden');
+        const modal2 = document.getElementById('withdraw-step2-modal');
+        const content2 = document.getElementById('withdraw-step2-content');
+        modal2.classList.remove('hidden');
+        setTimeout(() => {
+            content2.classList.remove('scale-95', 'opacity-0');
+            content2.classList.add('scale-100', 'opacity-100');
+        }, 10);
+    }
+
+    function closeWithdrawModal() {
+        const modal1 = document.getElementById('withdraw-step1-modal');
+        const content1 = document.getElementById('withdraw-step1-content');
+        const modal2 = document.getElementById('withdraw-step2-modal');
+        const content2 = document.getElementById('withdraw-step2-content');
+
+        if (!modal1.classList.contains('hidden')) {
+            content1.classList.remove('scale-100', 'opacity-100');
+            content1.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => modal1.classList.add('hidden'), 200);
         }
-
-        function openWithdrawStep2() {
-            // 1단계 닫기
-            const modal1 = document.getElementById('withdraw-step1-modal');
-            modal1.classList.add('hidden');
-
-            // 2단계 열기
-            const modal2 = document.getElementById('withdraw-step2-modal');
-            const content2 = document.getElementById('withdraw-step2-content');
-            modal2.classList.remove('hidden');
-            setTimeout(() => {
-                content2.classList.remove('scale-95', 'opacity-0');
-                content2.classList.add('scale-100', 'opacity-100');
-            }, 10);
+        if (!modal2.classList.contains('hidden')) {
+            content2.classList.remove('scale-100', 'opacity-100');
+            content2.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => modal2.classList.add('hidden'), 200);
         }
+    }
 
-        function closeWithdrawModal() {
-            const modal1 = document.getElementById('withdraw-step1-modal');
-            const content1 = document.getElementById('withdraw-step1-content');
-            const modal2 = document.getElementById('withdraw-step2-modal');
-            const content2 = document.getElementById('withdraw-step2-content');
-
-            // 애니메이션 역재생 후 hidden 처리
-            if (!modal1.classList.contains('hidden')) {
-                content1.classList.remove('scale-100', 'opacity-100');
-                content1.classList.add('scale-95', 'opacity-0');
-                setTimeout(() => modal1.classList.add('hidden'), 200);
-            }
-            if (!modal2.classList.contains('hidden')) {
-                content2.classList.remove('scale-100', 'opacity-100');
-                content2.classList.add('scale-95', 'opacity-0');
-                setTimeout(() => modal2.classList.add('hidden'), 200);
-            }
+    document.addEventListener('keydown', function(event) {
+        if (event.key === "Escape") {
+            closeSetupModal();
+            closeAlertModal();
+            closeNameChangeModal();
+            closeWithdrawModal();
+            closeDeleteModal(); // ESC로 삭제 모달도 닫기
         }
-
-        document.addEventListener('keydown', function(event) {
-            if (event.key === "Escape") {
-                closeSetupModal();
-                closeAlertModal();
-                closeNameChangeModal();
-                closeWithdrawModal(); // ESC 키로 탈퇴 모달도 닫기
-            }
-        });
+    });
 
     /*]]>*/
 </script>
