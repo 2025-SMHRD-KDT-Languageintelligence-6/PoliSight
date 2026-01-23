@@ -50,6 +50,7 @@
         p.bizPrdEndYmd,
         p.plcyKywdNm,
         p.aplyPrdSeCd,
+        p.aplyYmd,
         p.bizPrdSeCd,
         p.mrgSttsCd,
         p.earnCndSeCd,
@@ -145,18 +146,24 @@
                 OR p.mrgSttsCd = ''
                 )
             </if>
-
-            AND (p.bizPrdEndYmd IS NULL OR p.bizPrdEndYmd >= CURDATE())
         </where>
 
-        -- ✅ [핵심 수정] 정렬 순서 변경
-        -- 1순위: 즐겨찾기 여부 (f.plcyNo가 있으면 1, 없으면 0 -> 내림차순 정렬)
-        -- 2순위: 마감일 있는 것 우선
-        -- 3순위: 마감일 오름차순
         ORDER BY
         (CASE WHEN f.plcyNo IS NOT NULL THEN 1 ELSE 0 END) DESC,
-        CASE WHEN p.bizPrdEndYmd IS NULL THEN 1 ELSE 0 END,
-        p.bizPrdEndYmd ASC
+
+        CASE
+        -- [그룹 3] 마감: 코드가 마감(003)이거나, 기간제인데 날짜가 지난 경우
+        WHEN p.aplyPrdSeCd = '0057003' THEN 3
+        WHEN p.aplyPrdSeCd = '0057001' AND STR_TO_DATE(SUBSTRING_INDEX(p.aplyYmd, '~', -1), '%Y%m%d') &lt; CURDATE() THEN 3
+
+        -- [그룹 2] 상시
+        WHEN p.aplyPrdSeCd = '0057002' THEN 2
+
+        -- [그룹 1] D-Day
+        ELSE 1
+        END ASC,
+
+        STR_TO_DATE(SUBSTRING_INDEX(p.aplyYmd, '~', -1), '%Y%m%d') ASC
     </select>
 
     <select id="selectPolicyById" resultMap="PolicyResultMap">

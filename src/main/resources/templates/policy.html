@@ -340,8 +340,7 @@
 
                         <span class="text-xs font-bold"
                               th:classappend="${policy.dDay < 0 ? 'text-gray-400' : (policy.dDay <= 7 ? 'text-red-500' : 'text-blue-500')}"
-                              th:text="${policy.dDay < 0 ? '마감됨' : 'D-' + policy.dDay}">
-                                    D-5
+                              th:text="${policy.dDayText}"> D-5
                         </span>
                     </div>
 
