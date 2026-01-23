@@ -104,7 +104,7 @@
                                th:text="${policy != null ? policy.description : '-'}">
                                 -
                             </p>
-                            <button id="moreBtn" type="button" onclick="toggleDescription()" class="hidden text-xs text-blue-600 font-bold mt-1 hover:underline focus:outline-none flex items-center gap-1">
+                            <button id="moreBtn" type="button" onclick="toggleDescription()" class="hidden w-full justify-end text-xs text-blue-600 font-bold mt-1 hover:underline focus:outline-none flex items-center gap-1">
                                 더보기 <i class="fa-solid fa-chevron-down text-[10px]"></i>
                             </button>
                         </div>
@@ -326,10 +326,15 @@
                         AI 정밀 분석 요청 (선택)
                     </h3>
                     <div class="bg-indigo-50/60 rounded-xl p-5 border border-indigo-100">
-                        <label for="ai_prompt" class="block text-xs font-bold text-indigo-900 mb-2">
-                            위 선택지에는 없는 특수한 상황이 있다면 적어주세요.
-                        </label>
-                        <textarea id="ai_prompt" th:field="*{userPrompt}" rows="3" class="w-full p-3 rounded-xl border border-indigo-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm resize-none placeholder-slate-400" placeholder="예: 프리랜서라 소득이 불규칙해요, 부모님과 주민등록은 같이 되어있는데 실거주는 따로 해요 등"></textarea>
+                        <div class="flex justify-between items-end mb-2 flex-wrap gap-2">
+                            <label for="ai_prompt" class="block text-sm font-bold text-indigo-900 break-keep leading-snug">
+                                위 선택지에는 없는 특수한 상황이 있다면 적어주세요.
+                            </label>
+                            <span id="charCount" class="text-xs text-indigo-500 font-bold shrink-0">0/500자</span>
+                        </div>
+
+                        <textarea id="ai_prompt" th:field="*{userPrompt}" rows="3" maxlength="500" oninput="updateCharCount(this)" class="w-full p-3 rounded-xl border border-indigo-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm resize-none placeholder-slate-400" placeholder="예: 프리랜서라 소득이 불규칙해요, 부모님과 주민등록은 같이 되어있는데 실거주는 따로 해요 등"></textarea>
+
                         <p class="text-[11px] text-indigo-500 mt-2 flex items-center gap-1">
                             <i class="fa-solid fa-circle-info"></i>
                             작성해주신 내용은 AI가 분석하여 시뮬레이션 결과에 반영합니다.
@@ -551,6 +556,12 @@
             }
         }
 
+        // [수정 2 관련] 프롬프트 글자수 업데이트 함수
+        function updateCharCount(textarea) {
+            const count = textarea.value.length;
+            document.getElementById('charCount').innerText = `${count}/500자`;
+        }
+
         document.addEventListener("DOMContentLoaded", function() {
             const siSelect = document.getElementById("regionSi");
 
@@ -569,6 +580,10 @@
             loadPrevConditions();
 
             checkDescriptionOverflow(); // 더보기 버튼 체크
+
+            // [수정 2 관련] 초기 로드 시 글자수 반영 (뒤로가기 등으로 값 있을 경우)
+            const promptArea = document.getElementById('ai_prompt');
+            if (promptArea) updateCharCount(promptArea);
 
             // 폼 전송 시 로딩 모달 띄우기 이벤트 추가
             const form = document.getElementById('simulationForm');

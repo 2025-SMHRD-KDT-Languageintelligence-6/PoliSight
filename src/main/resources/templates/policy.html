@@ -55,11 +55,8 @@
     /* 카드 선택 스타일 */
     .policy-card { position: relative; cursor: pointer; transition: all 0.2s; }
     .policy-card:hover { transform: translateY(-2px); }
+    /* 수정2 적용: ::after 가상 요소(체크표시) 제거됨 */
     .policy-card.selected { border-color: #2563EB; background-color: #f0f7ff; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1); }
-    .policy-card.selected::after {
-        content: '\f00c'; font-family: "Font Awesome 6 Free"; font-weight: 900;
-        position: absolute; top: 1rem; right: 1rem; color: #2563EB; font-size: 1.2rem;
-    }
 
     /* 인풋 공통 */
     .sidebar-input, select.sidebar-input {
@@ -290,7 +287,7 @@
     </aside>
 
     <section class="w-full md:col-span-8 lg:col-span-9 flex flex-col min-w-0">
-        <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm mb-5 flex items-center sticky top-24 z-10 w-full min-w-0">
+        <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm mb-5 flex items-center w-full min-w-0">
             <div class="pl-3 text-slate-400 flex-shrink-0 text-sm"><i class="fa-solid fa-search"></i></div>
 
             <input type="text" id="visual-keyword" placeholder="검색어를 입력하세요 (예: 청년 수당)"
@@ -335,7 +332,7 @@
                             <th:block th:if="${policy.department != null}">
                                 <th:block th:each="dept : ${#sets.toSet(#strings.arraySplit(policy.department, ','))}">
                                     <span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-1 rounded"
-                                        th:text="${dept.trim()}"> 부서명
+                                          th:text="${dept.trim()}"> 부서명
                                     </span>
                                 </th:block>
                             </th:block>
@@ -385,8 +382,8 @@
 
 <div class="fixed bottom-0 left-0 w-full bg-white border-t p-3 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] z-50 transition-transform translate-y-full"
      id="action-bar">
-    <div class="max-w-6xl mx-auto flex justify-between items-center px-4">
-        <p class="font-bold text-slate-800 text-sm" id="selected-title">선택된 정책 없음</p>
+    <div class="max-w-6xl mx-auto flex justify-center md:justify-between items-center px-4">
+        <p class="font-bold text-slate-800 text-sm hidden md:block" id="selected-title">선택된 정책 없음</p>
         <button onclick="goToSimulation()"
                 class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-bold transition shadow-lg flex items-center gap-2 text-sm">
             <i class="fa-solid fa-wand-magic-sparkles"></i> AI 시뮬레이션 시작
@@ -622,6 +619,12 @@
                     // 찜 성공 -> 노란 별
                     btn.classList.add('active');
                     icon.className = 'fa-solid fa-star text-yellow-500';
+
+                    // -------------------------------------------------------
+                    // ✅ [추가된 기능] 카드를 즉시 목록 최상단으로 이동시키기
+                    // -------------------------------------------------------
+                    const container = card.parentElement; // 카드가 담긴 부모 컨테이너
+                    container.prepend(card);
 
                     // 모달 띄우기
                     const modal = document.getElementById('fav-modal');
