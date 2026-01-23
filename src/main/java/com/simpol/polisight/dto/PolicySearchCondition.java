@@ -35,8 +35,11 @@ public class PolicySearchCondition {
     private List<MajorType> majorTypes;
     private List<SbizType> sbizTypes;
 
-    // 7. AI 시뮬레이션용 프롬프트 저장 (필요시 사용)
+    // 7. AI 시뮬레이션용
     private String userPrompt;
 
-    private Long memberIdx; // 정렬을 위한 회원 ID
+    // ★ [추가됨] 정책 이름을 담을 필드 (이게 있어야 오류가 안 납니다!)
+    private String policyTitle;
+
+    private Long memberIdx;
 }
