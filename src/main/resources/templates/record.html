@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>PoliSight - 시뮬레이션 기록</title>
+
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; }
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+        .hidden { display: none; }
+
+        .scenario-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-color: #93C5FD;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen">
+
+<th:block th:replace="~{HF :: header('record')}"></th:block>
+
+<main class="flex-grow w-full max-w-5xl mx-auto px-4 py-12">
+
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+        <div>
+            <h2 class="text-3xl font-bold text-slate-900 mb-2">시뮬레이션 기록 보관소</h2>
+            <p class="text-slate-500">지금까지 진행한 AI 정책 시뮬레이션 결과를 확인하고 관리하세요.</p>
+        </div>
+
+        <div class="flex gap-3">
+            <div class="px-5 py-3 bg-white rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+                    <i class="fa-solid fa-file-invoice"></i>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-400 font-bold uppercase">저장된 기록</p>
+                    <p class="text-lg font-bold text-slate-800" th:text="${totalCount} + '건'">0건</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex justify-between items-center mb-6">
+        <form action="/record" method="get" class="relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+            <input type="text" name="keyword" th:value="${param.keyword}" placeholder="정책명 검색..." class="pl-9 pr-4 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-blue-500 w-64 bg-white">
+        </form>
+
+        <div class="flex gap-2">
+            <button onclick="selectAll()" type="button"
+                    class="px-3 py-1.5 border border-slate-200 bg-white rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition flex items-center gap-1">
+                <i class="fa-solid fa-check"></i> 전체선택
+            </button>
+            <button onclick="deselectAll()" type="button"
+                    class="px-3 py-1.5 border border-slate-200 bg-white rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition flex items-center gap-1">
+                <i class="fa-solid fa-xmark"></i> 선택해제
+            </button>
+            <button onclick="openDeleteModal()" type="button"
+                    class="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-red-50 hover:text-red-500 transition flex items-center gap-1">
+                <i class="fa-solid fa-trash-can"></i> 삭제
+            </button>
+        </div>
+    </div>
+
+    <div class="space-y-4">
+        <div th:if="${recordList == null or #lists.isEmpty(recordList)}" class="text-center py-12 bg-white rounded-2xl border border-slate-200 border-dashed">
+            <p class="text-slate-400">저장된 시뮬레이션 기록이 없습니다.</p>
+        </div>
+
+        <div th:each="record : ${recordList}"
+             class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all relative overflow-hidden flex items-stretch"
+             th:classappend="${record.resultScore >= 80} ? 'hover:border-blue-300' : 'hover:border-slate-300'">
+
+            <div class="absolute top-0 left-0 w-1.5 h-full"
+                 th:classappend="${record.resultScore >= 80} ? 'bg-blue-500' : 'bg-slate-300'"></div>
+
+            <div class="flex items-center pl-5">
+                <input type="checkbox" name="recordChk" th:value="${record.simIdx}" class="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
+            </div>
+
+            <div class="flex-1 p-6 flex flex-col md:flex-row justify-between gap-6">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                            <span class="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded"
+                                  th:text="${#temporals.format(record.createdAt, 'yyyy.MM.dd')}">2026.01.23</span>
+
+                        <span th:if="${record.resultScore >= 80}" class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100"
+                              th:text="|조건 충족 (${record.resultScore}점)|">조건 충족</span>
+                        <span th:unless="${record.resultScore >= 80}" class="text-xs font-bold text-slate-500 bg-slate-50 px-2 py-0.5 rounded border border-slate-200"
+                              th:text="|조건 불충족 (${record.resultScore}점)|">조건 불충족</span>
+                    </div>
+
+                    <h3 class="text-xl font-bold text-slate-800 mb-2 group-hover:text-blue-600 transition"
+                        th:text="${record.policyName}">청년 일자리 도약 장려금</h3>
+                    <p class="text-sm text-slate-500 mb-4 line-clamp-1"
+                       th:text="${record.policyIntro}">정책 한줄 소개 내용...</p>
+
+                    <div class="flex items-center gap-6 text-sm text-slate-600">
+                        <div class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-location-dot text-slate-400"></i>
+                            <span th:text="${record.regionText}">서울 강남구</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-user text-slate-400"></i>
+                            <span th:text="|만 ${record.userAge}세 / ${record.jobName}|">만 26세 / 미취업</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex md:flex-col justify-end gap-2 min-w-[120px]">
+                    <button type="button"
+                            th:data-title="${record.policyName}"
+                            th:data-date="${#temporals.format(record.createdAt, 'yyyy.MM.dd')}"
+                            th:data-score="${record.resultScore}"
+                            th:data-content="${record.content}"
+                            th:data-region="${record.regionText}"
+                            th:data-age="${record.userAge}"
+                            th:data-job="${record.jobName}"
+                            onclick="openDetailModal(this)"
+                            class="w-full px-4 py-2.5 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-black transition flex items-center justify-center gap-2 shadow-md">
+                        <span>결과 다시보기</span>
+                        <i class="fa-solid fa-chevron-right text-xs"></i>
+                    </button>
+                    <button type="button"
+                            th:onclick="|deleteSingle(${record.simIdx})|"
+                            class="w-full px-4 py-2.5 bg-white border border-slate-200 text-slate-500 text-sm font-bold rounded-xl hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition flex items-center justify-center gap-2">
+                        삭제
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex justify-center mt-12" th:if="${totalPages > 0}">
+        <nav class="flex gap-1">
+            <a th:href="@{/record(page=${currentPage - 1})}"
+               th:classappend="${currentPage == 1} ? 'pointer-events-none opacity-50' : ''"
+               class="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50">
+                <i class="fa-solid fa-chevron-left text-xs"></i>
+            </a>
+
+            <th:block th:each="page : ${#numbers.sequence(startPage, endPage)}">
+                <a th:href="@{/record(page=${page})}"
+                   th:text="${page}"
+                   th:classappend="${page == currentPage} ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'"
+                   class="w-10 h-10 flex items-center justify-center rounded-lg border font-bold transition">
+                    1
+                </a>
+            </th:block>
+
+            <a th:href="@{/record(page=${currentPage + 1})}"
+               th:classappend="${currentPage == totalPages} ? 'pointer-events-none opacity-50' : ''"
+               class="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50">
+                <i class="fa-solid fa-chevron-right text-xs"></i>
+            </a>
+        </nav>
+    </div>
+
+</main>
+
+<th:block th:replace="~{HF :: footer}"></th:block>
+
+<div id="detail-modal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm transition-opacity" onclick="closeDetailModal()"></div>
+    <div class="fixed inset-0 z-10 overflow-y-auto">
+        <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+            <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all w-full max-w-5xl my-8">
+
+                <div class="bg-white px-6 py-4 border-b border-slate-100 flex justify-between items-center sticky top-0 z-20">
+                    <div class="flex items-center gap-2">
+                        <span class="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded">RECORD</span>
+                        <h3 id="modal-policy-title" class="text-lg font-bold text-slate-900">정책 제목</h3>
+                    </div>
+                    <button type="button" class="text-slate-400 hover:text-slate-600 transition" onclick="closeDetailModal()">
+                        <i class="fa-solid fa-xmark text-2xl"></i>
+                    </button>
+                </div>
+
+                <div class="p-6 bg-slate-50 max-h-[85vh] overflow-y-auto custom-scroll">
+                    <div class="grid lg:grid-cols-12 gap-6">
+                        <aside class="lg:col-span-4 space-y-5">
+                            <div class="bg-white rounded-2xl border border-blue-100 p-5 shadow-sm">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600">
+                                        <i class="fa-solid fa-landmark"></i>
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] font-bold text-blue-500">TARGET POLICY</span>
+                                        <h4 id="modal-policy-name" class="font-bold text-slate-800 text-sm">정책 이름</h4>
+                                    </div>
+                                </div>
+                                <div class="space-y-1 mt-3 pl-1 text-xs">
+                                    <p class="text-slate-500 flex justify-between">
+                                        <span>시뮬레이션 날짜</span> <span id="modal-date" class="font-bold text-slate-700">-</span>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-4">Input Conditions</h3>
+                                <div class="space-y-4 divide-y divide-slate-100">
+                                    <div class="pt-0">
+                                        <h4 class="text-xs font-bold text-slate-400 mb-2">기본 정보</h4>
+                                        <ul class="space-y-1">
+                                            <li class="flex justify-between text-xs"><span class="text-slate-500">나이</span> <span id="modal-age" class="font-bold text-blue-600">-</span></li>
+                                            <li class="flex justify-between text-xs"><span class="text-slate-500">거주지</span> <span id="modal-region" class="font-bold text-slate-800">-</span></li>
+                                            <li class="flex justify-between text-xs"><span class="text-slate-500">직업</span> <span id="modal-job" class="font-bold text-slate-800">-</span></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </aside>
+
+                        <section class="lg:col-span-8 space-y-6">
+                            <div class="bg-white rounded-2xl border border-blue-100 shadow-lg shadow-blue-50/50 overflow-hidden">
+                                <div class="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white relative">
+                                    <div class="absolute right-0 top-0 w-48 h-48 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
+                                    <div class="relative z-10">
+                                        <div class="flex items-center gap-2 mb-2 opacity-90 text-xs font-medium">
+                                            <i class="fa-solid fa-robot"></i> AI Policy Analyst
+                                        </div>
+                                        <h2 class="text-2xl font-bold mb-4">분석이 완료되었습니다.</h2>
+                                        <div class="flex items-end gap-3">
+                                            <div class="flex-grow">
+                                                <div class="flex justify-between text-xs mb-1">
+                                                    <span class="font-bold text-blue-100">매칭 적합도</span>
+                                                    <span id="modal-score-text" class="font-bold text-white">0 / 100</span>
+                                                </div>
+                                                <div class="w-full bg-black/20 rounded-full h-2">
+                                                    <div id="modal-score-bar" class="bg-yellow-400 h-2 rounded-full shadow-[0_0_10px_rgba(250,204,21,0.5)]" style="width: 0%"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-6">
+                                    <h3 class="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
+                                        <i class="fa-solid fa-quote-left text-blue-500"></i> AI 상담사의 맞춤형 가이드
+                                    </h3>
+                                    <div id="modal-content" class="bg-slate-50 rounded-xl p-5 border border-slate-200 text-slate-700 leading-relaxed text-sm whitespace-pre-wrap">결과 내용...</div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 px-6 py-4 flex justify-end gap-3 border-t border-slate-100 sticky bottom-0 z-20">
+                    <button type="button" class="px-5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-700 font-bold text-sm hover:bg-slate-50 transition" onclick="closeDetailModal()">
+                        닫기
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="delete-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center" aria-modal="true">
+    <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="closeDeleteModal()"></div>
+    <div class="relative bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center transform scale-95 opacity-0 transition-all duration-200" id="delete-content">
+        <div class="w-12 h-12 rounded-full bg-red-100 text-red-500 flex items-center justify-center mx-auto mb-4 text-xl">
+            <i class="fa-solid fa-trash-can"></i>
+        </div>
+        <h3 class="text-lg font-bold text-slate-900 mb-2">기록 삭제</h3>
+        <p class="text-sm text-slate-500 mb-6 leading-relaxed">선택한 기록을 삭제하시겠습니까?<br>삭제 후 복구할 수 없습니다.</p>
+        <div class="flex gap-3">
+            <button onclick="closeDeleteModal()" class="flex-1 py-3 border border-slate-200 bg-white text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition text-sm">취소</button>
+            <button onclick="confirmDelete()" class="flex-1 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition text-sm shadow-md">삭제</button>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    // 전체 선택
+    function selectAll() {
+        const checkboxes = document.querySelectorAll('input[name="recordChk"]');
+        checkboxes.forEach(cb => cb.checked = true);
+    }
+
+    // 선택 해제
+    function deselectAll() {
+        const checkboxes = document.querySelectorAll('input[name="recordChk"]');
+        checkboxes.forEach(cb => cb.checked = false);
+    }
+
+    // 상세 모달 열기
+    function openDetailModal(btn) {
+        const title = btn.getAttribute('data-title');
+        const date = btn.getAttribute('data-date');
+        const score = btn.getAttribute('data-score');
+        const content = btn.getAttribute('data-content');
+        const region = btn.getAttribute('data-region');
+        const age = btn.getAttribute('data-age');
+        const job = btn.getAttribute('data-job');
+
+        document.getElementById('modal-policy-title').innerText = title;
+        document.getElementById('modal-policy-name').innerText = title;
+        document.getElementById('modal-date').innerText = date;
+        document.getElementById('modal-region').innerText = region;
+        document.getElementById('modal-age').innerText = '만 ' + age + '세';
+        document.getElementById('modal-job').innerText = job;
+
+        document.getElementById('modal-score-text').innerText = score + ' / 100';
+        document.getElementById('modal-score-bar').style.width = score + '%';
+        document.getElementById('modal-content').innerText = content;
+
+        const modal = document.getElementById('detail-modal');
+        modal.classList.remove('hidden');
+    }
+
+    function closeDetailModal() {
+        const modal = document.getElementById('detail-modal');
+        modal.classList.add('hidden');
+    }
+
+    let deleteTargetIds = [];
+
+    function openDeleteModal() {
+        const checkedBoxes = document.querySelectorAll('input[name="recordChk"]:checked');
+        deleteTargetIds = Array.from(checkedBoxes).map(cb => cb.value);
+
+        if (deleteTargetIds.length === 0) {
+            alert("삭제할 항목을 선택해주세요.");
+            return;
+        }
+
+        const modal = document.getElementById('delete-modal');
+        const content = document.getElementById('delete-content');
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            content.classList.remove('scale-95', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
+        }, 10);
+    }
+
+    function deleteSingle(id) {
+        deleteTargetIds = [id];
+        const modal = document.getElementById('delete-modal');
+        const content = document.getElementById('delete-content');
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            content.classList.remove('scale-95', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
+        }, 10);
+    }
+
+    function closeDeleteModal() {
+        const modal = document.getElementById('delete-modal');
+        const content = document.getElementById('delete-content');
+        content.classList.remove('scale-100', 'opacity-100');
+        content.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => modal.classList.add('hidden'), 200);
+    }
+
+    function confirmDelete() {
+        if(deleteTargetIds.length === 0) return;
+
+        fetch('/api/record/delete', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(deleteTargetIds)
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('기록이 삭제되었습니다.');
+                location.reload();
+            } else {
+                alert('삭제 중 오류가 발생했습니다.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('서버 통신 오류가 발생했습니다.');
+        })
+        .finally(() => {
+            closeDeleteModal();
+        });
+    }
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key === "Escape") {
+            closeDetailModal();
+            closeDeleteModal();
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.simpol.polisight.mapper.RecordMapper">
+
+    <insert id="insertRecord" parameterType="com.simpol.polisight.dto.RecordDto"
+            useGeneratedKeys="true" keyProperty="simIdx">
+        INSERT INTO simulation (
+        memberIdx, plcyNo, province, city, gender, birthDate,
+        personalIncome, familyIncome, familySize,
+        eduLevelCode, empStatusCode, married, child, home,
+        prompt, content, createdAt
+        ) VALUES (
+        #{memberIdx}, #{plcyNo}, #{province}, #{city}, #{gender}, #{birthDate},
+        #{personalIncome}, #{familyIncome}, #{familySize},
+        #{eduLevelCode}, #{empStatusCode}, #{married}, #{child}, #{home},
+        #{prompt}, #{content}, NOW()
+        )
+    </insert>
+
+    <select id="selectRecords" resultType="com.simpol.polisight.dto.RecordDto">
+        SELECT
+        s.simIdx, s.memberIdx, s.plcyNo,
+        s.province, s.city, s.birthDate,
+        s.eduLevelCode, s.empStatusCode,
+        s.prompt, s.content, s.createdAt,
+        p.plcyNm AS policyName,
+        p.plcyExplnCn AS policyIntro
+        FROM simulation s
+        LEFT JOIN policy p ON s.plcyNo = p.plcyNo
+        WHERE s.memberIdx = #{memberIdx}
+        <if test="keyword != null and keyword != ''">
+            AND p.plcyNm LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        ORDER BY s.createdAt DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countRecords" resultType="int">
+        SELECT COUNT(*)
+        FROM simulation s
+        LEFT JOIN policy p ON s.plcyNo = p.plcyNo
+        WHERE s.memberIdx = #{memberIdx}
+        <if test="keyword != null and keyword != ''">
+            AND p.plcyNm LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+    </select>
+
+    <delete id="deleteRecords">
+        DELETE FROM simulation
+        WHERE simIdx IN
+        <foreach item="id" collection="simIdxList" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>
