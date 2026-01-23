@@ -65,7 +65,7 @@ public class SimulationController {
             return "redirect:/simulation";
         }
 
-        // 로그인 체크 및 회원 정보
+        // 로그인 체크
         Object loginMemberObj = session.getAttribute("loginMember");
         Long memberIdx = 1L; // 기본값
         if (loginMemberObj != null) {
@@ -89,32 +89,24 @@ public class SimulationController {
         if (policyId != null) {
             PolicyDto policy = policyService.getPolicyById(policyId);
             model.addAttribute("policy", policy);
-            // ★ [DTO 수정으로 해결] 이제 오류 안 남
             condition.setPolicyTitle(policy.getTitle());
         } else {
             policyId = null;
         }
 
-        // ★ [Service 수정으로 해결] Map으로 결과 받기
+        // ★ [중요] AI 분석 호출 (Map으로 결과 받기)
         Map<String, Object> aiResultMap = aiSimulationService.getPolicyRecommendation(condition);
 
         String content = (String) aiResultMap.getOrDefault("content", "분석 결과 없음");
         String suitability = (String) aiResultMap.getOrDefault("적합여부", "N");
         String relatedPolicy = (String) aiResultMap.getOrDefault("연관된 정책", "없음");
+        String basis = (String) aiResultMap.getOrDefault("basis", "분석 근거 정보가 없습니다.");
 
-        // 점수 계산 (적합 여부에 따라 다르게)
-        int score;
-        if ("Y".equalsIgnoreCase(suitability)) {
-            score = 85 + (int)(Math.random() * 15);
-        } else {
-            score = 30 + (int)(Math.random() * 31);
-        }
-
-        // 화면 전달
+        // 모델에 담기
         model.addAttribute("aiResult", content);
         model.addAttribute("suitability", suitability);
-        model.addAttribute("score", score);
         model.addAttribute("relatedPolicy", relatedPolicy);
+        model.addAttribute("basis", basis); // 근거 데이터 전달
 
         // DB 저장
         try {
@@ -145,41 +137,25 @@ public class SimulationController {
         return "result";
     }
 
-    // --- Helper Methods ---
     private LocalDate parseDate(String dateStr) {
         if (dateStr == null || dateStr.length() != 8) return null;
         try { return LocalDate.parse(dateStr, DateTimeFormatter.ofPattern("yyyyMMdd")); }
         catch (Exception e) { return null; }
     }
-
-    private String convertGender(String gender) {
-        if ("male".equalsIgnoreCase(gender)) return "M";
-        if ("female".equalsIgnoreCase(gender)) return "F";
-        return null;
-    }
-
+    private String convertGender(String gender) { return "male".equalsIgnoreCase(gender) ? "M" : "female".equalsIgnoreCase(gender) ? "F" : null; }
     private Integer convertEducation(List<String> eduList) {
         if (eduList == null || eduList.isEmpty()) return null;
         String code = eduList.get(0);
-        if (code.endsWith("001")) return 1;
-        if (code.endsWith("002")) return 2;
-        if (code.endsWith("003")) return 3;
-        if (code.endsWith("004")) return 4;
-        if (code.endsWith("005")) return 5;
-        if (code.endsWith("006")) return 6;
-        if (code.endsWith("007")) return 7;
-        if (code.endsWith("008")) return 8;
-        return 0;
+        // 실제 코드 매핑 (간소화)
+        if (code.endsWith("001")) return 1; if (code.endsWith("002")) return 2; if (code.endsWith("003")) return 3;
+        if (code.endsWith("004")) return 4; if (code.endsWith("005")) return 5; if (code.endsWith("006")) return 6;
+        if (code.endsWith("007")) return 7; if (code.endsWith("008")) return 8; return 0;
     }
-
     private Integer convertEmployment(List<String> empList) {
         if (empList == null || empList.isEmpty()) return null;
         String status = empList.get(0);
-        if ("UNEMPLOYED".equals(status)) return 1;
-        if ("EMPLOYED".equals(status)) return 2;
-        if ("SELF_EMPLOYED".equals(status)) return 3;
-        if ("FREELANCER".equals(status)) return 4;
-        if ("FOUNDER".equals(status)) return 5;
-        return 0;
+        if ("UNEMPLOYED".equals(status)) return 1; if ("EMPLOYED".equals(status)) return 2;
+        if ("SELF_EMPLOYED".equals(status)) return 3; if ("FREELANCER".equals(status)) return 4;
+        if ("FOUNDER".equals(status)) return 5; return 0;
     }
 }
