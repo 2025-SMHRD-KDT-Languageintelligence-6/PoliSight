@@ -37,4 +37,6 @@ public class PolicySearchCondition {
 
     // 7. AI 시뮬레이션용 프롬프트 저장 (필요시 사용)
     private String userPrompt;
+
+    private Long memberIdx; // 정렬을 위한 회원 ID
 }

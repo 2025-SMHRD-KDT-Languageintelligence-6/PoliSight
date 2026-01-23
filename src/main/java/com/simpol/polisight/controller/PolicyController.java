@@ -11,7 +11,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,29 +33,27 @@ public class PolicyController {
     public String showPolicySearch(
             @ModelAttribute PolicySearchCondition condition,
             Model model, HttpSession session) {
-        List<PolicyDto> policies = policyService.searchPolicies(condition);
-        model.addAttribute("policyList", policies);
-        model.addAttribute("condition", condition);
 
-        // 2) ✅ [추가됨] 즐겨찾기 상태 조회 로직
-        // 로그인한 멤버 정보 가져오기
+        // ✅ [수정] 로그인 정보를 가져와서 검색 조건(condition)에 추가
+        // 이렇게 해야 DB(XML)에서 "누가" 즐겨찾기 했는지 알 수 있음
         MemberDto loginMember = (MemberDto) session.getAttribute("loginMember");
-
-        // 즐겨찾기한 정책 ID들을 담을 리스트 (기본값: 빈 리스트)
         List<String> favIds = new ArrayList<>();
 
         if (loginMember != null) {
-            // 로그인 상태라면 DB에서 내가 찜한 정책 ID 목록 조회
-            // (Mapper에 작성해둔 selectPlcyNosByMemberIdx 메소드 호출)
+            // 1) 정렬을 위해 condition에 ID 주입
+            condition.setMemberIdx(loginMember.getMemberIdx());
+
+            // 2) 화면 별표 표시를 위해 즐겨찾기 목록 별도 조회
             favIds = favoriteMapper.selectPlcyNosByMemberIdx(loginMember.getMemberIdx());
         }
 
-        // 3) 뷰(HTML)로 전달
-        // Thymeleaf에서 th:classappend 로직에 사용됨
+        // 서비스 호출 (memberIdx가 담긴 condition 전달)
+        List<PolicyDto> policies = policyService.searchPolicies(condition);
+
+        model.addAttribute("policyList", policies);
+        model.addAttribute("condition", condition);
         model.addAttribute("favIds", favIds);
 
         return "policy";
     }
-
-
 }

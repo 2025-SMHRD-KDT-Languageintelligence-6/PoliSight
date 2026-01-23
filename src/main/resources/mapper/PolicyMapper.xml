@@ -10,37 +10,29 @@
         <result property="lclsfNm" column="lclsfNm"/>
         <result property="bizPrdBgngYmd" column="bizPrdBgngYmd"/>
         <result property="bizPrdEndYmd" column="bizPrdEndYmd"/>
-
         <result property="plcyKywdNm" column="plcyKywdNm"/>
 
         <result property="aplyPrdSeCd" column="aplyPrdSeCd"
                 typeHandler="com.simpol.polisight.handler.CodeEnumTypeHandler"
                 javaType="com.simpol.polisight.type.AplyPrdType"/>
-
         <result property="bizPrdSeCd" column="bizPrdSeCd"
                 typeHandler="com.simpol.polisight.handler.CodeEnumTypeHandler"
                 javaType="com.simpol.polisight.type.BizPrdType"/>
-
         <result property="mrgSttsCd" column="mrgSttsCd"
                 typeHandler="com.simpol.polisight.handler.CodeEnumTypeHandler"
                 javaType="com.simpol.polisight.type.MrgSttsType"/>
-
         <result property="earnCndSeCd" column="earnCndSeCd"
                 typeHandler="com.simpol.polisight.handler.CodeEnumTypeHandler"
                 javaType="com.simpol.polisight.type.EarnCndType"/>
-
         <result property="plcyMajorCd" column="plcyMajorCd"
                 typeHandler="com.simpol.polisight.handler.JsonListTypeHandler"
                 javaType="com.simpol.polisight.type.MajorType"/>
-
         <result property="jobCd" column="jobCd"
                 typeHandler="com.simpol.polisight.handler.JsonListTypeHandler"
                 javaType="com.simpol.polisight.type.JobType"/>
-
         <result property="schoolCd" column="schoolCd"
                 typeHandler="com.simpol.polisight.handler.JsonListTypeHandler"
                 javaType="com.simpol.polisight.type.SchoolType"/>
-
         <result property="sbizCd" column="sbizCd"
                 typeHandler="com.simpol.polisight.handler.JsonListTypeHandler"
                 javaType="com.simpol.polisight.type.SbizType"/>
@@ -56,10 +48,7 @@
         p.lclsfNm,
         p.bizPrdBgngYmd,
         p.bizPrdEndYmd,
-
-        -- ✅ [수정] DB 컬럼명 plcyKywdNm을 그대로 사용
         p.plcyKywdNm,
-
         p.aplyPrdSeCd,
         p.bizPrdSeCd,
         p.mrgSttsCd,
@@ -69,12 +58,17 @@
         p.schoolCd,
         p.sbizCd
         FROM policy p
+
+        -- ✅ [핵심 추가] 즐겨찾기 테이블 조인 (로그인 유저 기준)
+        LEFT JOIN favorite f
+        ON p.plcyNo = f.plcyNo
+        AND f.memberIdx = #{memberIdx}
+
         <where>
             <if test="keyword != null and keyword != ''">
                 AND (
                 p.plcyNm LIKE CONCAT('%', #{keyword}, '%')
                 OR p.plcyExplnCn LIKE CONCAT('%', #{keyword}, '%')
-                -- ✅ [수정] 검색 조건에서도 plcyKywdNm 사용
                 OR p.plcyKywdNm LIKE CONCAT('%', #{keyword}, '%')
                 )
             </if>
@@ -155,7 +149,12 @@
             AND (p.bizPrdEndYmd IS NULL OR p.bizPrdEndYmd >= CURDATE())
         </where>
 
+        -- ✅ [핵심 수정] 정렬 순서 변경
+        -- 1순위: 즐겨찾기 여부 (f.plcyNo가 있으면 1, 없으면 0 -> 내림차순 정렬)
+        -- 2순위: 마감일 있는 것 우선
+        -- 3순위: 마감일 오름차순
         ORDER BY
+        (CASE WHEN f.plcyNo IS NOT NULL THEN 1 ELSE 0 END) DESC,
         CASE WHEN p.bizPrdEndYmd IS NULL THEN 1 ELSE 0 END,
         p.bizPrdEndYmd ASC
     </select>
@@ -168,10 +167,7 @@
         lclsfNm,
         bizPrdBgngYmd,
         bizPrdEndYmd,
-
-        -- ✅ [수정] 상세 조회도 plcyKywdNm 사용
         plcyKywdNm,
-
         aplyPrdSeCd,
         bizPrdSeCd,
         mrgSttsCd,

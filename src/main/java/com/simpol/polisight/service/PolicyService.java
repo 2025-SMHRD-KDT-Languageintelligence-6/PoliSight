@@ -18,7 +18,7 @@ public class PolicyService {
 
     private final PolicyMapper policyMapper;
 
-    // ✅ [신규] 나이 계산 유틸 메서드 (컨트롤러에서도 사용 가능)
+    // 나이 계산 유틸
     public Integer calculateAge(String birthDateStr) {
         if (birthDateStr == null || birthDateStr.length() != 8) return null;
         try {
@@ -33,12 +33,12 @@ public class PolicyService {
     // 검색
     public List<PolicyDto> searchPolicies(PolicySearchCondition condition) {
 
-        // 1. 생년월일 -> 나이 변환 (공통 메서드 사용)
+        // 1. 생년월일 -> 나이 변환
         if (condition.getBirthDate() != null) {
             condition.setAge(calculateAge(condition.getBirthDate()));
         }
 
-        // 2. 소득 단위 변환 (만원 -> 원)
+        // 2. 소득 단위 변환
         if (condition.getIncome() != null) {
             condition.setIncome(condition.getIncome());
         }
