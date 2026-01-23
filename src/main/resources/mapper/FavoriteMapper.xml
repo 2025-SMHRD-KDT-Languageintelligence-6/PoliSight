@@ -28,7 +28,7 @@
 
     <select id="selectFavoritePoliciesDetails" resultType="com.simpol.polisight.dto.PolicyDto">
         SELECT
-        p.plcyNo, p.plcyNm, p.plcyExplnCn, p.lclsfNm, p.bizPrdEndYmd
+        p.plcyNo, p.plcyNm, p.plcyExplnCn, p.lclsfNm
         FROM policy p
         JOIN favorite f ON p.plcyNo = f.plcyNo
         WHERE f.memberIdx = #{memberIdx}
