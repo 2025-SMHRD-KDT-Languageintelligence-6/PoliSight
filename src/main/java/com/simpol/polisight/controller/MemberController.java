@@ -29,7 +29,8 @@ public class MemberController {
     @PostMapping("/join")
     public String joinProcess(MemberDto memberDto) {
         memberService.join(memberDto);
-        return "redirect:/login";
+        // [수정] ?signup=success 파라미터 추가 (이게 있어야 모달이 뜹니다)
+        return "redirect:/login?signup=success";
     }
 
     @GetMapping("/logout")
