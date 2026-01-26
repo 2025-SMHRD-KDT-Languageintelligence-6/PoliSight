@@ -141,7 +141,9 @@
                     <h1 class="text-xl font-bold text-slate-900 mb-1">상세 조건 설정</h1>
                     <p class="text-slate-500 text-xs">조건을 수정하거나 상황을 입력해 달라지는 결과를 시뮬레이션 해 보세요.</p>
                 </div>
-                <button type="button" onclick="showLoadModal()"
+                <button type="button"
+                        th:if="${session.loginMember != null}"
+                        onclick="showLoadModal()"
                         class="flex items-center justify-center gap-1.5 px-3 py-2 bg-blue-50 text-blue-600 rounded-xl border border-blue-100 font-bold text-xs hover:bg-blue-100 transition-all hover:shadow-sm shrink-0">
                     <i class="fa-solid fa-user-check"></i> 내 조건 불러오기
                 </button>
@@ -434,6 +436,16 @@
             "제주특별자치도": ["제주시","서귀포시"]
         };
 
+        const idToCodeMap = {
+            1: '0049001', 2: '0049002', 3: '0049003', 4: '0049004',
+            5: '0049005', 6: '0049006', 7: '0049007', 8: '0049008'
+        };
+
+        const jobMap = {
+            1: 'UNEMPLOYED', 2: 'EMPLOYED', 3: 'SELF_EMPLOYED',
+            4: 'FREELANCER', 5: 'FOUNDER' // STUDENT 등이 있다면 매핑 필요
+        };
+
         function updateRegionGu() {
             const siSelect = document.getElementById("regionSi");
             const guSelect = document.getElementById("regionGu");
@@ -464,9 +476,111 @@
         }
 
         function confirmLoadMyInfo() {
-            loadPrevConditions();
+            loadMemberInfoFromServer();
             closeConfirmModal();
-            // [수정2] 성공 알럿 제거됨
+        }
+
+        // [추가] 서버에서 회원 정보 가져오기 (File 2 로직 이식)
+        function loadMemberInfoFromServer() {
+            // 로딩 표시가 필요하다면 여기에 추가 가능
+
+            fetch('/api/my-info')
+                .then(response => {
+                    if (!response.ok) throw new Error("로그인이 필요하거나 오류가 발생했습니다.");
+                    return response.json();
+                })
+                .then(data => {
+                    if(!data) {
+                        alert("저장된 회원 정보가 없습니다.");
+                        return;
+                    }
+                    // 입력 필드 초기화 후 데이터 채우기
+                    populateSimulationForm(data);
+                })
+                .catch(error => {
+                    console.error(error);
+                    alert("정보를 불러오는 데 실패했습니다.");
+                });
+        }
+
+        // [추가] 받아온 데이터를 시뮬레이션 폼에 채워넣는 함수
+        function populateSimulationForm(data) {
+            if (!data) return;
+
+            // 1. 지역 (시/도 -> 구/군 순서로 처리)
+            const si = data.regionSi || data.province;
+            const gu = data.regionGu || data.city;
+
+            if(si) {
+                const siSelect = document.getElementById('regionSi');
+                siSelect.value = si;
+                updateRegionGu(); // 시 변경에 따른 구 목록 갱신
+
+                if(gu) {
+                    document.getElementById('regionGu').value = gu;
+                }
+            }
+
+            // 2. 생년월일
+            if(data.birthDate) {
+                document.getElementById('birthDate').value = String(data.birthDate).replace(/-/g, '');
+            }
+
+            // 3. 성별
+            if(data.gender) {
+                const val = (data.gender === 'M' || data.gender === 'male') ? 'male' : 'female';
+                const radio = document.querySelector(`input[name="gender"][value="${val}"]`);
+                if(radio) radio.checked = true;
+            }
+
+            // 4. 학력 (Code 매핑)
+            const eduCode = data.educationLevel || data.eduLevelCode;
+            const eduVal = (typeof eduCode === 'number') ? idToCodeMap[eduCode] : eduCode;
+            if(eduVal) {
+                const el = document.querySelector('select[name="educationLevel"]');
+                if(el) el.value = eduVal;
+            }
+
+            // 5. 고용 상태 (Code 매핑)
+            const empCode = data.employmentStatus || data.empStatusCode;
+            const empVal = (typeof empCode === 'number') ? jobMap[empCode] : empCode;
+            if(empVal) {
+                const el = document.querySelector('select[name="employmentStatus"]');
+                if(el) el.value = empVal;
+            }
+
+            // 6. 결혼 여부 (Y/N 처리)
+            if (data.married === true || data.marry === 'Y') {
+                document.querySelector('input[name="marry"][value="Y"]').click(); // click()을 써서 스타일 갱신 유도
+            } else if (data.married === false || data.marry === 'N') {
+                document.querySelector('input[name="marry"][value="N"]').click();
+            }
+
+            // 7. 자녀 수 및 가구원 수
+            if(data.child != null) document.querySelector('input[name="childCount"]').value = data.child;
+            if(data.familySize != null) document.querySelector('input[name="familySize"]').value = data.familySize;
+
+            // 8. 주택 소유 여부
+            if (data.home === true || data.house === 'Y') {
+                document.querySelector('input[name="house"][value="Y"]').click();
+            } else if (data.home === false || data.house === 'N') {
+                document.querySelector('input[name="house"][value="N"]').click();
+            }
+
+            // 9. 소득 정보 (Range와 Text 동기화)
+            const pIncome = (data.personalIncome !== undefined) ? data.personalIncome : data.income;
+            if(pIncome != null) {
+                const textInput = document.getElementById('my_income_text');
+                textInput.value = Number(pIncome).toLocaleString(); // 쉼표 포맷
+                document.getElementById('my_income_range').value = pIncome;
+            }
+
+            const fIncome = (data.familyIncome !== undefined) ? data.familyIncome : data.householdIncome;
+            if(fIncome != null) {
+                const textInput = document.getElementById('household_income_text');
+                textInput.value = Number(fIncome).toLocaleString();
+                document.getElementById('household_income_range').value = fIncome;
+            }
         }
 
         document.getElementById('hiddenDatePicker').addEventListener('change', function() {
