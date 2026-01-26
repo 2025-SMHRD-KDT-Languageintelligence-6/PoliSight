@@ -136,9 +136,15 @@
 
     <section class="lg:col-span-8">
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-            <div class="mb-6 border-b border-slate-100 pb-4">
-                <h1 class="text-xl font-bold text-slate-900 mb-2">상세 조건 설정</h1>
-                <p class="text-slate-500 text-sm">조건을 수정하거나 프롬프트로 상황을 입력해 달라지는 결과를 시뮬레이션 해 보세요.</p>
+            <div class="mb-6 border-b border-slate-100 pb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 class="text-xl font-bold text-slate-900 mb-1">상세 조건 설정</h1>
+                    <p class="text-slate-500 text-xs">조건을 수정하거나 상황을 입력해 달라지는 결과를 시뮬레이션 해 보세요.</p>
+                </div>
+                <button type="button" onclick="showLoadModal()"
+                        class="flex items-center justify-center gap-1.5 px-3 py-2 bg-blue-50 text-blue-600 rounded-xl border border-blue-100 font-bold text-xs hover:bg-blue-100 transition-all hover:shadow-sm shrink-0">
+                    <i class="fa-solid fa-user-check"></i> 내 조건 불러오기
+                </button>
             </div>
 
             <form id="simulationForm" th:action="@{/simulation/analyze}" th:object="${simulationForm}" method="post" class="space-y-8">
@@ -364,6 +370,25 @@
     </div>
 </footer>
 
+<div id="confirmModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden">
+    <div class="bg-white rounded-2xl p-6 shadow-2xl max-w-sm w-full mx-4 border border-slate-100 transform transition-all">
+        <div class="flex items-center gap-3 text-blue-600 mb-4">
+            <div class="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
+                <i class="fa-solid fa-user-gear text-lg"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-800">내 정보 불러오기</h3>
+        </div>
+        <p class="text-slate-500 text-sm leading-relaxed mb-6">
+            저장된 내 조건을 불러오시겠습니까?<br>
+            <span class="text-orange-500 font-medium">현재 작성 중인 내용은 모두 초기화됩니다.</span>
+        </p>
+        <div class="flex gap-3">
+            <button onclick="closeConfirmModal()" class="flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-600 font-bold text-sm hover:bg-slate-200 transition">취소</button>
+            <button onclick="confirmLoadMyInfo()" class="flex-1 py-2.5 rounded-xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 transition shadow-lg shadow-blue-100">불러오기</button>
+        </div>
+    </div>
+</div>
+
 <div id="loadingModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden">
     <div class="bg-white rounded-2xl p-8 shadow-2xl flex flex-col items-center justify-center max-w-sm w-full mx-4 border border-slate-100 transform transition-all animate-fade-in">
         <div class="relative mb-6">
@@ -391,32 +416,21 @@
             "서울특별시": ["종로구","중구","용산구","성동구","광진구","동대문구","중랑구","성북구","강북구","도봉구","노원구","은평구","서대문구","마포구","양천구","강서구","구로구","금천구","영등포구","동작구","관악구","서초구","강남구","송파구","강동구"],
             "부산광역시": ["중구","서구","동구","영도구","부산진구","동래구","남구","북구","해운대구","사하구","금정구","강서구","연제구","수영구","사상구","기장군"],
             "대구광역시": ["중구","동구","서구","남구","북구","수성구","달서구","달성군","군위군"],
-            "인천광역시": ["중구","동구","미추홀구","연수구","남동구","부평구","계양구","서구","강화군","옹진군"],
+            "인천광역시": ["중구","동구","미취홀구","연수구","남동구","부평구","계양구","서구","강화군","옹진군"],
             "광주광역시": ["동구","서구","남구","북구","광산구"],
             "대전광역시": ["동구","중구","서구","유성구","대덕구"],
             "울산광역시": ["중구","남구","동구","북구","울주군"],
             "세종특별자치시": ["세종특별자치시"],
             "경기도": [
-                "수원시","수원시 장안구","수원시 권선구","수원시 팔달구","수원시 영통구",
-                "성남시","성남시 수정구","성남시 중원구","성남시 분당구",
-                "의정부시",
-                "안양시","안양시 만안구","안양시 동안구",
-                "부천시","부천시 원미구","부천시 소사구","부천시 오정구",
-                "광명시","평택시","동두천시",
-                "안산시","안산시 상록구","안산시 단원구",
-                "고양시","고양시 덕양구","고양시 일산동구","고양시 일산서구",
-                "과천시","구리시","남양주시","오산시","시흥시","군포시","의왕시","하남시",
-                "용인시","용인시 처인구","용인시 기흥구","용인시 수지구",
-                "파주시","이천시","안성시","김포시","화성시","광주시","양주시","포천시","여주시",
-                "연천군","가평군","양평군"
+                "수원시","성남시","의정부시","안양시","부천시","광명시","평택시","동두천시","안산시","고양시","과천시","구리시","남양주시","오산시","시흥시","군포시","의왕시","하남시","용인시","파주시","이천시","안성시","김포시","화성시","광주시","양주시","포천시","여주시","연천군","가평군","양평군"
             ],
             "강원특별자치도": ["춘천시","원주시","강릉시","동해시","태백시","속초시","삼척시","홍천군","횡성군","영월군","평창군","정선군","철원군","화천군","양구군","인제군","고성군","양양군"],
-            "충청북도": ["청주시","청주시 상당구","청주시 서원구","청주시 흥덕구","청주시 청원구","충주시","제천시","보은군","옥천군","영동군","증평군","진천군","괴산군","음성군","단양군"],
-            "충청남도": ["천안시","천안시 동남구","천안시 서북구","공주시","보령시","아산시","서산시","논산시","계룡시","당진시","금산군","부여군","서천군","청양군","홍성군","예산군","태안군"],
-            "전북특별자치도": ["전주시","전주시 완산구","전주시 덕진구","군산시","익산시","정읍시","남원시","김제시","완주군","진안군","무주군","장수군","임실군","순창군","고창군","부안군"],
-            "전라남도": ["목포시","여수시","순천시","나주시","광양시","담양군","곡성군","구례군","고흥군","보성군","화순군","장흥군","장흥군 장흥읍","강진군","해남군","영암군","무안군","함평군","영광군","장성군","완도군","진도군","신안군"],
-            "경상북도": ["포항시","포항시 남구","포항시 북구","경주시","김천시","안동시","구미시","영주시","영천시","상주시","문경시","경산시","의성군","청송군","영양군","영덕군","청도군","고령군","성주군","칠곡군","예천군","봉화군","울진군","울릉군"],
-            "경상남도": ["창원시","창원시 의창구","창원시 성산구","창원시 마산합포구","창원시 마산회원구","창원시 진해구","진주시","통영시","사천시","김해시","밀양시","거제시","양산시","의령군","함안군","창녕군","고성군","남해군","하동군","산청군","함양군","거창군","합천군"],
+            "충청북도": ["청주시","충주시","제천시","보은군","옥천군","영동군","증평군","진천군","괴산군","음성군","단양군"],
+            "충청남도": ["천안시","공주시","보령시","아산시","서산시","논산시","계룡시","당진시","금산군","부여군","서천군","청양군","홍성군","예산군","태안군"],
+            "전북특별자치도": ["전주시","군산시","익산시","정읍시","남원시","김제시","완주군","진안군","무주군","장수군","임실군","순창군","고창군","부안군"],
+            "전라남도": ["목포시","여수시","순천시","나주시","광양시","담양군","곡성군","구례군","고흥군","보성군","화순군","장흥군","강진군","해남군","영암군","무안군","함평군","영광군","장성군","완도군","진도군","신안군"],
+            "경상북도": ["포항시","경주시","김천시","안동시","구미시","영주시","영천시","상주시","문경시","경산시","의성군","청송군","영양군","영덕군","청도군","고령군","성주군","칠곡군","예천군","봉화군","울진군","울릉군"],
+            "경상남도": ["창원시","진주시","통영시","사천시","김해시","밀양시","거제시","양산시","의령군","함안군","창녕군","고성군","남해군","하동군","산청군","함양군","거창군","합천군"],
             "제주특별자치도": ["제주시","서귀포시"]
         };
 
@@ -436,6 +450,23 @@
                     guSelect.appendChild(option);
                 });
             }
+        }
+
+        // [수정1] 모달 열기/닫기/확인 로직
+        function showLoadModal() {
+            document.getElementById('confirmModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        function confirmLoadMyInfo() {
+            loadPrevConditions();
+            closeConfirmModal();
+            // [수정2] 성공 알럿 제거됨
         }
 
         document.getElementById('hiddenDatePicker').addEventListener('change', function() {
@@ -529,11 +560,9 @@
             }
         }
 
-        // [수정 3 관련] 더보기 버튼 토글 함수
         function toggleDescription() {
             const desc = document.getElementById('policyDescription');
             const btn = document.getElementById('moreBtn');
-
             if (desc.classList.contains('line-clamp-3')) {
                 desc.classList.remove('line-clamp-3');
                 btn.innerHTML = '접기 <i class="fa-solid fa-chevron-up text-[10px]"></i>';
@@ -543,20 +572,15 @@
             }
         }
 
-        // [수정 3 관련] 텍스트 길이에 따라 더보기 버튼 표시 여부 결정
         function checkDescriptionOverflow() {
             const desc = document.getElementById('policyDescription');
             const btn = document.getElementById('moreBtn');
-
             if (!desc || !btn) return;
-
-            // 실제 내용의 높이가 표시 영역(3줄 높이)보다 큰지 확인
             if (desc.scrollHeight > desc.clientHeight) {
                 btn.classList.remove('hidden');
             }
         }
 
-        // [수정 2 관련] 프롬프트 글자수 업데이트 함수
         function updateCharCount(textarea) {
             const count = textarea.value.length;
             document.getElementById('charCount').innerText = `${count}/500자`;
@@ -564,40 +588,28 @@
 
         document.addEventListener("DOMContentLoaded", function() {
             const siSelect = document.getElementById("regionSi");
-
             for (const si in areaData) {
                 const option = document.createElement("option");
                 option.value = si;
                 option.text = si;
                 siSelect.appendChild(option);
             }
-
             if(siSelect.value) updateRegionGu();
-
             setupIncomeInput('my_income_range', 'my_income_text');
             setupIncomeInput('household_income_range', 'household_income_text');
-
             loadPrevConditions();
-
-            checkDescriptionOverflow(); // 더보기 버튼 체크
-
-            // [수정 2 관련] 초기 로드 시 글자수 반영 (뒤로가기 등으로 값 있을 경우)
+            checkDescriptionOverflow();
             const promptArea = document.getElementById('ai_prompt');
             if (promptArea) updateCharCount(promptArea);
-
-            // 폼 전송 시 로딩 모달 띄우기 이벤트 추가
             const form = document.getElementById('simulationForm');
             if (form) {
                 form.addEventListener('submit', function() {
                     document.getElementById('loadingModal').classList.remove('hidden');
-                    // 스크롤 방지
                     document.body.style.overflow = 'hidden';
                 });
             }
         });
-
     /*]]>*/
 </script>
-
 </body>
 </html>
