@@ -28,11 +28,29 @@
 
     <select id="selectFavoritePoliciesDetails" resultType="com.simpol.polisight.dto.PolicyDto">
         SELECT
-        p.plcyNo, p.plcyNm, p.plcyExplnCn, p.lclsfNm
+        p.plcyNo, p.plcyNm, p.plcyExplnCn, p.lclsfNm, f.notify
         FROM policy p
         JOIN favorite f ON p.plcyNo = f.plcyNo
         WHERE f.memberIdx = #{memberIdx}
         ORDER BY f.createdAt DESC
+    </select>
+
+    <update id="updateNotify">
+        UPDATE favorite
+        SET notify = #{notify}
+        WHERE memberIdx = #{memberIdx}
+        AND plcyNo = #{plcyNo}
+    </update>
+
+    <select id="selectUsersForDeadlineNotify" resultType="map">
+        SELECT
+        m.email, p.plcyNm, p.plcyNo
+        FROM favorite f
+        JOIN policy p ON f.plcyNo = p.plcyNo
+        JOIN member m ON f.memberIdx = m.memberIdx
+        WHERE f.notify = 1
+        AND STR_TO_DATE(SUBSTRING_INDEX(p.aplyYmd, '~', -1), '%Y%m%d')
+        = DATE_ADD(CURDATE(), INTERVAL 3 DAY)
     </select>
 
 </mapper>

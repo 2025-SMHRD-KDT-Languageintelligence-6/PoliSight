@@ -209,9 +209,9 @@
                        th:text="${policy.plcyExplnCn}">정책 내용</p>
 
                     <div class="flex justify-end gap-2">
-                        <button type="button" onclick="toggleNotification(this)"
+                        <button type="button" th:onclick="toggleNotification(this, [[${policy.plcyNo}]])"
                                 class="px-3 py-1.5 bg-slate-100 text-slate-500 rounded-lg text-xs font-bold hover:bg-yellow-50 hover:text-yellow-600 transition flex items-center gap-1 group-btn">
-                            <i class="fa-regular fa-bell group-btn-hover:fa-solid"></i> 알림
+                            <i th:class="${policy.notify == true ? 'fa-solid fa-bell text-yellow-500' : 'fa-regular fa-bell'}"></i> 알림
                         </button>
                     </div>
                 </div>
@@ -978,23 +978,53 @@
         checkboxes.forEach(cb => cb.checked = false);
     }
 
-    // [수정 2] 알림 토글 로직: ON일 때만 모달(bell 아이콘), OFF는 모달 없음
-    function toggleNotification(btn) {
+    // [수정] 알림 토글 로직: 서버 DB 업데이트 포함
+    function toggleNotification(btn, plcyNo) {
         const icon = btn.querySelector('i');
 
-        if (icon.classList.contains('fa-regular')) {
-            // 알림 켜기
-            icon.classList.remove('fa-regular');
-            icon.classList.add('fa-solid', 'text-yellow-500');
-            btn.classList.add('text-yellow-600', 'bg-yellow-50');
-            showCustomAlert("알림이 설정되었습니다.", 'bell'); // 'bell' 타입 전달
-        } else {
-            // 알림 끄기 (조용히 처리)
-            icon.classList.remove('fa-solid', 'text-yellow-500');
-            icon.classList.add('fa-regular');
-            btn.classList.remove('text-yellow-600', 'bg-yellow-50');
-            // showCustomAlert 호출 안 함
-        }
+        // 현재 아이콘 상태를 보고, 변경할 목표 상태(targetStatus)를 결정합니다.
+        // fa-regular(빈 종)이면 켜야 하므로 1, 아니면 0
+        const isCurrentlyOff = icon.classList.contains('fa-regular');
+        const targetStatus = isCurrentlyOff ? 1 : 0;
+
+        // 서버로 데이터 전송
+        fetch('/api/favorite/notify', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                plcyNo: plcyNo,
+                notify: targetStatus // 1 또는 0
+            })
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json(); // 성공 시 JSON 반환 가정
+            } else {
+                throw new Error('Server Error');
+            }
+        })
+        .then(data => {
+            // DB 업데이트 성공 시에만 UI 변경
+            if (targetStatus === 1) {
+                // 알림 켜기 UI 적용
+                icon.classList.remove('fa-regular');
+                icon.classList.add('fa-solid', 'text-yellow-500');
+                btn.classList.add('text-yellow-600', 'bg-yellow-50');
+                showCustomAlert("알림이 설정되었습니다.", 'bell');
+            } else {
+                // 알림 끄기 UI 적용
+                icon.classList.remove('fa-solid', 'text-yellow-500');
+                icon.classList.add('fa-regular');
+                btn.classList.remove('text-yellow-600', 'bg-yellow-50');
+                // 끄는 경우 알림창을 띄우지 않거나, 필요하면 띄움
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showCustomAlert("알림 설정 중 오류가 발생했습니다.");
+        });
     }
 
     // [수정 3] 삭제 버튼 클릭 시 -> 모달 열기

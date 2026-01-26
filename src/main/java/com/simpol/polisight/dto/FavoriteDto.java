@@ -13,5 +13,6 @@ import java.time.LocalDateTime;
 public class FavoriteDto {
     private Long memberIdx;     // 회원 고유 번호 (PK, FK)
     private String plcyNo;      // 정책 ID (PK, FK)
+    private Boolean notify;
     private LocalDateTime createdAt;
 }
