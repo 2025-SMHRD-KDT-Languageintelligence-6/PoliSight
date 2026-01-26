@@ -3,6 +3,7 @@ package com.simpol.polisight.service;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -157,5 +158,23 @@ public class MailService {
             e.printStackTrace();
             throw new RuntimeException("메일 발송 실패", e);
         }
+    }
+
+    /**
+     * [추가] 마감 임박 알림 메일 발송
+     */
+    public void sendDeadlineNotification(String toEmail, String policyName, String policyNo) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(toEmail);
+        message.setSubject("[PoliSight] 마감 임박! '" + policyName + "' 신청이 3일 남았습니다.");
+
+        String text = "안녕하세요, PoliSight입니다.\n\n" +
+                "관심 등록하신 [" + policyName + "] 정책의 신청 마감이 얼마 남지 않았습니다.\n" +
+                "놓치지 않도록 지금 바로 확인해 보세요!\n\n" +
+                "👉 바로가기: http://localhost:8089/policy\n\n" +
+                "(본 메일은 발신 전용입니다.)";
+
+        message.setText(text);
+        javaMailSender.send(message);
     }
 }

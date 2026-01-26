@@ -4,6 +4,7 @@ import com.simpol.polisight.dto.PolicyDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface FavoriteMapper {
@@ -24,4 +25,7 @@ public interface FavoriteMapper {
     List<PolicyDto> selectFavoritePoliciesDetails(Long memberIdx);
 
     int updateNotify(Long memberIdx, String plcyNo, int notify);
+
+    // [추가] 마감 임박 알림 대상 조회 (결과가 여러 개일 수 있으니 List)
+    List<Map<String, Object>> selectUsersForDeadlineNotify();
 }
