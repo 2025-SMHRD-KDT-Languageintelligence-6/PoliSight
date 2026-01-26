@@ -38,6 +38,9 @@ public class PolicyDto {
     private List<SchoolType> schoolCd;
     private List<SbizType> sbizCd;
 
+    // 화면 표기용
+    private Boolean notify;
+
     // ==========================================
     // 3. HTML 화면 표시용 Alias
     // ==========================================

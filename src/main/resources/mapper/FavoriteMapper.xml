@@ -28,11 +28,18 @@
 
     <select id="selectFavoritePoliciesDetails" resultType="com.simpol.polisight.dto.PolicyDto">
         SELECT
-        p.plcyNo, p.plcyNm, p.plcyExplnCn, p.lclsfNm
+        p.plcyNo, p.plcyNm, p.plcyExplnCn, p.lclsfNm, f.notify
         FROM policy p
         JOIN favorite f ON p.plcyNo = f.plcyNo
         WHERE f.memberIdx = #{memberIdx}
         ORDER BY f.createdAt DESC
     </select>
+
+    <update id="updateNotify">
+        UPDATE favorite
+        SET notify = #{notify}
+        WHERE memberIdx = #{memberIdx}
+        AND plcyNo = #{plcyNo}
+    </update>
 
 </mapper>

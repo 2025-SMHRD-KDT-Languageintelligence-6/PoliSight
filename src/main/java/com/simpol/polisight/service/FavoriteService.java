@@ -34,4 +34,9 @@ public class FavoriteService {
     public List<PolicyDto> getFavoritePolicies(Long memberIdx) {
         return favoriteMapper.selectFavoritePoliciesDetails(memberIdx);
     }
+
+    public boolean updateNotify(Long memberIdx, String plcyNo, int notify) {
+        int result = favoriteMapper.updateNotify(memberIdx, plcyNo, notify);
+        return result > 0;
+    }
 }

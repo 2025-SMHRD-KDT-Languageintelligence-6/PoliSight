@@ -22,4 +22,6 @@ public interface FavoriteMapper {
 
     // 기존 메서드 아래에 추가
     List<PolicyDto> selectFavoritePoliciesDetails(Long memberIdx);
+
+    int updateNotify(Long memberIdx, String plcyNo, int notify);
 }
