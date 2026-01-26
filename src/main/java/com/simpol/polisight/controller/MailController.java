@@ -87,7 +87,7 @@ public class MailController {
 
         String provider = member.getProvider();
 
-        if (provider != null && !provider.equals("PoliSight")) {
+        if (provider != null && !provider.equals("polisight")) {
             return "social_user:" + provider; // 예: "social_user:kakao"
         }
 

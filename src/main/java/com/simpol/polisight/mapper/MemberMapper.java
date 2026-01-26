@@ -11,8 +11,6 @@ public interface MemberMapper {
 
     MemberDto selectMemberByEmail(String email);
 
-    void updateMember(MemberDto memberDto);
-
     // [신규] 새 메서드 추가 (파라미터를 명확하게 분리)
     void updateMemberName(@Param("email") String email, @Param("name") String name);
 
