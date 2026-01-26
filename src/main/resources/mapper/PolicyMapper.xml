@@ -102,18 +102,6 @@
                 AND (p.sprtTrgtMaxAge IS NULL OR p.sprtTrgtMaxAge &gt;= #{age})
             </if>
 
-            <if test="income != null">
-                AND (
-                p.earnCndSeCd IS NULL
-                OR p.earnCndSeCd = '0043001'
-                OR p.earnCndSeCd = '0043003'
-                OR (
-                p.earnCndSeCd = '0043002'
-                AND (p.earnMaxAmt IS NULL OR p.earnMaxAmt >= #{income})
-                )
-                )
-            </if>
-
             <if test="educationLevel != null and educationLevel.size > 0">
                 AND (
                 p.schoolCd IS NULL

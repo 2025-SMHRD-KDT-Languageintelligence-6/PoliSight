@@ -421,7 +421,7 @@
 
         // marry -> married (Boolean) 로 변경
         // policy.html이 (data.married === true)로 체크하므로 true/false 변환
-        married: (document.querySelector('input[name="marry"]:checked')?.value === 'Y'),
+        married: document.querySelector('input[name="marry"]:checked')?.value,
 
         // familyCount -> familySize 로 변경
         familySize: document.getElementById('familyCount').value,
@@ -430,7 +430,7 @@
         child: document.getElementById('childCount').value,
 
         // house -> home (Boolean) 로 변경
-        home: (document.querySelector('input[name="house"]:checked')?.value === 'Y'),
+        home: document.querySelector('input[name="house"]:checked')?.value,
 
         // myIncome -> income 으로 변경
         income: document.getElementById('myIncomeText').value.replace(/,/g, ''),

@@ -201,7 +201,7 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-2 gap-3" style="display:none;">
                         <div>
                             <label class="block text-xs font-extrabold text-slate-700 mb-1.5">자녀 수</label>
                             <div class="flex-input-wrapper">
@@ -221,9 +221,9 @@
                     </div>
                 </div>
 
-                <hr class="border-slate-100">
+                <hr class="border-slate-100" style="display:none;">
 
-                <div class="space-y-3">
+                <div class="space-y-3" style="display:none;">
                     <div>
                         <label class="block text-xs font-extrabold text-slate-700 mb-1.5">본인 월 소득 (세전)</label>
                         <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 focus-within:border-blue-500 transition">
@@ -757,67 +757,68 @@
                 .finally(() => btn.innerHTML = originalText);
         }
 
-        // DB 데이터를 폼에 채워넣는 함수 (네가 올린 코드 그대로)
+        // DB 데이터를 폼에 채워넣는 함수
         function populateForm(data) {
             if (!data) return;
 
+            // 1. 시/군/구 (딜레이 없음)
             const si = data.regionSi || data.province;
             const gu = data.regionGu || data.city;
 
             if(si) {
                 document.getElementById('regionSi').value = si;
                 updateRegionGu();
-                if(gu) setTimeout(() => document.getElementById('regionGu').value = gu, 50);
+                if(gu) document.getElementById('regionGu').value = gu;
             }
 
             if(data.birthDate) document.getElementById('birthDate').value = String(data.birthDate).replace(/-/g, '');
 
             if(data.gender) {
-                const val = (data.gender === 'M') ? 'male' : 'female';
+                const val = (data.gender === 'M' || data.gender === 'male') ? 'male' : 'female';
                 const radio = document.querySelector(`input[name="gender"][value="${val}"]`);
                 if(radio) radio.checked = true;
             }
 
-            // 학력 설정 (DB ID -> 화면 코드)
-        const eduCode = data.educationLevel || data.eduLevelCode;
-        const idToCodeMap = {
-            1: '0049001', 2: '0049002', 3: '0049003', 4: '0049004',
-            5: '0049005', 6: '0049006', 7: '0049007', 8: '0049008'
-        };
-        const eduVal = (typeof eduCode === 'number') ? idToCodeMap[eduCode] : eduCode;
-        if(eduVal) {
-            const el = document.getElementById('educationLevel');
-            if(el.querySelector(`option[value="${eduVal}"]`)) el.value = eduVal;
-        }
+            const eduCode = data.educationLevel || data.eduLevelCode;
+            const idToCodeMap = { 1: '0049001', 2: '0049002', 3: '0049003', 4: '0049004', 5: '0049005', 6: '0049006', 7: '0049007', 8: '0049008' };
+            const eduVal = (typeof eduCode === 'number') ? idToCodeMap[eduCode] : eduCode;
+            if(eduVal) {
+                const el = document.getElementById('educationLevel');
+                if(el && el.querySelector(`option[value="${eduVal}"]`)) el.value = eduVal;
+            }
 
             const empCode = data.employmentStatus || data.empStatusCode;
-            const jobMap = { 1: 'UNEMPLOYED', 2: 'EMPLOYED', 3: 'SELF_EMPLOYED', 4: 'STUDENT' };
+            const jobMap = { 1: 'UNEMPLOYED', 2: 'EMPLOYED', 3: 'SELF_EMPLOYED', 4: 'STUDENT', 5: 'FOUNDER' };
             const jobVal = (typeof empCode === 'number') ? jobMap[empCode] : empCode;
             if(jobVal) document.getElementById('employmentStatus').value = jobVal;
 
-            const marryVal = (data.married === true) ? 'Y' : 'N';
-            const marryRadio = document.querySelector(`input[name="marry"][value="${marryVal}"]`);
-            if(marryRadio) marryRadio.checked = true;
+            // [수정됨] 결혼 여부 (Y면 Y, N이면 N, 없으면 패스)
+            if (data.married === true || data.marry === 'Y') {
+                document.querySelector('input[name="marry"][value="Y"]').checked = true;
+            } else if (data.married === false || data.marry === 'N') {
+                document.querySelector('input[name="marry"][value="N"]').checked = true;
+            }
 
             if(data.child != null) document.getElementById('childCount').value = data.child;
             if(data.familySize != null) document.getElementById('family-count').value = data.familySize;
 
-            const houseVal = (data.home === true) ? 'Y' : 'N';
-            const houseRadio = document.querySelector(`input[name="house"][value="${houseVal}"]`);
-            if(houseRadio) houseRadio.checked = true;
+            // [수정됨] 주택 소유 (Y면 Y, N이면 N, 없으면 패스)
+            if (data.home === true || data.house === 'Y') {
+                document.querySelector('input[name="house"][value="Y"]').checked = true;
+            } else if (data.home === false || data.house === 'N') {
+                document.querySelector('input[name="house"][value="N"]').checked = true;
+            }
 
             const pIncome = (data.personalIncome !== undefined) ? data.personalIncome : data.income;
             if(pIncome != null) {
-                const val = pIncome;
-                document.getElementById('my_income_text').value = val;
-                document.getElementById('my_income_range').value = val;
+                document.getElementById('my_income_text').value = pIncome;
+                document.getElementById('my_income_range').value = pIncome;
             }
 
             const fIncome = (data.familyIncome !== undefined) ? data.familyIncome : data.householdIncome;
             if(fIncome != null) {
-                const val = fIncome;
-                document.getElementById('household_income_text').value = val;
-                document.getElementById('household_income_range').value = val;
+                document.getElementById('household_income_text').value = fIncome;
+                document.getElementById('household_income_range').value = fIncome;
             }
         }
 
