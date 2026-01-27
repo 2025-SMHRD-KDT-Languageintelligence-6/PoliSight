@@ -1,9 +1,6 @@
 package com.simpol.polisight.controller;
 
-import com.simpol.polisight.dto.MemberDto;
-import com.simpol.polisight.dto.PolicyDto;
-import com.simpol.polisight.dto.PolicySearchCondition;
-import com.simpol.polisight.dto.RecordDto;
+import com.simpol.polisight.dto.*;
 import com.simpol.polisight.service.AiSimulationService;
 import com.simpol.polisight.service.PolicyService;
 import com.simpol.polisight.service.RecordService;
@@ -18,7 +15,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Controller
@@ -94,21 +90,30 @@ public class SimulationController {
             policyId = null;
         }
 
-        // ★ [중요] AI 분석 호출 (Map으로 결과 받기)
-        Map<String, Object> aiResultMap = aiSimulationService.getPolicyRecommendation(condition);
+        // =================================================================
+        // ★ [수정됨] AI 분석 호출 (Map -> DTO 변경)
+        // =================================================================
+        AiResponseDto aiResult = aiSimulationService.getPolicyRecommendation(condition);
 
-        String content = (String) aiResultMap.getOrDefault("content", "분석 결과 없음");
-        String suitability = (String) aiResultMap.getOrDefault("적합여부", "N");
-        String relatedPolicy = (String) aiResultMap.getOrDefault("연관된 정책", "없음");
-        String basis = (String) aiResultMap.getOrDefault("basis", "분석 근거 정보가 없습니다.");
+        // 기본값 설정
+        String content = "분석 결과 없음";
+        String suitability = "N";
+        String basis = "분석 근거 정보가 없습니다.";
 
-        // 모델에 담기
-        model.addAttribute("aiResult", content);
-        model.addAttribute("suitability", suitability);
-        model.addAttribute("relatedPolicy", relatedPolicy);
-        model.addAttribute("basis", basis); // 근거 데이터 전달
+        // 결과가 정상적으로 왔다면 덮어쓰기
+        if (aiResult != null) {
+            content = aiResult.getContent();
+            suitability = aiResult.getSuitability();
+            basis = aiResult.getBasis();
+        }
 
-        // DB 저장
+        // 모델에 담기 (화면에 보여줄 데이터)
+        model.addAttribute("aiResult", content);     // 상세 내용
+        model.addAttribute("suitability", suitability); // 적합 여부 (Y/N)
+        model.addAttribute("basis", basis);          // 판단 근거
+        model.addAttribute("relatedPolicy", "없음"); // (AI 서버가 아직 안 주는 값이라 기본값 처리)
+
+        // DB 저장 (RecordDto)
         try {
             RecordDto newRecord = RecordDto.builder()
                     .memberIdx(memberIdx)
@@ -126,7 +131,7 @@ public class SimulationController {
                     .child(condition.getChildCount())
                     .home("Y".equals(condition.getHouse()))
                     .prompt(condition.getUserPrompt())
-                    .content(content)
+                    .content(content) // AI 분석 결과 저장
                     .build();
 
             recordService.saveRecord(newRecord);
@@ -137,6 +142,7 @@ public class SimulationController {
         return "result";
     }
 
+    // 유틸리티 메서드들 (기존 유지)
     private LocalDate parseDate(String dateStr) {
         if (dateStr == null || dateStr.length() != 8) return null;
         try { return LocalDate.parse(dateStr, DateTimeFormatter.ofPattern("yyyyMMdd")); }
@@ -146,7 +152,6 @@ public class SimulationController {
     private Integer convertEducation(List<String> eduList) {
         if (eduList == null || eduList.isEmpty()) return null;
         String code = eduList.get(0);
-        // 실제 코드 매핑 (간소화)
         if (code.endsWith("001")) return 1; if (code.endsWith("002")) return 2; if (code.endsWith("003")) return 3;
         if (code.endsWith("004")) return 4; if (code.endsWith("005")) return 5; if (code.endsWith("006")) return 6;
         if (code.endsWith("007")) return 7; if (code.endsWith("008")) return 8; return 0;

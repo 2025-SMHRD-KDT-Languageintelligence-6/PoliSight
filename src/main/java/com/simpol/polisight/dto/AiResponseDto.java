@@ -1,12 +1,17 @@
 package com.simpol.polisight.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.google.gson.annotations.SerializedName;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@JsonIgnoreProperties(ignoreUnknown = true) // status나 processing_time 등 필요 없는 건 무시
+@Data
+@NoArgsConstructor
 public class AiResponseDto {
-    private String answer;
 
-    // Getter, Setter
-    public String getAnswer() { return answer; }
-    public void setAnswer(String answer) { this.answer = answer; }
+    // ⭐ 가장 중요: Python 서버가 보내주는 "적합여부"라는 한글 키를 자바 변수와 연결
+    @SerializedName("적합여부")
+    private String suitability; // 예: "Y" 또는 "N"
+
+    private String content;     // 예: "신청 가능합니다..."
+    private String basis;       // 예: "서울시 거주 조건 충족..."
 }

@@ -50,6 +50,12 @@ dependencies {
     // ✅ 수정된 부분: 존재하지 않는 'thymeleaf-test'를 삭제하고, 표준 테스트 라이브러리로 변경
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // 통신에 필요한 의존성 추가
+    // 👇 여기 아래 두 줄을 추가하세요!
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    implementation 'com.google.code.gson:gson:2.11.0'
+
 }
 
 tasks.named('test') {
