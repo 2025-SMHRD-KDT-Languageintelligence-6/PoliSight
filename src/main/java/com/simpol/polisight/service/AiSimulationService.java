@@ -8,9 +8,11 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,14 +23,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AiSimulationService {
 
-    // [복구] 다시 로컬 주소로 변경
-    private final String AI_SERVER_URL = "http://localhost:8000/simulate";
+    // [중요] Ngrok 주소 확인 (바뀌었으면 수정 필수!)
+    private final String AI_SERVER_URL = "https://lanelle-bottlelike-everett.ngrok-free.dev/simulate";
 
     public Map<String, Object> getPolicyRecommendation(PolicySearchCondition condition) {
         log.info("⚡ AI 분석 요청 시작: {}", condition);
 
+        // 1. 요청 데이터 생성
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("query", "내 조건으로 이 정책을 지원할 수 있을지 판별해주고, 불가능하다면 대안을 제시해줘.");
+        requestBody.put("query", "이 정책에 내가 지원할 수 있는지 판단해줘.");
         requestBody.put("conditions", formatUserConditions(condition));
 
         Map<String, String> policyInfo = new HashMap<>();
@@ -36,21 +39,44 @@ public class AiSimulationService {
         policyInfo.put("정책명", pTitle);
         requestBody.put("policy", policyInfo);
 
+        // 2. HTTP 요청 설정 (한글 깨짐 방지 적용)
         RestTemplate restTemplate = new RestTemplate();
+        // ★ 한글 로그가 ????로 깨지는 것을 방지하기 위해 UTF-8 컨버터 추가
+        restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
         try {
+            // 3. Python 서버 호출
             ResponseEntity<String> response = restTemplate.postForEntity(AI_SERVER_URL, entity, String.class);
+
+            // 로그 확인 (이제 한글이 잘 보일 겁니다)
+            System.out.println("\n🐍 [Python 응답 원본]: " + response.getBody());
+
+            // 4. 응답 파싱
             ObjectMapper mapper = new ObjectMapper();
-            return mapper.readValue(response.getBody(), Map.class);
+            Map<String, Object> result = mapper.readValue(response.getBody(), Map.class);
+
+            // ★★★ [핵심 수정] 호환성 확보 ★★★
+            // HTML/Controller가 'suitability'를 찾든 '적합여부'를 찾든 다 되게 만듦
+            if (result.containsKey("suitability")) {
+                result.put("적합여부", result.get("suitability")); // 옛날 코드 호환용 복사
+            }
+
+            System.out.println("📦 [최종 반환 데이터]: " + result + "\n");
+            return result;
+
         } catch (Exception e) {
             log.error("AI Server Error", e);
             Map<String, Object> errorResult = new HashMap<>();
+
+            // 에러 시에도 두 가지 키를 다 넣어줌
+            errorResult.put("suitability", "Error");
             errorResult.put("적합여부", "N");
             errorResult.put("content", "AI 서버와 연결할 수 없습니다. (오류: " + e.getMessage() + ")");
-            errorResult.put("연관된 정책", "없음");
+            errorResult.put("basis", "연결 실패");
             return errorResult;
         }
     }
@@ -72,6 +98,7 @@ public class AiSimulationService {
                 (c.getChildCount() != null ? c.getChildCount() : 0)
         );
     }
+
     private String safeString(String input) { return (input != null) ? input : ""; }
     private String listToString(List<String> list) { return (list == null || list.isEmpty()) ? "정보 없음" : String.join(", ", list); }
 }
