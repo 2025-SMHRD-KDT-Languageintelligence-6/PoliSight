@@ -83,56 +83,6 @@
         .find-desc { font-size: 13px; color: var(--text-sub); margin-bottom: 20px; text-align: center; line-height: 1.6; }
 
         button:disabled { background: #ccc; cursor: not-allowed; color: #666; box-shadow: none; }
-
-        /* ================= 모달 공통 스타일 ================= */
-        .modal-overlay {
-            display: none; /* 기본 숨김 */
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            align-items: center; justify-content: center;
-            backdrop-filter: blur(2px);
-        }
-
-        .modal-overlay.show {
-            display: flex;
-            animation: modalFadeIn 0.3s ease-out;
-        }
-
-        .modal-box {
-            background: white;
-            padding: 40px 30px;
-            border-radius: 20px;
-            text-align: center;
-            width: 90%;
-            max-width: 360px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-            transform: translateY(20px);
-            animation: modalSlideUp 0.3s ease-out forwards;
-        }
-
-        /* [추가] 모달 내 서브 버튼 스타일 */
-        .modal-sub-btn {
-            background: transparent; border: none; color: #999;
-            font-size: 13px; text-decoration: underline;
-            margin-top: 15px; cursor: pointer;
-        }
-
-        @keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes modalSlideUp { to { transform: translateY(0); } }
-
-        .modal-icon { font-size: 50px; margin-bottom: 20px; }
-        .modal-box h3 { margin: 0 0 10px; font-size: 22px; font-weight: 800; color: var(--text-main); }
-        .modal-box p { color: var(--text-sub); font-size: 15px; margin-bottom: 30px; line-height: 1.5; }
-
-        .modal-btn {
-            width: 100%; padding: 14px; background: var(--primary-color); color: white;
-            border: none; border-radius: 12px; font-size: 16px; font-weight: 700;
-            cursor: pointer; transition: background 0.2s;
-        }
-        .modal-btn:hover { background: var(--primary-hover); }
     </style>
 </head>
 <body>
@@ -281,35 +231,6 @@
     </section>
 </div>
 
-<div id="welcomeModal" class="modal-overlay">
-    <div class="modal-box">
-        <div class="modal-icon">🎉</div>
-        <h3>회원가입 완료!</h3>
-        <p>
-            PoliSight에 오신 것을 환영합니다.<br>
-            나에게 딱 맞는 정책 추천을 위해<br>
-            <strong>맞춤 조건</strong>을 설정해 보세요.
-        </p>
-
-        <button class="modal-btn" onclick="goToSetupFromSignup()">내 조건 설정 하러 가기</button>
-
-        <button class="modal-sub-btn" onclick="closeWelcomeModal()">나중에 하기 (로그인)</button>
-    </div>
-</div>
-
-<div id="emailSentModal" class="modal-overlay">
-    <div class="modal-box">
-        <div class="modal-icon">📧</div>
-        <h3>이메일 발송 완료!</h3>
-        <p>
-            비밀번호 재설정 링크가<br>
-            이메일로 발송되었습니다.<br>
-            메일함을 확인해 주세요.
-        </p>
-        <button class="modal-btn" onclick="closeEmailSentModal()">확인</button>
-    </div>
-</div>
-
 <script>
     /* ================= 전역 변수 ================= */
     let timerInterval = null;
@@ -342,50 +263,40 @@
         }
     }
 
-    /* ================= 모달 닫기 기능들 ================= */
-    function closeWelcomeModal() {
-        document.getElementById('welcomeModal').classList.remove('show');
-        document.getElementById('loginEmail').focus();
-    }
+    /* ================= 로그인 및 초기화 로직 (통합) ================= */
 
-    // [추가] 셋업 페이지 이동 함수
-    function goToSetupFromSignup() {
-        location.href = '/setup?source=signup';
-    }
-
-    // [추가] 이메일 발송 모달 닫기 -> 닫으면 로그인 탭으로 이동
-    function closeEmailSentModal() {
-        document.getElementById('emailSentModal').classList.remove('show');
-        switchTab('login');
-    }
-
-    /* ================= 로그인 및 초기화 로직 ================= */
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
 
-        // 회원가입 성공 처리 로직
-        if (urlParams.get('signup') === 'success') {
-            document.getElementById('welcomeModal').classList.add('show');
-            switchTab('login');
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
-        else if (urlParams.get('mode') === 'signup') {
+        // 1. URL 파라미터 체크 -> 회원가입 탭 열기
+        // (이 코드가 가장 먼저 실행되어야 회원가입 화면이 보입니다)
+        if (urlParams.get('mode') === 'signup') {
+            console.log("회원가입 모드 감지: 탭을 전환합니다.");
             switchTab('signup');
         }
 
+        // 2. 로그인 실패 시 이메일 복원
         if (urlParams.has('error')) {
             const savedEmail = localStorage.getItem('lastLoginEmail');
-            if(savedEmail) document.getElementById('loginEmail').value = savedEmail;
+            if(savedEmail) {
+                document.getElementById('loginEmail').value = savedEmail;
+            }
         }
 
-        // 셋업 데이터 주입 로직
+        // 3. 셋업 데이터(sessionStorage) -> 회원가입 폼 주입 로직
         const setupDataJson = sessionStorage.getItem('userSetupData');
         const signupForm = document.getElementById('signupForm');
+
         if (setupDataJson && signupForm) {
+            console.log("셋업 데이터 발견! DB 컬럼명에 맞춰 주입합니다.");
+
             try {
                 const data = JSON.parse(setupDataJson);
+
+                // [헬퍼 함수] hidden input 생성 및 폼 추가
                 const addHiddenInfo = (name, value) => {
                     if(value === undefined || value === null || value === '') return;
+
                     let input = signupForm.querySelector(`input[name="${name}"]`);
                     if (!input) {
                         input = document.createElement('input');
@@ -396,23 +307,64 @@
                     input.value = value;
                 };
 
+                // --- 매핑 시작 ---
+
+                // 1. 지역 정보
                 addHiddenInfo('province', data.regionSi);
                 addHiddenInfo('city', data.regionGu);
+
+                // 2. 성별
                 addHiddenInfo('gender', data.gender);
-                if (data.birthDate) addHiddenInfo('birthDate', String(data.birthDate).replace(/[^0-9]/g, ''));
-                if(data.income) addHiddenInfo('personalIncome', parseInt(String(data.income).replace(/,/g, '')));
-                if(data.householdIncome) addHiddenInfo('familyIncome', parseInt(String(data.householdIncome).replace(/,/g, '')));
+
+                // 3. 생년월일 처리 (복잡한 변환 삭제 -> 그냥 숫자만 보냄)
+                if (data.birthDate) {
+                    // "1995-01-01"이든 "19950101"이든 숫자만 남겨서 보냄 -> "19950101"
+                    let cleanDate = String(data.birthDate).replace(/[^0-9]/g, '');
+                    addHiddenInfo('birthDate', cleanDate);
+                }
+
+                // 4. 소득 (문자열 안전 변환 후 계산)
+                if(data.income) {
+                    const val = String(data.income).replace(/,/g, '');
+                    addHiddenInfo('personalIncome', parseInt(val));
+                }
+                if(data.householdIncome) {
+                    const val = String(data.householdIncome).replace(/,/g, '');
+                    addHiddenInfo('familyIncome', parseInt(val));
+                }
+
+                // 5. 가구 정보
                 addHiddenInfo('familySize', data.familySize);
                 addHiddenInfo('child', data.child);
-                const eduMap = { "0049001": 1, "0049002": 2, "0049003": 3, "0049004": 4, "0049005": 5, "0049006": 6, "0049007": 7, "0049008": 8 };
+
+                // 6. 학력 코드
+                const eduMap = {
+                    "0049001": 1, "0049002": 2, "0049003": 3, "0049004": 4,
+                    "0049005": 5, "0049006": 6, "0049007": 7, "0049008": 8
+                };
                 if(data.educationLevel) addHiddenInfo('eduLevelCode', eduMap[data.educationLevel] || 0);
-                const empMap = { "UNEMPLOYED": 1, "EMPLOYED": 2, "SELF_EMPLOYED": 3, "FREELANCER": 4, "FOUNDER": 5 };
+
+                // 7. 고용 상태 코드
+                const empMap = {
+                    "UNEMPLOYED": 1,    // 미취업
+                    "EMPLOYED": 2,      // 직장인
+                    "SELF_EMPLOYED": 3, // 자영업
+                    "FREELANCER": 4,    // 프리랜서
+                    "FOUNDER": 5        // 창업자
+                };
                 if(data.employmentStatus) addHiddenInfo('empStatusCode', empMap[data.employmentStatus] || 0);
+
+                // 8. 결혼/주택 (boolean)
                 addHiddenInfo('married', data.married);
                 addHiddenInfo('home', data.home);
-            } catch (e) { console.error("데이터 매핑 오류", e); }
+
+            } catch (e) {
+                console.error("데이터 매핑 중 오류 발생:", e);
+                // 오류가 나도 탭 전환은 이미 위에서 수행되었으므로 안전함
+            }
         }
 
+        // 4. 이벤트 리스너 등록 (기존 코드 유지)
         if(signupForm) {
             signupForm.addEventListener('submit', function(e) {
                 if (!isEmailVerified) {
@@ -420,6 +372,7 @@
                     alert('이메일 인증을 완료해 주세요.');
                     document.getElementById('regEmail').focus();
                 } else {
+                    // (선택) 회원가입 성공 시 임시 데이터 삭제
                     sessionStorage.removeItem('userSetupData');
                 }
             });
@@ -429,7 +382,8 @@
     const loginForm = document.getElementById('loginForm');
     if(loginForm) {
         loginForm.addEventListener('submit', function() {
-            localStorage.setItem('lastLoginEmail', document.getElementById('loginEmail').value);
+            const emailVal = document.getElementById('loginEmail').value;
+            localStorage.setItem('lastLoginEmail', emailVal);
         });
     }
 
@@ -437,12 +391,16 @@
     if(loginEmailInput) {
         loginEmailInput.addEventListener('input', function() {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if(this.value.length > 0 && !emailRegex.test(this.value)) toggleError('loginFormatError', true);
-            else toggleError('loginFormatError', false);
+            if(this.value.length > 0 && !emailRegex.test(this.value)) {
+                toggleError('loginFormatError', true);
+            } else {
+                toggleError('loginFormatError', false);
+            }
         });
     }
 
-    /* ================= 회원가입 (인증/타이머) 로직 ================= */
+    /* ================= 회원가입 로직 ================= */
+
     function startAuthTimer(duration) {
         let timer = duration, minutes, seconds;
         const display = document.getElementById('authTimer');
@@ -517,7 +475,11 @@
     function verifyCode() {
         const codeInput = document.getElementById('authCode');
         const code = codeInput.value;
-        if(code.length !== 6) { toggleError('authCodeError', true, '인증번호 6자리를 입력해 주세요.'); return; }
+
+        if(code.length !== 6) {
+            toggleError('authCodeError', true, '인증번호 6자리를 입력해 주세요.');
+            return;
+        }
 
         fetch('/mail/verify', {
             method: 'POST',
@@ -541,7 +503,10 @@
                 isEmailVerified = false;
             }
         })
-        .catch(error => { console.error('Error:', error); alert('오류 발생'); });
+        .catch(error => {
+            console.error('Error:', error);
+            alert('인증 확인 중 오류가 발생했습니다.');
+        });
     }
 
     const pw = document.getElementById('regPw');
@@ -560,14 +525,20 @@
     pw.addEventListener('input', checkPwValidation);
     pwConfirm.addEventListener('input', checkPwMatch);
 
-    /* ================= [수정됨] 비밀번호 찾기 이메일 발송 ================= */
     function sendResetLink() {
         const emailInput = document.getElementById('findEmail');
         const email = emailInput.value;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        if(!email) { toggleError('findEmailError', true, '이메일을 입력해 주세요.'); emailInput.focus(); return; }
-        if(!emailRegex.test(email)) { toggleError('findEmailError', true, '올바른 이메일 형식을 입력해 주세요.'); return; }
+        if(!email) {
+            toggleError('findEmailError', true, '이메일을 입력해 주세요.');
+            emailInput.focus();
+            return;
+        }
+        if(!emailRegex.test(email)) {
+            toggleError('findEmailError', true, '올바른 이메일 형식을 입력해 주세요.');
+            return;
+        }
 
         const btn = document.querySelector('#findSection .submit-btn');
         const originalText = btn.innerText;
@@ -584,14 +555,13 @@
             btn.innerText = originalText;
             btn.disabled = false;
             if (data === 'success') {
-                // [수정] alert 대신 예쁜 모달창 띄우기
-                document.getElementById('emailSentModal').classList.add('show');
+                alert('재설정 링크가 이메일로 발송되었습니다!\n메일함을 확인해 주세요.');
                 toggleError('findEmailError', false);
             } else if (data === 'not_found') {
                 toggleError('findEmailError', true, '등록되지 않은 이메일 주소입니다.');
             } else if (data.startsWith('social_user')) {
-                const provider = data.split(':')[1];
-                toggleError('findEmailError', true, "[" + provider + "] 소셜 가입 계정입니다.");
+                const provider = data.split(':')[1]; // "kakao" 또는 "google" 추출
+                toggleError('findEmailError', true, "[" + provider + "] 소셜 가입 계정입니다. (소셜 로그인 이용)");
             } else {
                 alert('오류가 발생했습니다. 다시 시도해 주세요.');
             }
