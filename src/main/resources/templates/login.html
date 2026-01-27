@@ -355,8 +355,18 @@
                 if(data.employmentStatus) addHiddenInfo('empStatusCode', empMap[data.employmentStatus] || 0);
 
                 // 8. 결혼/주택 (boolean)
-                addHiddenInfo('married', data.married);
-                addHiddenInfo('home', data.home);
+                if (data.married) {
+                    // "Y"랑 같으면 true, 아니면 false
+                    const boolMarried = (data.married === 'Y');
+                    addHiddenInfo('married', boolMarried);
+                    // 결과: <input name="married" value="true"> 가 생성됨 -> 서버가 Boolean으로 인식
+                }
+
+                if (data.home) {
+                    const boolHome = (data.home === 'Y');
+                    addHiddenInfo('home', boolHome);
+                    // 결과: <input name="home" value="true"> 가 생성됨
+                }
 
             } catch (e) {
                 console.error("데이터 매핑 중 오류 발생:", e);
