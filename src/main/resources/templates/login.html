@@ -83,6 +83,38 @@
         .find-desc { font-size: 13px; color: var(--text-sub); margin-bottom: 20px; text-align: center; line-height: 1.6; }
 
         button:disabled { background: #ccc; cursor: not-allowed; color: #666; box-shadow: none; }
+
+        /* ================= 모달(Alert 대체) 스타일 추가 ================= */
+        .modal-overlay {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 9999;
+            align-items: center; justify-content: center;
+            backdrop-filter: blur(3px);
+            animation: fadeInModal 0.2s ease-out;
+        }
+        .modal-box {
+            background: #fff; width: 320px; padding: 30px 24px 24px;
+            border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            text-align: center;
+            transform: scale(0.95);
+            animation: popInModal 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        .modal-msg {
+            font-size: 15px; color: var(--text-main); font-weight: 600;
+            margin-bottom: 24px; line-height: 1.5; white-space: pre-line; /* 줄바꿈 문자 적용 */
+        }
+        .modal-btn {
+            background: var(--primary-color); color: white; border: none;
+            padding: 12px 0; width: 100%; border-radius: 10px;
+            font-size: 14px; font-weight: 700; cursor: pointer;
+            transition: background 0.2s;
+        }
+        .modal-btn:hover { background: var(--primary-hover); }
+
+        @keyframes fadeInModal { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes popInModal { from { transform: scale(0.9); } to { transform: scale(1); } }
     </style>
 </head>
 <body>
@@ -231,10 +263,26 @@
     </section>
 </div>
 
+<div id="customModal" class="modal-overlay">
+    <div class="modal-box">
+        <p id="modalMessage" class="modal-msg"></p>
+        <button class="modal-btn" onclick="closeModal()">확인</button>
+    </div>
+</div>
+
 <script>
     /* ================= 전역 변수 ================= */
     let timerInterval = null;
     let isEmailVerified = false;
+
+    /* ================= 모달 제어 함수 (Alert 대체용) ================= */
+    function showModal(message) {
+        document.getElementById('modalMessage').innerText = message;
+        document.getElementById('customModal').style.display = 'flex';
+    }
+    function closeModal() {
+        document.getElementById('customModal').style.display = 'none';
+    }
 
     /* ================= 공통 기능 ================= */
     function switchTab(type) {
@@ -269,7 +317,6 @@
         const urlParams = new URLSearchParams(window.location.search);
 
         // 1. URL 파라미터 체크 -> 회원가입 탭 열기
-        // (이 코드가 가장 먼저 실행되어야 회원가입 화면이 보입니다)
         if (urlParams.get('mode') === 'signup') {
             console.log("회원가입 모드 감지: 탭을 전환합니다.");
             switchTab('signup');
@@ -308,7 +355,6 @@
                 };
 
                 // --- 매핑 시작 ---
-
                 // 1. 지역 정보
                 addHiddenInfo('province', data.regionSi);
                 addHiddenInfo('city', data.regionGu);
@@ -316,14 +362,13 @@
                 // 2. 성별
                 addHiddenInfo('gender', data.gender);
 
-                // 3. 생년월일 처리 (복잡한 변환 삭제 -> 그냥 숫자만 보냄)
+                // 3. 생년월일 처리
                 if (data.birthDate) {
-                    // "1995-01-01"이든 "19950101"이든 숫자만 남겨서 보냄 -> "19950101"
                     let cleanDate = String(data.birthDate).replace(/[^0-9]/g, '');
                     addHiddenInfo('birthDate', cleanDate);
                 }
 
-                // 4. 소득 (문자열 안전 변환 후 계산)
+                // 4. 소득
                 if(data.income) {
                     const val = String(data.income).replace(/,/g, '');
                     addHiddenInfo('personalIncome', parseInt(val));
@@ -356,30 +401,27 @@
 
                 // 8. 결혼/주택 (boolean)
                 if (data.married) {
-                    // "Y"랑 같으면 true, 아니면 false
                     const boolMarried = (data.married === 'Y');
                     addHiddenInfo('married', boolMarried);
-                    // 결과: <input name="married" value="true"> 가 생성됨 -> 서버가 Boolean으로 인식
                 }
 
                 if (data.home) {
                     const boolHome = (data.home === 'Y');
                     addHiddenInfo('home', boolHome);
-                    // 결과: <input name="home" value="true"> 가 생성됨
                 }
 
             } catch (e) {
                 console.error("데이터 매핑 중 오류 발생:", e);
-                // 오류가 나도 탭 전환은 이미 위에서 수행되었으므로 안전함
             }
         }
 
-        // 4. 이벤트 리스너 등록 (기존 코드 유지)
+        // 4. 이벤트 리스너 등록
         if(signupForm) {
             signupForm.addEventListener('submit', function(e) {
                 if (!isEmailVerified) {
                     e.preventDefault();
-                    alert('이메일 인증을 완료해 주세요.');
+                    // alert('이메일 인증을 완료해 주세요.') -> 모달로 교체
+                    showModal('이메일 인증을 완료해 주세요.');
                     document.getElementById('regEmail').focus();
                 } else {
                     // (선택) 회원가입 성공 시 임시 데이터 삭제
@@ -461,7 +503,8 @@
                 btnReq.textContent = '인증요청';
                 emailInput.focus();
             } else if (data === 'success') {
-                alert('인증번호가 발송되었습니다. 이메일을 확인해 주세요.');
+                // alert -> 모달로 교체
+                showModal('인증번호가 발송되었습니다.\n이메일을 확인해 주세요.');
                 toggleError('regEmailError', false);
                 authArea.style.display = 'flex';
                 btnReq.textContent = '재전송';
@@ -469,14 +512,16 @@
                 startAuthTimer(300);
                 document.getElementById('authCode').focus();
             } else {
-                alert('메일 발송 실패: 잠시 후 다시 시도해 주세요.');
+                // alert -> 모달로 교체
+                showModal('메일 발송 실패: 잠시 후 다시 시도해 주세요.');
                 btnReq.disabled = false;
                 btnReq.textContent = '인증요청';
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('서버 연결 오류입니다.');
+            // alert -> 모달로 교체
+            showModal('서버 연결 오류입니다.');
             btnReq.disabled = false;
             btnReq.textContent = '인증요청';
         });
@@ -499,7 +544,8 @@
         .then(response => response.text())
         .then(data => {
             if (data === 'ok') {
-                alert('인증이 완료되었습니다.');
+                // alert -> 모달로 교체
+                showModal('인증이 완료되었습니다.');
                 toggleError('authCodeError', false);
                 clearInterval(timerInterval);
                 document.getElementById('regEmail').readOnly = true;
@@ -515,7 +561,8 @@
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('인증 확인 중 오류가 발생했습니다.');
+            // alert -> 모달로 교체
+            showModal('인증 확인 중 오류가 발생했습니다.');
         });
     }
 
@@ -565,20 +612,23 @@
             btn.innerText = originalText;
             btn.disabled = false;
             if (data === 'success') {
-                alert('재설정 링크가 이메일로 발송되었습니다!\n메일함을 확인해 주세요.');
+                // alert -> 모달로 교체
+                showModal('재설정 링크가 이메일로 발송되었습니다!\n메일함을 확인해 주세요.');
                 toggleError('findEmailError', false);
             } else if (data === 'not_found') {
                 toggleError('findEmailError', true, '등록되지 않은 이메일 주소입니다.');
             } else if (data.startsWith('social_user')) {
-                const provider = data.split(':')[1]; // "kakao" 또는 "google" 추출
+                const provider = data.split(':')[1];
                 toggleError('findEmailError', true, "[" + provider + "] 소셜 가입 계정입니다. (소셜 로그인 이용)");
             } else {
-                alert('오류가 발생했습니다. 다시 시도해 주세요.');
+                // alert -> 모달로 교체
+                showModal('오류가 발생했습니다. 다시 시도해 주세요.');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('서버 연결 오류입니다.');
+            // alert -> 모달로 교체
+            showModal('서버 연결 오류입니다.');
             btn.innerText = originalText;
             btn.disabled = false;
         });
