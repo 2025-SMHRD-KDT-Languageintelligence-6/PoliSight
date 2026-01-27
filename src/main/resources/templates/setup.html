@@ -181,7 +181,8 @@
             <button class="btn-next" style="width: 100%; flex: auto;" onclick="nextStep(2)">다음으로 <i
                     class="fa-solid fa-arrow-right" style="margin-left:6px;"></i></button>
         </div>
-        <button class="btn-skip-link" onclick="skipSetup()">조건 설정 건너뛰기</button>
+
+        <button class="btn-skip-link skip-link" onclick="skipSetup()">조건 설정 건너뛰기</button>
     </div>
 
 
@@ -298,11 +299,11 @@
         </div>
 
         <div class="final-actions">
-            <button class="btn-signup-main" onclick="finishSetup('signup')">
+            <button id="btnMainAction" class="btn-signup-main" onclick="finishSetup('signup')">
                 이 정보 그대로 회원가입 하기
             </button>
 
-            <button class="btn-skip-main" onclick="finishSetup('policy')">
+            <button id="btnSkipMain" class="btn-skip-main skip-main" onclick="finishSetup('policy')">
                 회원가입 없이 바로 설정완료
             </button>
 
@@ -360,6 +361,25 @@
             option.text = si;
             siSelect.appendChild(option);
         }
+
+        // [수정] URL 파라미터 체크 (회원가입 후 진입 여부)
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('source') === 'signup') {
+            // 1. 메인 버튼 텍스트 및 클릭 이벤트 변경
+            const mainBtn = document.getElementById('btnMainAction');
+            if(mainBtn) {
+                mainBtn.innerText = "내 조건 저장 완료";
+                // 클릭 시 'save_and_login' 모드로 호출
+                mainBtn.onclick = function() { finishSetup('save_and_login'); };
+            }
+
+            // 2. 건너뛰기 버튼들 숨김 처리 (Step 1 상단, Step 4 하단)
+            const skipLink = document.querySelector('.skip-link'); // Step 1
+            const skipMain = document.getElementById('btnSkipMain'); // Step 4
+
+            if(skipLink) skipLink.style.display = 'none';
+            if(skipMain) skipMain.style.display = 'none';
+        }
     });
 
     // 2. 시/도 선택 시 하위 목록 갱신
@@ -408,34 +428,15 @@
     const setupData = {
         gender: document.querySelector('input[name="gender"]:checked')?.value || '',
         birthDate: document.getElementById('birthDate').value,
-
-        // region -> regionSi 로 변경
         regionSi: document.getElementById('regionSi').value,
-        // subRegion -> regionGu 로 변경
         regionGu: document.getElementById('regionGu').value,
-
-        // policy.html은 코드를 원하지만, 일단 문자열로 넘기고 policy에서 처리하도록 함 (매핑 필요 시 policy 수정)
-        // 여기서는 값을 그대로 넘깁니다.
         educationLevel: document.getElementById('educationLevel').value,
         employmentStatus: document.getElementById('employmentStatus').value,
-
-        // marry -> married (Boolean) 로 변경
-        // policy.html이 (data.married === true)로 체크하므로 true/false 변환
         married: document.querySelector('input[name="marry"]:checked')?.value,
-
-        // familyCount -> familySize 로 변경
         familySize: document.getElementById('familyCount').value,
-
-        // childCount -> child 로 변경
         child: document.getElementById('childCount').value,
-
-        // house -> home (Boolean) 로 변경
         home: document.querySelector('input[name="house"]:checked')?.value,
-
-        // myIncome -> income 으로 변경
         income: document.getElementById('myIncomeText').value.replace(/,/g, ''),
-
-        // householdIncome 유지
         householdIncome: document.getElementById('householdIncomeText').value.replace(/,/g, '')
         };
 
@@ -446,6 +447,10 @@
             location.href = /*[[@{/login(mode='signup')}]]*/ '/login?mode=signup';
         } else if (destination === 'policy') {
             location.href = /*[[@{/policy}]]*/ '/policy';
+        } else if (destination === 'save_and_login') {
+            // [추가] 회원가입 직후 설정 저장 시 -> 로그인 페이지로 이동
+            alert("조건이 임시 저장되었습니다.\n로그인하여 설정을 완료해주세요.");
+            location.href = /*[[@{/login}]]*/ '/login';
         }
     }
 
