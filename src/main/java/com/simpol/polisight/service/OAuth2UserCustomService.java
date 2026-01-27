@@ -2,7 +2,7 @@ package com.simpol.polisight.service;
 
 import com.simpol.polisight.dto.MemberDto;
 import com.simpol.polisight.mapper.MemberMapper;
-import jakarta.servlet.http.HttpSession; // (스프링 부트 3.0 이상) 2.x버전이면 javax.servlet.http.HttpSession
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -32,18 +32,19 @@ public class OAuth2UserCustomService extends DefaultOAuth2UserService {
         OAuth2User oAuth2User = super.loadUser(userRequest);
         Map<String, Object> attributes = oAuth2User.getAttributes();
 
-        // ★★★ [여기서 토큰을 꺼냅니다!] ★★★
+        // ★★★ [기존 코드 유지] 토큰 꺼내기
         String accessToken = userRequest.getAccessToken().getTokenValue();
         System.out.println("★ 소셜 Access Token 확보: " + accessToken);
 
-        // ★★★ [세션에 토큰 저장하기] ★★★
-        // 서비스단에서 세션을 잡기 위해 RequestContextHolder를 사용합니다.
+        // ★★★ [수정] 세션 변수를 미리 선언합니다 (아래에서 쓰기 위해 위치만 위로 올림)
+        HttpSession session = null;
+
+        // ★★★ [기존 코드 유지] 세션에 토큰 저장하기
         try {
             ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
-            HttpSession session = attr.getRequest().getSession();
+            session = attr.getRequest().getSession();
 
-            // 세션에 'socialAccessToken'이라는 이름으로 저장!
-            // -> 나중에 탈퇴 컨트롤러에서 꺼내 쓸 수 있습니다.
+            // 세션에 'socialAccessToken' 저장
             session.setAttribute("socialAccessToken", accessToken);
         } catch (Exception e) {
             System.out.println("세션 저장 중 오류 발생 (무시 가능): " + e.getMessage());
@@ -53,7 +54,7 @@ public class OAuth2UserCustomService extends DefaultOAuth2UserService {
         String email = "";
         String name = "";
 
-        // 2. 소셜 별 데이터 추출
+        // 2. [기존 코드 유지] 소셜 별 데이터 추출
         if ("google".equals(registrationId)) {
             email = (String) attributes.get("email");
             name = (String) attributes.get("name");
@@ -73,6 +74,7 @@ public class OAuth2UserCustomService extends DefaultOAuth2UserService {
         MemberDto member = memberMapper.selectMemberByEmail(email);
 
         if (member == null) {
+            // [신규 회원 가입]
             member = new MemberDto();
             member.setEmail(email);
             member.setMemberName(name);
@@ -82,25 +84,37 @@ public class OAuth2UserCustomService extends DefaultOAuth2UserService {
             try {
                 memberMapper.insertMember(member);
                 System.out.println("★ 신규 회원가입 완료: " + email);
+
+                // ★★★ [여기가 추가된 핵심 코드] ★★★
+                // 신규 가입자임을 세션에 표시 -> 나중에 핸들러가 이걸 보고 모달창으로 보냄
+                if (session != null) {
+                    session.setAttribute("socialIsNew", true);
+                }
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
         } else {
+            // [기존 회원 로그인]
             System.out.println("★ 기존 회원 로그인: " + email);
+
+            // ★★★ [추가된 안전장치] 기존 회원은 꼬리표 제거
+            if (session != null) {
+                session.setAttribute("socialIsNew", false);
+            }
         }
 
-        // [중요] 세션에 로그인 회원 정보(loginMember)도 같이 넣어줘야 컨트롤러들이 작동합니다.
-        // (만약 별도의 SuccessHandler가 없다면 여기서 넣어주는 게 안전합니다)
-        try {
-            ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
-            HttpSession session = attr.getRequest().getSession();
-            session.setAttribute("loginMember", member); // loginMember 세션 저장
-        } catch (Exception e) {}
+        // [기존 코드 유지] 로그인 세션 유지 정보 저장
+        if (session != null) {
+            try {
+                session.setAttribute("loginMember", member);
+            } catch (Exception e) {}
+        }
 
         return new CustomOAuth2User(member, attributes);
     }
 
-    // [내부 클래스]
+    // [기존 코드 유지] 내부 클래스
     public static class CustomOAuth2User implements OAuth2User {
         private final MemberDto member;
         private final Map<String, Object> attributes;

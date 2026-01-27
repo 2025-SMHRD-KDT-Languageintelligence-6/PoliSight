@@ -115,6 +115,33 @@
 
         @keyframes fadeInModal { from { opacity: 0; } to { opacity: 1; } }
         @keyframes popInModal { from { transform: scale(0.9); } to { transform: scale(1); } }
+        /* --- [추가] 축하 모달 스타일 --- */
+        .welcome-modal-overlay {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6); z-index: 10000;
+            align-items: center; justify-content: center;
+            backdrop-filter: blur(4px);
+            animation: fadeInModal 0.3s ease-out;
+        }
+        .welcome-box {
+            background: #fff; width: 360px; padding: 40px 30px;
+            border-radius: 24px; text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            transform: scale(0.9);
+            position: relative;
+            animation: popInModal 0.3s forwards;
+        }
+        .welcome-title { font-size: 22px; font-weight: 800; color: #222; margin: 20px 0 10px; }
+        .welcome-desc { font-size: 14px; color: #666; line-height: 1.6; margin-bottom: 30px; }
+        .btn-welcome-primary {
+            background: var(--primary-color); color: white; padding: 16px; border-radius: 12px;
+            border: none; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%; margin-bottom: 10px;
+        }
+        .btn-welcome-secondary {
+            background: #f1f3f5; color: #495057; padding: 16px; border-radius: 12px;
+            border: none; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%;
+        }
     </style>
 </head>
 <body>
@@ -270,6 +297,15 @@
     </div>
 </div>
 
+<div id="welcomeModal" class="welcome-modal-overlay">
+    <div class="welcome-box">
+        <div style="font-size: 40px;">🎉</div>
+        <h2 class="welcome-title">회원가입을 축하합니다!</h2>
+        <p id="welcomeMsg" class="welcome-desc">PoliSight에 오신 것을 환영합니다.</p>
+        <div id="welcomeActions"></div>
+    </div>
+</div>
+
 <script>
     /* ================= 전역 변수 ================= */
     let timerInterval = null;
@@ -315,6 +351,15 @@
 
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
+        const welcomeType = urlParams.get('social_welcome');
+
+        if (welcomeType === 'DONE') {
+            showWelcomeModal('DONE');       // "설정 완료! 홈으로" (셋업 O -> 가입)
+        } else if (welcomeType === 'NEED_SETUP') {
+            showWelcomeModal('NEED_SETUP'); // "설정 하실래요?" (셋업 X -> 가입)
+        } else if (welcomeType === 'true') {
+            showWelcomeModal('NEED_SETUP'); // 소셜 로그인 (셋업 X)
+        }
 
         // 1. URL 파라미터 체크 -> 회원가입 탭 열기
         if (urlParams.get('mode') === 'signup') {
@@ -418,15 +463,111 @@
         // 4. 이벤트 리스너 등록
         if(signupForm) {
             signupForm.addEventListener('submit', function(e) {
+                e.preventDefault(); // 1. 화면 이동(새로고침) 절대 금지!
+
                 if (!isEmailVerified) {
-                    e.preventDefault();
-                    // alert('이메일 인증을 완료해 주세요.') -> 모달로 교체
                     showModal('이메일 인증을 완료해 주세요.');
                     document.getElementById('regEmail').focus();
-                } else {
-                    // (선택) 회원가입 성공 시 임시 데이터 삭제
-                    sessionStorage.removeItem('userSetupData');
+                    return;
                 }
+
+                const joinData = new FormData(this);
+                const email = document.getElementById('regEmail').value;
+                const pw = document.getElementById('regPw').value;
+
+                // 셋업 데이터 확인
+                const setupDataJson = sessionStorage.getItem('userSetupData');
+                const hasSetupData = setupDataJson !== null;
+
+                // [단계 1] 회원가입 요청
+                fetch(this.action, {
+                    method: 'POST',
+                    body: joinData
+                })
+                .then(response => {
+                    if (!response.ok) return response.text().then(text => { throw new Error(text || '가입 실패'); });
+
+                    // [단계 2] 가입 성공 시 -> 자동 로그인 요청 (AJAX)
+                    const loginParams = new URLSearchParams();
+                    loginParams.append('email', email);  // Spring Security 설정에 따라 'username' 일 수 있음
+                    loginParams.append('userPw', pw);    // Spring Security 설정에 따라 'password' 일 수 있음
+
+                    return fetch('/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: loginParams
+                    });
+                })
+                .then(loginRes => {
+                    // [단계 3] 로그인 결과 확인
+                    // (redirect가 발생해도 fetch는 따라가서 200 OK를 줍니다. 쿠키는 브라우저에 저장됩니다.)
+                    if (loginRes.ok) {
+                        return true;
+                    } else {
+                        throw new Error("자동 로그인 실패. 직접 로그인해 주세요.");
+                    }
+                })
+                .then(() => {
+                    // [단계 4] (중요) 셋업 데이터가 있다면 -> 바로 DB에 저장 (이제 로그인 상태니까 됨!)
+                    if (hasSetupData) {
+                        return saveSetupDataImmediately(setupDataJson);
+                    }
+                    return Promise.resolve(); // 셋업 데이터 없으면 패스
+                })
+                .then(() => {
+                    // [단계 5] 모든 처리 완료 -> 셋업 데이터 지우고 모달 띄우기
+                    sessionStorage.removeItem('userSetupData');
+
+                    // 화면은 여전히 login.html 이지만, 사용자는 내부적으로 로그인 된 상태입니다.
+                    showWelcomeModal(hasSetupData ? 'DONE' : 'NEED_SETUP');
+                })
+                .catch(error => {
+                    console.error(error);
+                    // 실패 시 그냥 로그인 페이지로 이동시켜서 다시 시도하게 유도
+                    alert('처리 중 오류가 발생했습니다: ' + error.message);
+                    location.href = '/login';
+                });
+            });
+        }
+        function saveSetupDataImmediately(jsonStr) {
+            const rawData = JSON.parse(jsonStr);
+
+            // ★ [매핑] String 코드("0049001") -> Integer(1) 변환
+            // DTO에 Integer로 선언되어 있어서 숫자로 바꿔줘야 에러가 안 납니다.
+            const eduMap = { "0049001": 1, "0049002": 2, "0049003": 3, "0049004": 4, "0049005": 5, "0049006": 6, "0049007": 7, "0049008": 8 };
+            const empMap = { "UNEMPLOYED": 1, "EMPLOYED": 2, "SELF_EMPLOYED": 3, "FREELANCER": 4, "FOUNDER": 5 };
+
+            const serverDto = {
+                // 1. [핵심] Mapper가 기다리는 이름 (regionSi, regionGu)
+                // 이걸 보내야 매퍼가 <if test="regionSi">를 통과해서 DB의 province에 넣습니다.
+                regionSi: rawData.regionSi,
+                regionGu: rawData.regionGu,
+
+                // 2. [핵심] Mapper가 기다리는 이름 (educationLevel, employmentStatus)
+                // 단, DTO 타입이 Integer이므로 숫자로 변환해서 보냅니다.
+                educationLevel: eduMap[rawData.educationLevel] || 0,
+                employmentStatus: empMap[rawData.employmentStatus] || 0,
+
+                // 3. 소득 (Mapper는 personalIncome, familyIncome을 기다림)
+                // rawData.income은 문자열일 수 있으니 숫자로 변환
+                personalIncome: parseInt(rawData.income || 0),
+                familyIncome: parseInt(rawData.householdIncome || 0),
+                familySize: parseInt(rawData.familySize || 1),
+                child: parseInt(rawData.child || 0),
+
+                // 4. 나머지 기본 정보
+                gender: rawData.gender,
+                birthDate: rawData.birthDate,
+
+                // 5. 결혼/주택 (DTO: Boolean / Mapper: married, home)
+                married: rawData.married === 'Y',
+                home: rawData.home === 'Y'
+            };
+
+            return fetch('/user/setup/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(serverDto)
             });
         }
     });
@@ -632,6 +773,33 @@
             btn.innerText = originalText;
             btn.disabled = false;
         });
+    }
+    // [추가] 모달 제어 함수
+    function showWelcomeModal(type) {
+        const modal = document.getElementById('welcomeModal');
+        const actions = document.getElementById('welcomeActions');
+        const msg = document.getElementById('welcomeMsg');
+
+        modal.style.display = 'flex';
+        actions.innerHTML = '';
+
+        if (type === 'DONE') {
+            // 셋업 완료 후 가입
+            msg.innerHTML = "맞춤 조건 설정이 완료되었습니다.<br>지금 바로 정책을 추천해 드릴게요.";
+            actions.innerHTML = `<button class="btn-welcome-primary" onclick="location.href='/'">확인</button>`;
+        } else {
+            // 셋업 없이 가입 (셋업 유도)
+            msg.innerHTML = "더 정확한 정책 추천을 위해<br><strong>맞춤 조건 설정</strong>을 진행해 보시겠어요?";
+            actions.innerHTML = `
+                <button class="btn-welcome-primary" onclick="location.href='/setup?source=after_signup'">지금 설정하기</button>
+                <button class="btn-welcome-secondary" onclick="location.href='/'">다음에 하기</button>
+            `;
+        }
+    }
+
+    // [추가] 소셜 로그인 복귀 감지
+    if (new URLSearchParams(window.location.search).get('social_welcome') === 'true') {
+        showWelcomeModal('NEED_SETUP');
     }
 </script>
 

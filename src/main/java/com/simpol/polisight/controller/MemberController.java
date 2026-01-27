@@ -217,4 +217,15 @@ public class MemberController {
             return "redirect:/mypage";
         }
     }
+    // ==========================================
+    // ✅ [추가] 회원가입 후 초기 셋업 (updateConditions 재활용)
+    // ==========================================
+    @PostMapping(value = "/user/setup/update", consumes = "application/json")
+    @ResponseBody
+    public ResponseEntity<String> setupUpdate(@RequestBody MemberDto memberDto, HttpSession session) {
+
+        // 기존에 만들어두신 마이페이지 업데이트 로직(updateConditions)을 그대로 호출합니다.
+        // 로직이 완전히 동일하기 때문입니다.
+        return updateConditions(memberDto, session);
+    }
 }

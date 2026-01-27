@@ -362,24 +362,38 @@
             siSelect.appendChild(option);
         }
 
-        // [수정] URL 파라미터 체크 (회원가입 후 진입 여부)
+        // ▼▼▼ [여기부터 수정] URL 파라미터 체크 로직 교체 ▼▼▼
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('source') === 'signup') {
-            // 1. 메인 버튼 텍스트 및 클릭 이벤트 변경
-            const mainBtn = document.getElementById('btnMainAction');
+        const source = urlParams.get('source'); // 'signup' 또는 'after_signup'
+
+        const mainBtn = document.getElementById('btnMainAction');
+        const skipLink = document.querySelector('.skip-link'); // 1단계 건너뛰기
+        const skipMain = document.getElementById('btnSkipMain'); // 4단계 건너뛰기
+
+        // CASE A: 셋업 -> 회원가입 (기존 로직)
+        if (source === 'signup') {
             if(mainBtn) {
                 mainBtn.innerText = "내 조건 저장 완료";
-                // 클릭 시 'save_and_login' 모드로 호출
                 mainBtn.onclick = function() { finishSetup('save_and_login'); };
             }
-
-            // 2. 건너뛰기 버튼들 숨김 처리 (Step 1 상단, Step 4 하단)
-            const skipLink = document.querySelector('.skip-link'); // Step 1
-            const skipMain = document.getElementById('btnSkipMain'); // Step 4
-
             if(skipLink) skipLink.style.display = 'none';
             if(skipMain) skipMain.style.display = 'none';
         }
+        // CASE B: 회원가입 -> 셋업 (신규 로직: 축하 모달 타고 들어옴)
+        else if (source === 'after_signup') {
+            if(mainBtn) {
+                // 이미 로그인은 된 상태 -> 저장하고 홈으로
+                mainBtn.innerText = "설정 완료하고 홈으로";
+                mainBtn.onclick = function() { finishSetup('home'); };
+            }
+            // 건너뛰기 버튼 -> 그냥 홈으로
+            if(skipMain) {
+                skipMain.innerText = "다음에 설정하기 (홈으로)";
+                skipMain.onclick = function() { location.href = '/'; };
+            }
+            if(skipLink) skipLink.style.display = 'none';
+        }
+        // ▲▲▲ [여기까지 수정] ▲▲▲
     });
 
     // 2. 시/도 선택 시 하위 목록 갱신
@@ -423,34 +437,90 @@
     function nextStep(step) { showStep(step); }
     function prevStep(step) { showStep(step); }
 
+    /* setup.html 내부 스크립트 수정 */
+
     function finishSetup(destination) {
-    // [수정됨] policy.html 및 DB 형식에 맞춰 변수명(Key) 통일
-    const setupData = {
-        gender: document.querySelector('input[name="gender"]:checked')?.value || '',
-        birthDate: document.getElementById('birthDate').value,
-        regionSi: document.getElementById('regionSi').value,
-        regionGu: document.getElementById('regionGu').value,
-        educationLevel: document.getElementById('educationLevel').value,
-        employmentStatus: document.getElementById('employmentStatus').value,
-        married: document.querySelector('input[name="marry"]:checked')?.value,
-        familySize: document.getElementById('familyCount').value,
-        child: document.getElementById('childCount').value,
-        home: document.querySelector('input[name="house"]:checked')?.value,
-        income: document.getElementById('myIncomeText').value.replace(/,/g, ''),
-        householdIncome: document.getElementById('householdIncomeText').value.replace(/,/g, '')
+        // 1. 화면의 입력값 가져오기 (rawData)
+        const rawData = {
+            gender: document.querySelector('input[name="gender"]:checked')?.value || '',
+            birthDate: document.getElementById('birthDate').value,
+            regionSi: document.getElementById('regionSi').value,
+            regionGu: document.getElementById('regionGu').value,
+            educationLevel: document.getElementById('educationLevel').value,
+            employmentStatus: document.getElementById('employmentStatus').value,
+            married: document.querySelector('input[name="marry"]:checked')?.value,
+            familySize: document.getElementById('familyCount').value,
+            child: document.getElementById('childCount').value,
+            home: document.querySelector('input[name="house"]:checked')?.value,
+            income: document.getElementById('myIncomeText').value.replace(/,/g, ''),
+            householdIncome: document.getElementById('householdIncomeText').value.replace(/,/g, '')
         };
 
-        // 세션 스토리지 저장
-        sessionStorage.setItem('userSetupData', JSON.stringify(setupData));
+        // 2. 세션에 임시 저장 (회원가입 페이지로 넘어갈 때 사용)
+        sessionStorage.setItem('userSetupData', JSON.stringify(rawData));
 
-        if (destination === 'signup') {
-            location.href = /*[[@{/login(mode='signup')}]]*/ '/login?mode=signup';
-        } else if (destination === 'policy') {
-            location.href = /*[[@{/policy}]]*/ '/policy';
+        // 3. 분기 처리
+        if (destination === 'home') {
+            // ★★★ [여기가 핵심] 회원가입 후 셋업 -> 바로 저장하고 홈으로
+
+            // (1) 매핑 테이블 (코드 -> 숫자 변환)
+            const eduMap = { "0049001": 1, "0049002": 2, "0049003": 3, "0049004": 4, "0049005": 5, "0049006": 6, "0049007": 7, "0049008": 8 };
+            const empMap = { "UNEMPLOYED": 1, "EMPLOYED": 2, "SELF_EMPLOYED": 3, "FREELANCER": 4, "FOUNDER": 5 };
+
+            // (2) 서버 전송용 DTO 생성 (MemberDto 이름과 100% 일치시킴)
+            const serverDto = {
+                // Mapper 조건문 통과를 위한 핵심 키값
+                regionSi: rawData.regionSi,
+                regionGu: rawData.regionGu,
+
+                // 숫자형 변환
+                educationLevel: eduMap[rawData.educationLevel] || 0,
+                employmentStatus: empMap[rawData.employmentStatus] || 0,
+
+                personalIncome: parseInt(rawData.income || 0),
+                familyIncome: parseInt(rawData.householdIncome || 0),
+                familySize: parseInt(rawData.familySize || 1),
+                child: parseInt(rawData.child || 0),
+
+                // 기본 정보
+                gender: rawData.gender,
+                birthDate: rawData.birthDate,
+                married: rawData.married === 'Y', // boolean 변환
+                home: rawData.home === 'Y'        // boolean 변환
+            };
+
+            // (3) AJAX 전송
+            fetch('/user/setup/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(serverDto)
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("설정이 완료되었습니다!");
+                    sessionStorage.removeItem('userSetupData'); // 저장했으니 삭제
+                    location.href = '/'; // 메인으로 이동
+                } else {
+                    return response.text().then(text => { throw new Error(text); });
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("저장에 실패했습니다. 관리자에게 문의하세요.");
+            });
+
+        } else if (destination === 'signup') {
+            // 셋업 -> 회원가입 버튼 클릭
+            location.href = '/login?mode=signup';
+
         } else if (destination === 'save_and_login') {
-            // [추가] 회원가입 직후 설정 저장 시 -> 로그인 페이지로 이동
+            // 셋업(수정) -> 로그인 페이지
             alert("조건이 임시 저장되었습니다.\n로그인하여 설정을 완료해주세요.");
-            location.href = /*[[@{/login}]]*/ '/login';
+            location.href = '/login';
+
+        } else {
+            // 건너뛰기 -> 정책 페이지
+            location.href = '/policy';
         }
     }
 

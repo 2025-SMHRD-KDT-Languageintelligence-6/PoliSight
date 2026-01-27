@@ -80,14 +80,26 @@ public class SecurityConfig {
     @Bean
     public AuthenticationSuccessHandler successHandler() {
         return (request, response, authentication) -> {
+            HttpSession session = request.getSession();
             String email = authentication.getName();
             MemberDto member = memberMapper.selectMemberByEmail(email);
 
+            // 1. 로그인 세션 처리 (기존 코드 유지)
             if (member != null) {
-                HttpSession session = request.getSession();
                 session.setAttribute("loginMember", member);
             }
-            response.sendRedirect("/policy");
+
+            // 2. [수정] 신규 유저 꼬리표 확인 (1단계에서 붙인 것)
+            Boolean isNew = (Boolean) session.getAttribute("socialIsNew");
+
+            if (isNew != null && isNew) {
+                // ★ [신규 유저] -> 꼬리표 떼고, 로그인 페이지(모달)로 납치
+                session.removeAttribute("socialIsNew");
+                response.sendRedirect("/login?social_welcome=true");
+            } else {
+                // ★ [기존 유저] -> 원래 가던 대로 정책 페이지로 이동 (기존 유지)
+                response.sendRedirect("/policy");
+            }
         };
     }
 }
