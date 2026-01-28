@@ -43,17 +43,29 @@ jobs:
           username: ${{ secrets.GCP_USERNAME }}
           key: ${{ secrets.GCP_SSH_KEY }}
           script: |
-            # 1. [필수] 포트 킬러 도구 설치 (업데이트 포함해서 확실하게)
+            # 1. [필수] 포트 킬러 도구 설치 (비밀번호 없이 설치됨)
             echo "Installing psmisc..."
-            sudo apt-get update -y > /dev/null
-            sudo apt-get install -y psmisc > /dev/null
+            sudo apt-get update -y > /dev/null 2>&1 || true
+            sudo apt-get install -y psmisc > /dev/null 2>&1 || true
 
-            # 2. 8089 포트 점유 프로세스 강제 사살 (가장 강력한 방법)
-            echo "Killing process on port 8089..."
-            sudo fuser -k -n tcp 8089 || true
-            sleep 5
+            # 2. [핵심] 8089 포트 점유 프로세스 확인 사살
+            echo "Checking port 8089..."
+            
+            # 2-1. 1차 시도: fuser로 죽이기
+            if sudo fuser 8089/tcp > /dev/null 2>&1; then
+              echo "Process found on 8089. Killing..."
+              sudo fuser -k -n tcp 8089 || true
+              sleep 5
+            fi
 
-            # 3. 기존 파일 청소 및 새 파일 이동
+            # 2-2. 2차 시도: 아직도 살아있으면 kill -9로 강제 종료 (최후의 수단)
+            if sudo fuser 8089/tcp > /dev/null 2>&1; then
+              echo "Process still alive! Force killing..."
+              sudo kill -9 $(sudo lsof -t -i:8089) || true
+              sleep 3
+            fi
+
+            # 3. 파일 교체 (기존 파일 싹 지우고 새 파일 이동)
             echo "Deploying new version..."
             rm -rf /home/${{ secrets.GCP_USERNAME }}/app/*.jar
             mkdir -p /home/${{ secrets.GCP_USERNAME }}/app
