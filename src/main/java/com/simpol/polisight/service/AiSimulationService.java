@@ -1,7 +1,6 @@
 package com.simpol.polisight.service;
 
 import com.google.gson.Gson;
-import com.simpol.polisight.dto.AiRequestDto;
 import com.simpol.polisight.dto.AiResponseDto;
 import com.simpol.polisight.dto.PolicySearchCondition;
 import okhttp3.*;
@@ -10,7 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -18,37 +19,54 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AiSimulationService {
 
-    // 👇 Ngrok 주소 (바뀌면 꼭 수정하세요!)
-    private static final String AI_SERVER_URL = " https://lanelle-bottlelike-everett.ngrok-free.dev/simulate ";
+    // ✅ Ngrok 주소 (공백 없이 정확함)
+    private static final String AI_SERVER_URL = "https://lanelle-bottlelike-everett.ngrok-free.dev/simulate";
 
     private final OkHttpClient client = new OkHttpClient();
     private final Gson gson = new Gson();
 
-    // 기존 Controller에서 호출하던 메서드 시그니처 유지
     public AiResponseDto getPolicyRecommendation(PolicySearchCondition condition) {
         log.info("⚡ AI 분석 요청 시작: {}", condition);
 
-        // 1. [변환] 기존 SearchCondition -> 새로운 AiRequestDto 생성
+        // 1. [변환] 조건들을 하나의 문장으로 합침
         String conditionSentence = formatUserConditions(condition);
 
-        // 정책명, 지역, 나이 등 null 처리 (안전장치)
+        // 2. [데이터 준비] 성공했던 코드처럼 Map을 사용하여 직접 JSON 구조를 만듭니다.
+        // 이렇게 하면 DTO 파일이 어떻게 되어있든 상관없이 무조건 "정책명"으로 날아갑니다.
         String pName = (condition.getPolicyTitle() != null) ? condition.getPolicyTitle() : "정책 정보 없음";
-        String pRegion = (condition.getRegionSi() != null) ? condition.getRegionSi() : "전국";
-        String rCode = "00000"; // 지역코드가 없다면 기본값 혹은 condition에서 가져오기
-        int age = (condition.getAge() != null) ? condition.getAge() : 20;
 
-        // DTO 조립
-        AiRequestDto requestDto = new AiRequestDto(
-                "이 정책에 내가 지원할 수 있는지 판단해줘.", // query
-                conditionSentence, // conditions (문장으로 변환된 조건)
-                new AiRequestDto.PolicyInfo(pName, pRegion), // policy 객체
-                rCode, // region_code
-                age    // age
-        );
+        // 요청 데이터 (JSON) 만들기
+        Map<String, Object> requestData = new HashMap<>();
+        // [추가] 사용자가 적은 내용(userPrompt)이 있으면 반영하는 코드
+        String defaultQuery = "이 정책에 내가 지원할 수 있는지 판단해줘.";
+        String userCustomPrompt = condition.getUserPrompt();
 
-        // 2. [통신] OkHttp + Gson 사용
+        if (userCustomPrompt != null && !userCustomPrompt.isBlank()) {
+            // 사용자가 내용을 적었으면 합쳐서 보냄
+            requestData.put("query", defaultQuery + " (추가 상황: " + userCustomPrompt + ")");
+        } else {
+            // 안 적었으면 기본 질문만 전송
+            requestData.put("query", defaultQuery);
+        }
+        requestData.put("conditions", conditionSentence);
+
+        // ★ 핵심 수정: 'policyName'이 아니라 '정책명'이라는 키값을 직접 넣습니다.
+        Map<String, String> policyInfo = new HashMap<>();
+        policyInfo.put("정책명", pName);
+
+        // 파이썬 서버가 'region'을 안 쓴다면 생략해도 되지만, 필요하다면 아래 주석 해제
+        // String pRegion = (condition.getRegionSi() != null) ? condition.getRegionSi() : "전국";
+        // policyInfo.put("지역", pRegion);
+
+        requestData.put("policy", policyInfo);
+
+        // 3. [통신] OkHttp + Gson 사용
         try {
-            String jsonBody = gson.toJson(requestDto);
+            // Map을 JSON 문자열로 변환 (결과: {"policy": {"정책명": "..."} ... })
+            String jsonBody = gson.toJson(requestData);
+
+            // 로그로 확인해보세요. "정책명"이 확실히 보일 겁니다.
+            log.info("📤 [자바가 보내는 JSON]: " + jsonBody);
 
             RequestBody body = RequestBody.create(jsonBody, MediaType.get("application/json; charset=utf-8"));
             Request request = new Request.Builder()
@@ -59,21 +77,23 @@ public class AiSimulationService {
             try (Response response = client.newCall(request).execute()) {
                 if (response.isSuccessful() && response.body() != null) {
                     String responseString = response.body().string();
-                    log.info("🐍 Python 응답: {}", responseString);
+                    log.info("🐍 [Python 응답]: {}", responseString);
 
-                    // JSON -> AiResponseDto 객체 변환
+                    // 응답은 기존 DTO로 받습니다.
                     return gson.fromJson(responseString, AiResponseDto.class);
+                } else {
+                    log.error("❌ 통신 실패: 코드={}, 내용={}", response.code(), (response.body() != null ? response.body().string() : "null"));
                 }
             }
         } catch (IOException e) {
             log.error("❌ AI 서버 통신 오류", e);
         }
 
-        // 실패 시 빈 객체 반환 (혹은 에러 처리)
+        // 실패 시 null 반환
         return null;
     }
 
-    // 👇 기존에 잘 만드신 로직 (그대로 유지)
+    // 👇 기존 로직 유지
     private String formatUserConditions(PolicySearchCondition c) {
         String education = listToString(c.getEducationLevel());
         String employment = listToString(c.getEmploymentStatus());
