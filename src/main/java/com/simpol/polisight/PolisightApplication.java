@@ -14,6 +14,7 @@ public class PolisightApplication {
 
 }
 
-
+// 클라우드
 // http://34.50.52.105.nip.io:8089/
+// 로컬
 // http://localhost:8089/
