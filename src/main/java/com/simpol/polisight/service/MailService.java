@@ -77,6 +77,7 @@ public class MailService {
             helper.setTo(mail.trim());
             helper.setSubject("[PoliSight] 비밀번호 재설정 요청");
 
+            System.out.println("현재 사용 중인 베이스 주소: " + baseUrl);
             String resetLink = baseUrl + "/user/reset-pw?token=" + token;
 
             String body = getHtmlHeader();
