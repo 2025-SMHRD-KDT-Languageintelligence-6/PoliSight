@@ -43,7 +43,7 @@ jobs:
           username: ${{ secrets.GCP_USERNAME }}
           key: ${{ secrets.GCP_SSH_KEY }}
           script: |
-            # [필수] 포트 제어 도구 설치 (이게 없으면 fuser 명령어가 안 먹힘)
+            # [필수] 포트 제어 도구 설치(이게 없으면 fuser 명령어가 안 먹힘)
             sudo apt-get install -y psmisc
             
             # 1. 기존 서버 강제 종료
