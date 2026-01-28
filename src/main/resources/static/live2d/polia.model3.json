@@ -1,0 +1,30 @@
+{
+  "Version": 3,
+  "FileReferences": {
+    "Moc": "polia.moc3",
+    "Textures": [
+      "texture_00.png"
+    ],
+    "Motions": {
+      "Idle": [
+        {
+          "File": "WaitMotion.json",
+          "FadeInTime": 2.0,
+          "FadeOutTime": 2.0
+        }
+      ]
+    }
+  },
+  "Groups": [
+    {
+      "Target": "Parameter",
+      "Name": "EyeBlink",
+      "Ids": []
+    },
+    {
+      "Target": "Parameter",
+      "Name": "LipSync",
+      "Ids": []
+    }
+  ]
+}
