@@ -127,7 +127,6 @@
 
         .btn-skip-link { background: transparent; color: #94a3b8; font-size: 13px; font-weight: 500; margin-top: 20px; width: 100%; border: none; cursor: pointer; text-decoration: underline; }
 
-        /* [수정 1] 모달 관련 CSS 추가 */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -471,17 +470,8 @@
         const skipLink = document.querySelector('.skip-link'); // 1단계 건너뛰기
         const skipMain = document.getElementById('btnSkipMain'); // 4단계 건너뛰기
 
-        // CASE A: 셋업 -> 회원가입 (기존 로직)
-        if (source === 'signup') {
-            if(mainBtn) {
-                mainBtn.innerText = "내 조건 저장 완료";
-                mainBtn.onclick = function() { finishSetup('save_and_login'); };
-            }
-            if(skipLink) skipLink.style.display = 'none';
-            if(skipMain) skipMain.style.display = 'none';
-        }
-        // CASE B: 회원가입 -> 셋업 (신규 로직: 축하 모달 타고 들어옴)
-        else if (source === 'after_signup') {
+        // 회원가입 -> 셋업 (신규 로직: 축하 모달 타고 들어옴)
+        if (source === 'after_signup') {
             if(mainBtn) {
                 // 이미 로그인은 된 상태 -> 저장하고 홈으로
                 mainBtn.innerText = "설정 완료하고 홈으로";
@@ -498,7 +488,6 @@
 
             if(skipLink) skipLink.style.display = 'none';
         }
-        // ▲▲▲ [여기까지 수정] ▲▲▲
     });
 
     // 2. 시/도 선택 시 하위 목록 갱신
@@ -589,7 +578,7 @@
 
                 // 기본 정보
                 gender: rawData.gender,
-                birthDate: rawData.birthDate,
+                birthDate: rawData.birthDate ? rawData.birthDate : null,
                 married: rawData.married === 'Y', // boolean 변환
                 home: rawData.home === 'Y'        // boolean 변환
             };
@@ -619,11 +608,6 @@
         } else if (destination === 'signup') {
             // 셋업 -> 회원가입 버튼 클릭
             location.href = '/login?mode=signup';
-
-        } else if (destination === 'save_and_login') {
-            // 셋업(수정) -> 로그인 페이지
-            alert("조건이 임시 저장되었습니다.\n로그인하여 설정을 완료해주세요.");
-            location.href = '/login';
 
         } else {
             // 건너뛰기 -> 정책 페이지
