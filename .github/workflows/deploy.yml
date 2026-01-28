@@ -35,7 +35,7 @@ jobs:
           target: "/home/${{ secrets.GCP_USERNAME }}/app"
           strip_components: 2 # 경로 떼고 파일만 전송
 
-      # 4. 서버에서 실행 (SSH)
+      # 4. 서버에서 실행 (최적화 버전)
       - name: Deploy on Server
         uses: appleboy/ssh-action@master
         with:
@@ -43,14 +43,28 @@ jobs:
           username: ${{ secrets.GCP_USERNAME }}
           key: ${{ secrets.GCP_SSH_KEY }}
           script: |
-            # 1. 기존 프로세스 종료 (메모리 확보를 위해 가장 먼저 수행)
-            pgrep -f 'java -jar' | xargs -r kill -9
-
-            # 2. 잠시 대기 (메모리가 완전히 반환될 시간)
-            sleep 5
-
-            # 3. 새 서버 실행 (메모리 제한 옵션을 추가해서 실행)
-            # -Xmx512m: 자바가 사용할 최대 메모리를 512MB로 제한
-            nohup java -Xmx512m -jar /home/${{ secrets.GCP_USERNAME }}/app/*.jar > /home/${{ secrets.GCP_USERNAME }}/nohup.out 2>&1 &
+            # 1. 기존 서버 종료 및 메모리 정리
+            echo "Stopping existing application..."
+            sudo pkill -9 -f 'java -jar' || true
             
-            echo "🚀 배포 완료! 서버가 재시작되었습니다."
+            # 2. 메모리 비우기 (리눅스 커널 캐시 비우기 - 메모리 확보 필살기)
+            sudo sync && echo 3 | sudo tee /proc/sys/vm/drop_caches
+            
+            # 3. 앱 폴더 정리 (이전 버전 파일 삭제)
+            mkdir -p /home/${{ secrets.GCP_USERNAME }}/app
+            rm -f /home/${{ secrets.GCP_USERNAME }}/app/*.jar.old
+            
+            # 4. 새 서버 실행 (메모리 제한을 더 타이트하게 256MB로 설정)
+            # 현재 8GB 메모리가 있지만, 시스템 안정성을 위해 작게 시작해봅니다.
+            echo "Starting new application..."
+            nohup java -Xms256m -Xmx256m -jar /home/${{ secrets.GCP_USERNAME }}/app/*.jar > /home/${{ secrets.GCP_USERNAME }}/nohup.out 2>&1 &
+            
+            # 5. 실행 여부 확인
+            sleep 5
+            if pgrep -f 'java -jar' > /dev/null
+            then
+              echo "🚀 배포 성공! 서버가 정상 실행 중입니다."
+            else
+              echo "❌ 배포 실패! 로그(nohup.out)를 확인하세요."
+              exit 1
+            fi
