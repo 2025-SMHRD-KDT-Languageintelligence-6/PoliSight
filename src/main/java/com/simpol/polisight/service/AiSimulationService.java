@@ -93,10 +93,15 @@ public class AiSimulationService {
         return null;
     }
 
-    // 👇 기존 로직 유지
+    // 👇 [수정] 코드를 한글로 변환하여 문장을 만드는 메서드
     private String formatUserConditions(PolicySearchCondition c) {
-        String education = listToString(c.getEducationLevel());
-        String employment = listToString(c.getEmploymentStatus());
+
+        // 1. 학력 코드 변환 (0049002 -> 고교 재학)
+        String education = convertEducationToKorean(c.getEducationLevel());
+
+        // 2. 고용 상태 변환 (UNEMPLOYED -> 미취업)
+        String employment = convertEmploymentToKorean(c.getEmploymentStatus());
+
         String incomeStr = (c.getIncome() != null) ? c.getIncome() + "만원" : "정보 없음";
         String majors = (c.getMajorTypes() != null && !c.getMajorTypes().isEmpty()) ?
                 c.getMajorTypes().stream().map(String::valueOf).collect(Collectors.joining(", ")) : "해당 없음";
@@ -105,11 +110,45 @@ public class AiSimulationService {
                 "거주지: %s %s, 나이: %s세, 학력: %s, 전공: %s, 취업상태: %s, 소득: %s, 가구원: %s명, 결혼: %s, 자녀: %d명",
                 safeString(c.getRegionSi()), safeString(c.getRegionGu()),
                 (c.getAge() != null ? c.getAge() : "미상"),
-                education, majors, employment, incomeStr,
+                education,  // 변환된 한글 값 들어감
+                majors,
+                employment, // 변환된 한글 값 들어감
+                incomeStr,
                 (c.getFamilySize() != null ? c.getFamilySize() : 1),
                 safeString(c.getMarry()),
                 (c.getChildCount() != null ? c.getChildCount() : 0)
         );
+    }
+
+    // 👇 [추가] 학력 코드를 한글로 바꾸는 기능 (복사해서 아래쪽에 추가하세요)
+    private String convertEducationToKorean(List<String> list) {
+        if (list == null || list.isEmpty()) return "정보 없음";
+        String code = list.get(0); // 리스트의 첫 번째 값
+
+        if (code.endsWith("001")) return "중졸 이하";
+        if (code.endsWith("002")) return "고교 재학";
+        if (code.endsWith("003")) return "고졸 예정";
+        if (code.endsWith("004")) return "고졸";
+        if (code.endsWith("005")) return "대학 재학";
+        if (code.endsWith("006")) return "대졸 예정";
+        if (code.endsWith("007")) return "대졸";
+        if (code.endsWith("008")) return "석/박사";
+
+        return "기타 (" + code + ")";
+    }
+
+    // 👇 [추가] 고용 상태를 한글로 바꾸는 기능 (복사해서 아래쪽에 추가하세요)
+    private String convertEmploymentToKorean(List<String> list) {
+        if (list == null || list.isEmpty()) return "정보 없음";
+        String status = list.get(0);
+
+        if ("UNEMPLOYED".equals(status)) return "미취업(구직자)";
+        if ("EMPLOYED".equals(status)) return "직장인(재직중)";
+        if ("SELF_EMPLOYED".equals(status)) return "자영업/소상공인";
+        if ("FREELANCER".equals(status)) return "프리랜서";
+        if ("FOUNDER".equals(status)) return "창업자";
+
+        return status;
     }
 
     private String safeString(String input) { return (input != null) ? input : ""; }
