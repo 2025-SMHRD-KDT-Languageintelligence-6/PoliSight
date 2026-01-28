@@ -126,6 +126,62 @@
         .btn-skip-main:hover { background: #e9ecef; color: #333; }
 
         .btn-skip-link { background: transparent; color: #94a3b8; font-size: 13px; font-weight: 500; margin-top: 20px; width: 100%; border: none; cursor: pointer; text-decoration: underline; }
+
+        /* [수정 1] 모달 관련 CSS 추가 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-box {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 340px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-icon-circle {
+            width: 60px; height: 60px;
+            background: #eef6ff;
+            color: var(--primary-color);
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 28px;
+            margin: 0 auto 20px;
+        }
+
+        .modal-title { font-size: 20px; font-weight: 800; color: #222; margin-bottom: 10px; }
+        .modal-text { font-size: 15px; color: #666; line-height: 1.5; margin-bottom: 30px; }
+
+        .btn-modal-confirm {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-modal-confirm:hover { background: #0062cc; }
     </style>
 </head>
 <body>
@@ -303,7 +359,7 @@
                 이 정보 그대로 회원가입 하기
             </button>
 
-            <button id="btnSkipMain" class="btn-skip-main skip-main" onclick="finishSetup('policy')">
+            <button id="btnSkipMain" class="btn-skip-main skip-main" onclick="openCheckModal()">
                 회원가입 없이 바로 설정완료
             </button>
 
@@ -314,6 +370,51 @@
     </div>
 
 </div>
+
+<div id="completeModal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-icon-circle">
+            <i class="fa-solid fa-check"></i>
+        </div>
+        <h3 class="modal-title">설정이 완료되었습니다!</h3>
+        <p class="modal-text">맞춤 조건이 저장되었습니다.<br>이제 홈으로 이동합니다.</p>
+        <button class="btn-modal-confirm" onclick="closeSuccessModal()">확인</button>
+    </div>
+</div>
+
+<div id="checkSkipModal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-icon-circle" style="color: #ff9800; background: #fff3e0;">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h3 class="modal-title">잠시만요!</h3>
+        <p class="modal-text">
+            비회원으로 진행 시 입력하신 정보는<br>
+            <strong style="color: #e74c3c;">이번 1회만 적용</strong>되며,
+            페이지를 벗어나면<br><strong>초기화</strong>됩니다.
+        </p>
+        <p class="modal-text" style="font-size: 13px; margin-top: -15px; margin-bottom: 20px;">
+            그래도 저장 없이 계속 하시겠습니까?
+        </p>
+
+        <div style="display: flex; gap: 8px;">
+            <button class="btn-modal-confirm" onclick="finishSetup('policy')"
+                    style="background: #f1f3f5; color: #64748b; flex: 1;">
+                이번만 사용
+            </button>
+            <button class="btn-modal-confirm" onclick="closeCheckModal(); finishSetup('signup')"
+                    style="flex: 1.5;">
+                가입하고 저장
+            </button>
+        </div>
+
+        <button onclick="closeCheckModal()"
+                style="background:transparent; border:none; color:#999; margin-top:15px; font-size:13px; text-decoration:underline; cursor: pointer;">
+            취소하고 돌아가기
+        </button>
+    </div>
+</div>
+
 
 <script th:inline="javascript">
     /*<![CDATA[*/
@@ -386,11 +487,15 @@
                 mainBtn.innerText = "설정 완료하고 홈으로";
                 mainBtn.onclick = function() { finishSetup('home'); };
             }
-            // 건너뛰기 버튼 -> 그냥 홈으로
+            // [수정 2] '다음에 하기' -> '이전' 버튼으로 변경하고, 기존 이전 링크 제거
             if(skipMain) {
-                skipMain.innerText = "다음에 설정하기 (홈으로)";
-                skipMain.onclick = function() { location.href = '/'; };
+                skipMain.innerText = "이전";
+                skipMain.onclick = function() { prevStep(3); };
             }
+            // step4 영역 내에 있는 이전 링크(.btn-skip-link)만 숨김 처리
+            const step4PrevLink = document.querySelector('#step4 .btn-skip-link');
+            if(step4PrevLink) step4PrevLink.style.display = 'none';
+
             if(skipLink) skipLink.style.display = 'none';
         }
         // ▲▲▲ [여기까지 수정] ▲▲▲
@@ -497,9 +602,11 @@
             })
             .then(response => {
                 if (response.ok) {
-                    alert("설정이 완료되었습니다!");
+                    // [수정 3] alert 제거 후 모달 오픈
+                    // alert("설정이 완료되었습니다!");
                     sessionStorage.removeItem('userSetupData'); // 저장했으니 삭제
-                    location.href = '/'; // 메인으로 이동
+                    // location.href = '/'; -> 모달 버튼 클릭 시 이동으로 변경
+                    document.getElementById('completeModal').style.display = 'flex';
                 } else {
                     return response.text().then(text => { throw new Error(text); });
                 }
@@ -522,6 +629,28 @@
             // 건너뛰기 -> 정책 페이지
             location.href = '/policy';
         }
+    }
+
+    // [수정 4] 모달 닫기 및 홈 이동 함수 추가
+    function closeSuccessModal() {
+        document.getElementById('completeModal').style.display = 'none';
+        location.href = '/';
+    }
+
+    // [수정 1] 저장 경고 모달 제어 함수 추가
+    function openCheckModal() {
+        // 회원가입 후 셋업인 경우('after_signup')는 여기서 처리되지 않음 (DOMContentLoaded에서 onclick이 덮어씌워짐)
+        // 안전 장치: 만약 이 함수가 호출되더라도 'after_signup'이면 그냥 이전으로
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('source') === 'after_signup') {
+            prevStep(3);
+            return;
+        }
+        document.getElementById('checkSkipModal').style.display = 'flex';
+    }
+
+    function closeCheckModal() {
+        document.getElementById('checkSkipModal').style.display = 'none';
     }
 
     function skipSetup() {
