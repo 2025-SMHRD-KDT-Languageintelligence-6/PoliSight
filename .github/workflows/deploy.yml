@@ -59,10 +59,10 @@ jobs:
             # 4. 앱 폴더 정리
             mkdir -p /home/${{ secrets.GCP_USERNAME }}/app
 
-            # 5. 새 서버 실행 (메모리 제한을 512MB로 약간 늘려 성능 확보)
+            # 5. 새 서버 실행 (메모리 제한 + 한국 시간 설정 추가)
             # 사용자님 서버(8GB) 사양에 맞춰 512MB 정도 쓰게 하는 것이 안정적입니다.
             echo "Starting new application..."
-            nohup java -Xms512m -Xmx512m -jar /home/${{ secrets.GCP_USERNAME }}/app/*.jar > /home/${{ secrets.GCP_USERNAME }}/nohup.out 2>&1 &
+            nohup java -Duser.timezone=Asia/Seoul -Xms512m -Xmx512m -jar /home/${{ secrets.GCP_USERNAME }}/app/*.jar > /home/${{ secrets.GCP_USERNAME }}/nohup.out 2>&1 &
 
             # 6. 실행 여부 확인
             sleep 10
