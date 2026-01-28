@@ -14,4 +14,6 @@ public class PolisightApplication {
 
 }
 
+
+// http://34.50.52.105.nip.io:8089/
 // http://localhost:8089/

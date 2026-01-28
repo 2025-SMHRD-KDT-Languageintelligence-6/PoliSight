@@ -3,6 +3,7 @@ package com.simpol.polisight.service;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,10 @@ import java.util.Random;
 public class MailService {
 
     private final JavaMailSender javaMailSender;
+
+    // application.properties에서 설정한 주소를 가져옵니다.
+    @Value("${site.base-url}")
+    private String baseUrl;
 
     // 보내는 사람 이메일 (application.properties와 동일하게 설정)
     private static final String SENDER_EMAIL = "bsb0107p@gmail.com";
@@ -72,7 +77,7 @@ public class MailService {
             helper.setTo(mail.trim());
             helper.setSubject("[PoliSight] 비밀번호 재설정 요청");
 
-            String resetLink = "http://localhost:8089/user/reset-pw?token=" + token;
+            String resetLink = baseUrl + "/user/reset-pw?token=" + token;
 
             String body = getHtmlHeader();
             body += "  <div style='padding: 30px 20px; text-align: center;'>";
@@ -106,7 +111,7 @@ public class MailService {
             helper.setTo(toEmail);
             helper.setSubject("[PoliSight] 마감 임박 알림: '" + policyName + "' 신청이 3일 남았습니다.");
 
-            String policyLink = "http://localhost:8089/policy";
+            String policyLink = baseUrl + "/policy";
 
             String body = getHtmlHeader();
             body += "  <div style='padding: 30px 20px; text-align: center;'>";
