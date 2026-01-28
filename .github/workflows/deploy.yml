@@ -43,27 +43,32 @@ jobs:
           username: ${{ secrets.GCP_USERNAME }}
           key: ${{ secrets.GCP_SSH_KEY }}
           script: |
-            # 1. 기존 서버 종료 및 메모리 정리
+            # 1. 기존 서버 종료 (가장 확실한 방법으로)
             echo "Stopping existing application..."
+            # -9(강제종료) 옵션으로 좀비 프로세스까지 확실히 제거합니다.
             sudo pkill -9 -f 'java -jar' || true
-            
-            # 2. 메모리 비우기 (리눅스 커널 캐시 비우기 - 메모리 확보 필살기)
+
+            # 2. 포트 점유 강제 해제 (8089 포트가 살아있으면 새 서버가 안 뜹니다)
+            echo "Clearing port 8089..."
+            sudo fuser -k 8089/tcp || true
+
+            # 3. 메모리 비우기 및 대기 (시스템 안정화)
             sudo sync && echo 3 | sudo tee /proc/sys/vm/drop_caches
-            
-            # 3. 앱 폴더 정리 (이전 버전 파일 삭제)
-            mkdir -p /home/${{ secrets.GCP_USERNAME }}/app
-            rm -f /home/${{ secrets.GCP_USERNAME }}/app/*.jar.old
-            
-            # 4. 새 서버 실행 (메모리 제한을 더 타이트하게 256MB로 설정)
-            # 현재 8GB 메모리가 있지만, 시스템 안정성을 위해 작게 시작해봅니다.
-            echo "Starting new application..."
-            nohup java -Xms256m -Xmx256m -jar /home/${{ secrets.GCP_USERNAME }}/app/*.jar > /home/${{ secrets.GCP_USERNAME }}/nohup.out 2>&1 &
-            
-            # 5. 실행 여부 확인
             sleep 5
+
+            # 4. 앱 폴더 정리
+            mkdir -p /home/${{ secrets.GCP_USERNAME }}/app
+
+            # 5. 새 서버 실행 (메모리 제한을 512MB로 약간 늘려 성능 확보)
+            # 사용자님 서버(8GB) 사양에 맞춰 512MB 정도 쓰게 하는 것이 안정적입니다.
+            echo "Starting new application..."
+            nohup java -Xms512m -Xmx512m -jar /home/${{ secrets.GCP_USERNAME }}/app/*.jar > /home/${{ secrets.GCP_USERNAME }}/nohup.out 2>&1 &
+
+            # 6. 실행 여부 확인
+            sleep 10
             if pgrep -f 'java -jar' > /dev/null
             then
-              echo "🚀 배포 성공! 서버가 정상 실행 중입니다."
+              echo "🚀 배포 성공! PoliSight 서버가 8089번 포트에서 정상 실행 중입니다."
             else
               echo "❌ 배포 실패! 로그(nohup.out)를 확인하세요."
               exit 1
