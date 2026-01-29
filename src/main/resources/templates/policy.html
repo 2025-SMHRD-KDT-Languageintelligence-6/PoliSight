@@ -334,6 +334,9 @@
                      th:data-url="${policy.aplyUrlAddr ?: ''}"
                      th:data-ref1="${policy.refUrlAddr1 ?: ''}"
                      th:data-ref2="${policy.refUrlAddr2 ?: ''}"
+                     th:data-category="${policy.lclsfNm + (policy.mclsfNm != null ? ' > ' + policy.mclsfNm : '')}"
+                     th:data-income-range="${(policy.earnMinAmt ?: '0') + '만원 ~ ' + (policy.earnMaxAmt ?: '무제한') + '만원'}"
+                     th:data-views="${policy.inqCnt ?: 0}"
                      th:data-id="${policy.plcyNo}"
                      onclick="selectPolicy(this)">
                     <div class="flex justify-between items-start mb-2">
@@ -678,40 +681,73 @@
 
         // ✅ 상세 모달
         let easyMode = false;
-        // 540라인 근처: 기존 openDetail 함수를 통째로 교체
         function openDetail(e, btnOrCard) {
-            e.stopPropagation();
+            e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
             const card = btnOrCard.closest('.policy-card');
-            const d = card.dataset;
+            const d = card.dataset; // 카드에 심긴 th:data- 속성들 가져오기
 
-            document.getElementById('modal-title').innerText = d.title || '정보 없음';
-            document.getElementById('modal-desc-original').innerText = d.desc || '설명이 없습니다.';
-            document.getElementById('modal-support').innerText = d.support || '정보 없음';
-            document.getElementById('modal-apply-prd').innerText = d.applyPrd || '상세 공고 참조';
-            document.getElementById('modal-age').innerText = d.age;
-            document.getElementById('modal-income').innerText = d.income;
-            document.getElementById('modal-documents').innerText = d.documents || '제출 서류 정보가 없습니다.';
-            document.getElementById('modal-etc').innerText = d.etc || '특이사항 없음';
+            // 1. 단순 텍스트 데이터 맵핑 (ID만 맞으면 바로 꽂힘)
+            const textFields = {
+                'modal-title': d.title,
+                'modal-category': d.category,     // lclsfNm > mclsfNm 합쳐진 값
+                'modal-views': d.views,           // 조회수
+                'modal-support': d.support,       // 지원 내용
+                'modal-age': d.age,               // 만 #세 ~ 만 #세
+                'modal-income-range': d.incomeRange, // 000만원 ~ 000만원
+                'modal-income': d.income,         // 소득 상세 내용 (earnEtcCn)
+                'modal-apply-prd': d.applyPrd,    // 신청 기간
+                'modal-biz-prd': d.bizPrd,        // 사업 기간
+                'modal-desc-original': d.desc,    // 정책 설명 원문
+                'modal-documents': d.documents,   // 제출 서류
+                'modal-etc': d.etc                // 기타 사항
+            };
 
-            const applyBtn = document.getElementById('modal-apply-url');
-            if (d.url && d.url !== 'null' && d.url !== '') {
-                applyBtn.href = d.url;
-                applyBtn.style.display = 'flex';
-            } else {
-                applyBtn.style.display = 'none';
-            }
+            // 반복문으로 화면에 출력 (데이터가 'null'이거나 없으면 '정보 없음' 표시)
+            Object.keys(textFields).forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    const val = textFields[id];
+                    el.innerText = (val && val !== 'null' && val !== 'undefined' && val !== '') ? val : '정보 없음';
+                }
+            });
 
+            // 2. 링크 버튼들 처리 (신청 홈페이지, 참고링크 1, 참고링크 2)
+            const links = {
+                'modal-apply-url': d.url,
+                'modal-ref1': d.ref1,
+                'modal-ref2': d.ref2
+            };
+
+            Object.keys(links).forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    const url = links[id];
+                    if (url && url !== 'null' && url !== '' && url !== 'undefined') {
+                        el.href = url;
+                        el.style.display = 'flex'; // 주소가 있으면 보이기
+                    } else {
+                        el.style.display = 'none'; // 주소가 없으면 숨기기
+                    }
+                }
+            });
+
+            // 3. 모달 초기 상태 설정 (쉬운 말 모드 해제)
             easyMode = false;
             document.getElementById('modal-desc-original').classList.remove('hidden');
             document.getElementById('modal-desc-easy').classList.add('hidden');
-            document.getElementById('btn-easy-toggle').querySelector('span').innerText = "쉬운 말로 보기";
+            const easyBtnSpan = document.querySelector('#btn-easy-toggle span');
+            if (easyBtnSpan) easyBtnSpan.innerText = "쉬운 말로 보기";
 
+            // 4. 모달 열기 및 애니메이션 효과
             const modal = document.getElementById('policy-modal');
             modal.classList.remove('hidden');
             setTimeout(() => {
                 modal.classList.add('opacity-100');
                 const content = modal.querySelector('div');
-                content.classList.add('scale-100'); content.classList.remove('scale-95');
+                if (content) {
+                    content.classList.add('scale-100');
+                    content.classList.remove('scale-95');
+                }
             }, 10);
         }
 

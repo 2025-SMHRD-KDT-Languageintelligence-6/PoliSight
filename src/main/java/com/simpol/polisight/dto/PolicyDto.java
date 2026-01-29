@@ -16,17 +16,21 @@ public class PolicyDto {
     private String plcyNm;
     private String plcyExplnCn;
     private String lclsfNm;
+    private String mclsfNm;
 
     // ✅ 추가해야 할 필드들 (DB 컬럼명과 일치시키기)
     private String plcySprtCn;      // 지원내용
     private Integer sprtTrgtMinAge;  // 최소연령
     private Integer sprtTrgtMaxAge;  // 최대연령
+    private Integer earnMinAmt;      // ✅ 추가: 소득최소금액
+    private Integer earnMaxAmt;      // ✅ 추가: 소득최대금액
     private String earnEtcCn;       // 소득기타내용
     private String sbmsnDcmntCn;    // 제출서류내용
     private String etcMttrCn;       // 기타사항내용
     private String aplyUrlAddr;  // 신청 URL
     private String refUrlAddr1;  // 참고 URL 1
     private String refUrlAddr2;  // 참고 URL 2
+    private Integer inqCnt;         // ✅ 추가: 조회수
 
     // ✅ DB 컬럼 plcyKywdNm과 매핑될 필드
     private String plcyKywdNm;
