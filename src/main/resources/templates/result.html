@@ -20,12 +20,9 @@
         .scrollbar-hide::-webkit-scrollbar { width: 4px; }
         .scrollbar-hide::-webkit-scrollbar-track { background: transparent; }
         .scrollbar-hide::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
-
-        /* 커스텀 스크롤바 (작은 영역용) */
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
         .custom-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 2px; }
-
         .animate-fade-in { animation: fadeIn 0.8s ease-out forwards; opacity: 0; transform: translateY(10px); }
         .delay-200 { animation-delay: 0.2s; }
         .delay-500 { animation-delay: 0.5s; }
@@ -57,31 +54,25 @@
 
     <div class="grid lg:grid-cols-12 gap-8">
         <aside class="lg:col-span-4 space-y-6">
-
             <div class="bg-white rounded-2xl border border-blue-100 shadow-lg shadow-blue-50/50 p-6 relative overflow-hidden animate-fade-in" th:if="${policy != null}">
                 <div class="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-4 -mt-4 z-0"></div>
                 <div class="relative z-10">
                     <div class="flex items-center gap-2 text-sm text-blue-600 font-bold mb-4">
                         <i class="fa-solid fa-crosshairs"></i> 분석 대상 정책
                     </div>
-
                     <div class="mb-5">
-                        <h4 class="font-bold text-xl text-slate-900 leading-tight"
-                            th:text="${policy.title}">정책 제목</h4>
+                        <h4 class="font-bold text-xl text-slate-900 leading-tight" th:text="${policy.title}">정책 제목</h4>
                     </div>
-
                     <div class="space-y-4 text-sm text-slate-600 border-t border-slate-100 pt-4">
                         <div class="flex flex-col gap-1.5">
                             <span class="text-slate-400 text-xs font-bold">지원 내용</span>
                             <div class="relative">
-                                <p id="policyDescription" class="font-medium text-slate-700 leading-relaxed line-clamp-3 break-keep"
-                                   th:text="${policy.description}">-</p>
+                                <p id="policyDescription" class="font-medium text-slate-700 leading-relaxed line-clamp-3 break-keep" th:text="${policy.description}">-</p>
                                 <button id="moreBtn" type="button" onclick="toggleDescription()" class="hidden w-full justify-end text-xs text-blue-600 font-bold mt-1 hover:underline focus:outline-none flex items-center gap-1">
                                     더보기 <i class="fa-solid fa-chevron-down text-[10px]"></i>
                                 </button>
                             </div>
                         </div>
-
                         <div class="flex justify-between items-center pt-2 border-t border-slate-50">
                             <span class="text-slate-400 text-xs">분야</span>
                             <span class="font-bold text-slate-700" th:text="${policy.department}">분야</span>
@@ -98,7 +89,6 @@
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wide">분석 조건</h3>
                 </div>
-
                 <div class="space-y-6 divide-y divide-slate-100">
                     <div class="pt-0">
                         <h4 class="text-xs font-bold text-slate-400 mb-3">기본 인적 사항</h4>
@@ -134,49 +124,45 @@
                             <li class="flex justify-between text-sm"><span class="text-slate-500">가구소득</span> <span class="font-bold text-slate-800" th:text="|${#numbers.formatInteger(condition.householdIncome, 0, 'COMMA')} 만원|">0 만원</span></li>
                         </ul>
                     </div>
-
                     <div class="pt-6 mt-2 border-t border-slate-50">
                         <h4 class="font-bold text-sm text-slate-800 mb-3 flex items-center gap-2">
                             <span class="w-2.5 h-2.5 bg-indigo-600 rounded-full"></span>
                             AI 정밀 분석 요청사항
                         </h4>
                         <div class="bg-indigo-50/60 rounded-xl p-3 border border-indigo-100 min-h-[60px]">
-                            <p class="text-sm text-indigo-900 leading-relaxed font-medium max-h-24 overflow-y-auto custom-scroll break-keep"
-                               th:text="${condition.userPrompt}">
-                            </p>
+                            <p class="text-sm text-indigo-900 leading-relaxed font-medium max-h-24 overflow-y-auto custom-scroll break-keep" th:text="${condition.userPrompt}"></p>
                         </div>
                     </div>
-
                 </div>
             </div>
         </aside>
 
         <section class="lg:col-span-8 space-y-8">
             <div class="bg-white rounded-2xl border shadow-lg overflow-hidden animate-fade-in delay-200"
-                 th:classappend="${suitability == 'Y'} ? 'border-blue-100 shadow-blue-50' : 'border-red-100 shadow-red-50'">
+                 th:classappend="${result.suitability == 'Y'} ? 'border-blue-100 shadow-blue-50' : 'border-red-100 shadow-red-50'">
 
                 <div class="p-8 text-white relative overflow-hidden"
-                     th:classappend="${suitability == 'Y'} ? 'bg-gradient-to-r from-blue-600 to-indigo-600' : 'bg-gradient-to-r from-red-500 to-orange-500'">
+                     th:classappend="${result.suitability == 'Y'} ? 'bg-gradient-to-r from-blue-600 to-indigo-600' : 'bg-gradient-to-r from-red-500 to-orange-500'">
                     <div class="absolute right-0 top-0 w-64 h-64 bg-white/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
                     <div class="relative z-10 flex items-center justify-between">
                         <div>
-                            <div class="flex items-center gap-2 mb-2 opacity-90 text-sm font-medium"><i class="fa-solid fa-robot"></i> AI Policy Analyst</div>
+                            <div class="flex items-center gap-2 mb-2 opacity-90 text-sm font-medium">AI Policy Analyst</div>
                             <h2 class="text-3xl font-bold leading-normal">
-                                <span th:text="${suitability == 'Y'} ? '축하합니다! 신청 가능합니다.' : '아쉽지만 신청이 어렵습니다.'">결과 멘트</span>
+                                <span th:text="${result.suitability == 'Y'} ? '축하합니다! 신청 가능합니다.' : '아쉽지만 신청이 어렵습니다.'">결과 멘트</span>
                             </h2>
                         </div>
-                        <div th:if="${suitability == 'Y'}" class="bg-white/20 px-4 py-2 rounded-full text-lg font-bold border border-white/30 backdrop-blur-sm"><i class="fa-solid fa-check-circle"></i> PASS</div>
-                        <div th:if="${suitability != 'Y'}" class="bg-white/20 px-4 py-2 rounded-full text-lg font-bold border border-white/30 backdrop-blur-sm"><i class="fa-solid fa-circle-exclamation"></i> FAIL</div>
+                        <div th:if="${result.suitability == 'Y'}" class="bg-white/20 px-4 py-2 rounded-full text-lg font-bold border border-white/30 backdrop-blur-sm"><i class="fa-solid fa-check-circle"></i> PASS</div>
+                        <div th:if="${result.suitability != 'Y'}" class="bg-white/20 px-4 py-2 rounded-full text-lg font-bold border border-white/30 backdrop-blur-sm"><i class="fa-solid fa-circle-exclamation"></i> FAIL</div>
                     </div>
                 </div>
 
                 <div class="p-8">
                     <div class="mb-6">
                         <h3 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
-                            <i class="fa-solid fa-quote-left" th:classappend="${suitability == 'Y'} ? 'text-blue-500' : 'text-red-500'"></i> AI 상담사의 맞춤형 가이드
+                            <i class="fa-solid fa-quote-left" th:classappend="${result.suitability == 'Y'} ? 'text-blue-500' : 'text-red-500'"></i> AI 상담사의 맞춤형 가이드
                         </h3>
                         <div class="bg-slate-50 rounded-xl p-6 border border-slate-200 text-slate-700 leading-relaxed text-sm shadow-inner overflow-hidden">
-                            <div id="raw-ai-result" style="display:none;" th:text="${aiResult}"></div>
+                            <div id="raw-ai-result" style="display:none;" th:text="${result.content}"></div>
                             <div id="parsed-ai-result" class="prose prose-sm max-w-none">
                                 <div class="flex flex-col items-center justify-center py-10 text-slate-400"><i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><span>분석 중...</span></div>
                             </div>
@@ -203,11 +189,11 @@
                 </h3>
 
                 <div class="bg-slate-50 rounded-xl p-5 border border-slate-200 text-slate-700 text-sm leading-relaxed shadow-inner">
-                    <div th:if="${futureSim != null}" th:utext="${futureSim}">
-                        <p class="mb-2"><span class="font-bold text-slate-900"># 취업 성공 시:</span> 현재 소득 구간이 변경되어 본 정책의 지원 대상에서 제외될 수 있습니다. 이 경우 '청년 도약 계좌' 등 자산 형성 프로그램으로 전환하는 것이 유리합니다.</p>
-                        <p><span class="font-bold text-slate-900"># 독립/결혼 시:</span> 세대 분리로 인해 가구 소득 기준이 완화되어 '행복 주택' 등 주거 지원 정책의 1순위 신청 자격을 획득할 가능성이 높습니다.</p>
+                    <div th:if="${result.futureScenario != null and result.futureScenario != ''}"
+                         th:text="${result.futureScenario}" style="white-space: pre-line;">
                     </div>
-                    <div th:unless="${futureSim != null}" class="text-slate-400 text-center py-2">
+
+                    <div th:unless="${result.futureScenario != null and result.futureScenario != ''}" class="text-slate-400 text-center py-2">
                         <span>추가적인 시뮬레이션 정보가 없습니다.</span>
                     </div>
                 </div>
@@ -222,13 +208,16 @@
                 </h3>
 
                 <div class="bg-slate-50 rounded-xl p-5 border border-slate-200 text-slate-700 text-sm leading-relaxed shadow-inner">
-                    <div th:if="${recommendations != null}" th:utext="${recommendations}">
-                        <ul class="list-disc pl-4 space-y-1">
-                            <li><strong class="text-slate-900">청년 월세 특별 지원:</strong> 현재 거주 요건과 소득 요건이 충족되므로 함께 신청해보시는 것을 추천합니다.</li>
-                            <li><strong class="text-slate-900">내일배움카드:</strong> 직업 훈련이 필요하다면 자격 제한 없이 신청 가능하며, 훈련비의 일부를 지원받을 수 있습니다.</li>
+                    <div th:if="${result.recommendations != null and !result.recommendations.isEmpty()}">
+                        <ul class="space-y-2">
+                            <li th:each="policyName : ${result.recommendations}" class="flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-100 hover:border-blue-200 transition">
+                                <span class="text-blue-500 text-xs">🔗</span>
+                                <strong class="text-slate-700" th:text="${policyName}">정책 이름</strong>
+                            </li>
                         </ul>
                     </div>
-                    <div th:unless="${recommendations != null}" class="text-slate-400 text-center py-2">
+
+                    <div th:if="${result.recommendations == null or result.recommendations.isEmpty()}" class="text-slate-400 text-center py-2">
                         <span>추천 정책 정보가 없습니다.</span>
                     </div>
                 </div>
@@ -243,7 +232,7 @@
                 </h3>
                 <div class="bg-slate-50 rounded-xl p-5 border border-slate-200 text-slate-700 text-sm leading-relaxed shadow-inner">
                     <i class="fa-solid fa-quote-left text-slate-300 mr-2 text-xl align-top"></i>
-                    <span th:text="${basis}">여기에 AI가 판단한 근거 정책과 규정이 표시됩니다.</span>
+                    <span th:text="${result.basis}">여기에 AI가 판단한 근거 정책과 규정이 표시됩니다.</span>
                 </div>
             </div>
         </section>
@@ -257,11 +246,9 @@
         if(rawText && rawText.trim() !== "") {
             document.getElementById('parsed-ai-result').innerHTML = marked.parse(rawText);
         }
-        // [수정1 관련] 정책 설명 오버플로우 체크
         checkDescriptionOverflow();
     });
 
-    // [수정1 관련] 정책 설명 더보기/접기 스크립트 추가
     function toggleDescription() {
         const desc = document.getElementById('policyDescription');
         const btn = document.getElementById('moreBtn');

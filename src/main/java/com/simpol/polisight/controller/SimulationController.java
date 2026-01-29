@@ -25,7 +25,7 @@ public class SimulationController {
     private final AiSimulationService aiSimulationService;
     private final RecordService recordService;
 
-    // 1. 시뮬레이션 입력 페이지
+    // 1. 시뮬레이션 입력 페이지 (기존 유지)
     @GetMapping("/simulation")
     public String showSimulation(
             @RequestParam(name = "policyId", required = false) String policyId,
@@ -39,7 +39,7 @@ public class SimulationController {
         return "simulation";
     }
 
-    // 2. 분석 요청 (POST)
+    // 2. 분석 요청 (POST) (기존 유지)
     @PostMapping("/simulation/analyze")
     public String analyzeSimulation(
             @ModelAttribute("simulationForm") PolicySearchCondition condition,
@@ -53,7 +53,7 @@ public class SimulationController {
         return "redirect:/simulation/result";
     }
 
-    // 3. 결과 페이지 (GET)
+    // 3. 결과 페이지 (GET) - ★ 수정된 부분
     @GetMapping("/simulation/result")
     public String showSimulationResult(Model model, HttpSession session) {
 
@@ -63,7 +63,7 @@ public class SimulationController {
 
         // 로그인 체크
         Object loginMemberObj = session.getAttribute("loginMember");
-        Long memberIdx = 1L; // 기본값
+        Long memberIdx = 1L; // 기본값 (비회원 등)
         if (loginMemberObj != null) {
             MemberDto loginMember = (MemberDto) loginMemberObj;
             memberIdx = loginMember.getMemberIdx();
@@ -91,29 +91,32 @@ public class SimulationController {
         }
 
         // =================================================================
-        // ★ [수정됨] AI 분석 호출 (Map -> DTO 변경)
+        // ★ [핵심 수정] AI 분석 호출 및 Model 데이터 전달
         // =================================================================
-        AiResponseDto aiResult = aiSimulationService.getPolicyRecommendation(condition);
+        AiResponseDto aiResponseDto = aiSimulationService.getPolicyRecommendation(condition);
 
-        // 기본값 설정
+        // 기본값 설정 (DB 저장을 위해 필요)
         String content = "분석 결과 없음";
         String suitability = "N";
         String basis = "분석 근거 정보가 없습니다.";
 
-        // 결과가 정상적으로 왔다면 덮어쓰기
-        if (aiResult != null) {
-            content = aiResult.getContent();
-            suitability = aiResult.getSuitability();
-            basis = aiResult.getBasis();
+        // 결과가 정상적으로 왔다면 변수 업데이트
+        if (aiResponseDto != null) {
+            content = aiResponseDto.getContent();
+            suitability = aiResponseDto.getSuitability();
+            basis = aiResponseDto.getBasis();
         }
 
-        // 모델에 담기 (화면에 보여줄 데이터)
-        model.addAttribute("aiResult", content);     // 상세 내용
-        model.addAttribute("suitability", suitability); // 적합 여부 (Y/N)
-        model.addAttribute("basis", basis);          // 판단 근거
-        model.addAttribute("relatedPolicy", "없음"); // (AI 서버가 아직 안 주는 값이라 기본값 처리)
+        // 1. HTML에서 "result"로 접근할 수 있도록 DTO 객체 전체 전달 (필수!)
+        model.addAttribute("result", aiResponseDto);
 
-        // DB 저장 (RecordDto)
+        // 2. 기존 로직 호환성을 위해 개별 속성도 전달 (선택사항이나 안전하게 유지)
+        model.addAttribute("aiResult", content);
+        model.addAttribute("suitability", suitability);
+        model.addAttribute("basis", basis);
+
+
+        // DB 저장 (RecordDto) - 기존 로직 유지
         try {
             RecordDto newRecord = RecordDto.builder()
                     .memberIdx(memberIdx)
