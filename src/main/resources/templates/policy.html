@@ -321,67 +321,41 @@
             <th:block th:unless="${policyList == null or #lists.isEmpty(policyList)}">
                 <div th:each="policy : ${policyList}"
                      class="policy-card bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition relative w-full min-w-0"
-                     th:data-title="${policy.plcyNm ?: '정보 없음'}"
-                     th:data-desc="${policy.plcyExplnCn ?: ''}"
-                     th:data-desc-easy="${policy.plcyExplnCn ?: ''}"
-                     th:data-support="${policy.plcySprtCn ?: '상세 내용 참조'}"
-                     th:data-apply-prd="${policy.aplyYmd ?: '상세 공고 참조'}"
-                     th:data-biz-prd="${(policy.bizPrdBgngYmd != null && policy.bizPrdEndYmd != null) ? (policy.bizPrdBgngYmd + ' ~ ' + policy.bizPrdEndYmd) : '상시'}"
-                     th:data-age="${'만 ' + (policy.sprtTrgtMinAge ?: '0') + '세 ~ 만 ' + (policy.sprtTrgtMaxAge ?: '99') + '세'}"
-                     th:data-income="${policy.earnEtcCn ?: '제한 없음'}"
-                     th:data-documents="${policy.sbmsnDcmntCn ?: '제출 서류 없음'}"
-                     th:data-etc="${policy.etcMttrCn ?: ''}"
-                     th:data-url="${policy.aplyUrlAddr ?: ''}"
-                     th:data-ref1="${policy.refUrlAddr1 ?: ''}"
-                     th:data-ref2="${policy.refUrlAddr2 ?: ''}"
-                     th:data-category="${policy.lclsfNm + (policy.mclsfNm != null ? ' > ' + policy.mclsfNm : '')}"
-                     th:data-income-range="${(policy.earnMinAmt ?: '0') + '만원 ~ ' + (policy.earnMaxAmt ?: '무제한') + '만원'}"
-                     th:data-views="${policy.inqCnt ?: 0}"
                      th:data-id="${policy.plcyNo}"
+                     th:data-title="${policy.plcyNm}"
                      onclick="selectPolicy(this)">
-                    <div class="flex justify-between items-start mb-2">
 
+                    <div class="flex justify-between items-start mb-2">
                         <div class="flex flex-wrap gap-1">
                             <th:block th:if="${policy.department != null}">
                                 <th:block th:each="dept : ${#sets.toSet(#strings.arraySplit(policy.department, ','))}">
-                                    <span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-1 rounded"
-                                          th:text="${dept.trim()}"> 부서명
-                                    </span>
+                                    <span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-1 rounded" th:text="${dept.trim()}">부서</span>
                                 </th:block>
                             </th:block>
                         </div>
-
                         <span class="text-xs font-bold"
                               th:classappend="${policy.dDay < 0 ? 'text-gray-400' : (policy.dDay <= 7 ? 'text-red-500' : 'text-blue-500')}"
-                              th:text="${policy.dDayText}"> D-5
-                        </span>
+                              th:text="${policy.dDayText}">D-Day</span>
                     </div>
 
-                    <h4 class="font-bold text-slate-800 text-lg mb-1 break-keep" th:text="${policy.title}">정책명</h4>
-                    <p class="text-xs text-slate-500 line-clamp-2 break-keep" th:text="${policy.description}">내용이 들어갑니다.</p>
+                    <h4 class="font-bold text-slate-800 text-lg mb-1 break-keep" th:text="${policy.plcyNm}">정책명</h4>
+                    <p class="text-xs text-slate-500 line-clamp-2 break-keep" th:text="${policy.plcyExplnCn}">설명</p>
 
                     <div class="mt-4 flex flex-wrap gap-2 text-[11px] text-slate-500 font-medium">
-                        <th:block th:if="${policy.plcyKywdNm != null and !#strings.isEmpty(policy.plcyKywdNm)}">
+                        <th:block th:if="${policy.plcyKywdNm != null}">
                             <th:block th:each="tag : ${#strings.arraySplit(policy.plcyKywdNm, ',')}">
-                <span class="bg-slate-100 px-2 py-1 rounded"
-                      th:text="${tag.contains('#') ? tag.trim() : '#' + tag.trim()}">
-                    #키워드
-                </span>
+                                <span class="bg-slate-100 px-2 py-1 rounded" th:text="${tag.contains('#') ? tag.trim() : '#' + tag.trim()}">#태그</span>
                             </th:block>
                         </th:block>
                     </div>
 
                     <div class="absolute bottom-5 right-5 flex gap-2 z-10">
                         <button onclick="openDetail(event, this)"
-                                class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs px-3 py-1.5 rounded-lg transition">
-                            자세히
-                        </button>
-
+                                class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs px-3 py-1.5 rounded-lg transition">자세히</button>
                         <button th:if="${session.loginMember != null}"
                                 onclick="toggleFavorite(event, this)"
                                 class="fav-btn w-[30px] h-[29px] bg-slate-100 hover:bg-slate-200 text-slate-400 border border-transparent rounded-lg flex items-center justify-center transition"
                                 th:classappend="${favIds != null and #lists.contains(favIds, policy.plcyNo)} ? 'active' : ''">
-
                             <i th:class="${favIds != null and #lists.contains(favIds, policy.plcyNo)} ? 'fa-solid fa-star text-yellow-500' : 'fa-regular fa-star'"></i>
                         </button>
                     </div>
@@ -403,51 +377,86 @@
     </div>
 </div>
 
-<div id="policy-modal"
-     class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300">
-    <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl transform scale-95 transition-transform duration-300 p-0 relative mx-4 overflow-hidden">
+<div id="policy-modal" class="fixed inset-0 z-[100] hidden overflow-y-auto" role="dialog" aria-modal="true">
+    <div class="flex min-h-screen items-center justify-center p-4 text-center sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeDetail()"></div>
 
-        <div class="p-6 border-b border-slate-100 bg-slate-50/50">
-            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 bg-white rounded-full w-8 h-8 flex items-center justify-center shadow-sm">
-                <i class="fa-solid fa-xmark"></i>
+        <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl p-8">
+            <button onclick="closeDetail()" class="absolute right-6 top-6 text-gray-400 hover:text-gray-500">
+                <i class="fa-solid fa-xmark text-2xl"></i>
             </button>
-            <span class="text-blue-600 font-bold text-[10px] bg-blue-50 px-2 py-0.5 rounded-md mb-2 inline-block">정책 상세 정보</span>
-            <h3 class="text-xl font-extrabold text-slate-900 leading-tight" id="modal-title">정책 제목</h3>
-        </div>
 
-        <div class="p-6 overflow-y-auto max-h-[65vh] custom-scroll space-y-8">
-            <section>
-                <h4 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
-                    <i class="fa-solid fa-circle-info text-blue-500"></i> 정책 설명
-                </h4>
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                    <p id="modal-desc-original" class="text-slate-600 text-sm leading-relaxed"></p>
-                    <p id="modal-desc-easy" class="text-slate-800 text-base leading-relaxed font-bold hidden"></p>
-                </div>
-            </section>
+            <div class="mb-6 border-b pb-4">
+                <span class="inline-block px-2 py-1 rounded bg-blue-50 text-blue-600 text-xs font-bold mb-2" id="modal-category">대분류 > 중분류</span>
+                <h2 class="text-3xl font-bold text-gray-900 mb-2" id="modal-title">정책 제목</h2>
+                <p class="text-blue-500 text-sm font-medium" id="modal-keywords">#키워드</p>
+            </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="space-y-4">
-                    <div><h5 class="text-[11px] font-bold text-slate-400 mb-1">🎁 지원 내용</h5><p id="modal-support" class="text-sm text-slate-700 font-semibold"></p></div>
-                    <div><h5 class="text-[11px] font-bold text-slate-400 mb-1">🎂 지원 연령</h5><p id="modal-age" class="text-sm text-blue-600 font-extrabold"></p></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="flex items-center text-lg font-bold text-gray-800 mb-2"><i class="fa-solid fa-circle-info mr-2 text-blue-500"></i>정책 설명</h4>
+                        <div id="modal-desc-original" class="bg-gray-50 p-4 rounded-xl text-sm leading-relaxed text-gray-600 whitespace-pre-wrap"></div>
+                    </div>
+                    <div>
+                        <h4 class="flex items-center text-lg font-bold text-gray-800 mb-2"><i class="fa-solid fa-gift mr-2 text-pink-500"></i>지원 내용</h4>
+                        <div id="modal-support" class="bg-pink-50 p-4 rounded-xl text-sm text-gray-700 whitespace-pre-wrap"></div>
+                    </div>
+                    <div>
+                        <h4 class="flex items-center text-lg font-bold text-gray-800 mb-2"><i class="fa-solid fa-file-invoice mr-2 text-purple-500"></i>제출 서류</h4>
+                        <div id="modal-documents" class="bg-gray-50 p-4 rounded-xl text-sm text-gray-600 whitespace-pre-wrap"></div>
+                    </div>
                 </div>
-                <div class="space-y-4">
-                    <div><h5 class="text-[11px] font-bold text-slate-400 mb-1">📅 신청 기간</h5><p id="modal-apply-prd" class="text-sm text-slate-700 font-semibold"></p></div>
-                    <div><h5 class="text-[11px] font-bold text-slate-400 mb-1">💰 소득 조건</h5><p id="modal-income" class="text-sm text-slate-700 font-semibold"></p></div>
+
+                <div class="space-y-6">
+                    <div class="bg-slate-50 p-5 rounded-xl space-y-4">
+                        <div class="flex justify-between border-b pb-2">
+                            <span class="text-gray-500 font-bold">지원 연령</span>
+                            <span id="modal-age" class="text-gray-900"></span>
+                        </div>
+                        <div class="flex justify-between border-b pb-2">
+                            <span class="text-gray-500 font-bold">결혼 상태</span>
+                            <span id="modal-marry" class="text-gray-900"></span>
+                        </div>
+                        <div class="flex justify-between border-b pb-2">
+                            <span class="text-gray-500 font-bold">소득 조건</span>
+                            <span id="modal-income" class="text-right text-gray-900"></span>
+                        </div>
+                        <p id="modal-earn-etc" class="text-xs text-gray-400 mt-1"></p>
+                    </div>
+
+                    <div class="bg-blue-50 p-5 rounded-xl space-y-2 text-sm">
+                        <p><strong>거주 지역:</strong> <span id="modal-zip"></span></p>
+                        <p><strong>학력 요건:</strong> <span id="modal-school"></span></p>
+                        <p><strong>전공 요건:</strong> <span id="modal-major"></span></p>
+                        <p><strong>취업 상태:</strong> <span id="modal-job"></span></p>
+                        <p><strong>특화 분야:</strong> <span id="modal-sbiz"></span></p>
+                    </div>
+
+                    <div class="space-y-2">
+                        <p class="text-sm"><strong>신청 기간:</strong> <span id="modal-apply-prd" class="text-blue-600 font-bold"></span></p>
+                        <p class="text-sm"><strong>사업 기간:</strong> <span id="modal-biz-prd" class="text-gray-600"></span></p>
+                    </div>
                 </div>
             </div>
 
-            <hr class="border-slate-100">
-
-            <div class="space-y-6">
-                <section><h4 class="text-sm font-bold text-slate-800 mb-2">📄 제출 서류</h4><div class="bg-slate-50 p-4 rounded-xl border border-slate-100 text-sm text-slate-600 whitespace-pre-line" id="modal-documents"></div></section>
-                <section><h4 class="text-sm font-bold text-slate-800 mb-2">💡 기타 사항</h4><p class="text-sm text-slate-600 whitespace-pre-line" id="modal-etc"></p></section>
+            <div class="mt-8 border-t pt-4">
+                <p class="text-sm text-gray-500"><strong>기타 사항:</strong> <span id="modal-etc"></span></p>
+                <p class="text-xs text-gray-300 mt-2 text-right">조회수: <span id="modal-inq-cnt">0</span></p>
             </div>
-        </div>
 
-        <div class="p-6 border-t border-slate-100 flex gap-3 bg-white">
-            <button id="btn-easy-toggle" onclick="toggleEasyMode()" class="flex-1 py-3.5 rounded-xl font-bold border-2 border-blue-600 text-blue-600 text-sm"><i class="fa-solid fa-face-smile"></i> <span>쉬운 말로 보기</span></button>
-            <a id="modal-apply-url" target="_blank" href="#" class="flex-1 py-3.5 bg-blue-600 text-white rounded-xl font-bold text-center text-sm shadow-lg shadow-blue-200"><i class="fa-solid fa-paper-plane"></i> 신청 홈페이지</a>
+            <div class="mt-8 flex flex-wrap gap-4">
+                <button onclick="toggleEasyMode()" class="flex-1 px-6 py-4 border-2 border-blue-500 text-blue-500 font-bold rounded-xl hover:bg-blue-50 transition">
+                    <i class="fa-solid fa-face-smile mr-2"></i>쉬운 말로 보기
+                </button>
+                <a id="modal-apply-url" target="_blank" class="flex-1 px-6 py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition text-center">
+                    <i class="fa-solid fa-paper-plane mr-2"></i>신청 홈페이지
+                </a>
+            </div>
+            <div class="mt-4 flex gap-4 text-xs">
+                <a id="modal-ref1-url" target="_blank" class="text-gray-400 hover:text-blue-500 underline">참고 사이트 1</a>
+                <a id="modal-ref2-url" target="_blank" class="text-gray-400 hover:text-blue-500 underline">참고 사이트 2</a>
+            </div>
         </div>
     </div>
 </div>
@@ -682,73 +691,73 @@
         // ✅ 상세 모달
         let easyMode = false;
         function openDetail(e, btnOrCard) {
-            e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
+            if (e) e.stopPropagation();
             const card = btnOrCard.closest('.policy-card');
-            const d = card.dataset; // 카드에 심긴 th:data- 속성들 가져오기
+            const plcyNo = card.dataset.id;
 
-            // 1. 단순 텍스트 데이터 맵핑 (ID만 맞으면 바로 꽂힘)
-            const textFields = {
-                'modal-title': d.title,
-                'modal-category': d.category,     // lclsfNm > mclsfNm 합쳐진 값
-                'modal-views': d.views,           // 조회수
-                'modal-support': d.support,       // 지원 내용
-                'modal-age': d.age,               // 만 #세 ~ 만 #세
-                'modal-income-range': d.incomeRange, // 000만원 ~ 000만원
-                'modal-income': d.income,         // 소득 상세 내용 (earnEtcCn)
-                'modal-apply-prd': d.applyPrd,    // 신청 기간
-                'modal-biz-prd': d.bizPrd,        // 사업 기간
-                'modal-desc-original': d.desc,    // 정책 설명 원문
-                'modal-documents': d.documents,   // 제출 서류
-                'modal-etc': d.etc                // 기타 사항
-            };
+            fetch(`/api/policy/${plcyNo}`)
+                .then(res => res.json())
+                .then(d => {
+                    const set = (id, val) => {
+                        const el = document.getElementById(id);
+                        if (el) el.innerText = (val && val !== 'null' && val !== '') ? val : '정보 없음';
+                    };
+                    const parseArr = (jsonStr) => {
+                        try {
+                            const arr = typeof jsonStr === 'string' ? JSON.parse(jsonStr) : jsonStr;
+                            return (Array.isArray(arr) && arr.length > 0) ? arr.join(', ') : '제한 없음';
+                        } catch(e) { return '제한 없음'; }
+                    };
 
-            // 반복문으로 화면에 출력 (데이터가 'null'이거나 없으면 '정보 없음' 표시)
-            Object.keys(textFields).forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    const val = textFields[id];
-                    el.innerText = (val && val !== 'null' && val !== 'undefined' && val !== '') ? val : '정보 없음';
-                }
-            });
+                    // 데이터 주입 시작
+                    set('modal-title', d.plcyNm);
+                    set('modal-keywords', d.plcyKywdNm);
+                    set('modal-desc-original', d.plcyExplnCn);
+                    set('modal-category', `${d.lclsfNm || ''} > ${d.mclsfNm || ''}`);
+                    set('modal-support', d.plcySprtCn);
+                    set('modal-age', `만 ${d.sprtTrgtMinAge || 0}세 ~ ${d.sprtTrgtMaxAge || 99}세`);
+                    set('modal-marry', d.mrgSttsCd);
+                    set('modal-income', `[${d.earnCndSeCd || '기준없음'}] ${d.earnMinAmt || 0}만원 ~ ${(!d.earnMaxAmt || d.earnMaxAmt === 0) ? '무제한' : d.earnMaxAmt + '만원'}`);
+                    set('modal-earn-etc', d.earnEtcCn);
+                    set('modal-zip', parseArr(d.zipCd));
+                    set('modal-school', parseArr(d.schoolCd));
+                    set('modal-major', parseArr(d.plcyMajorCd));
+                    set('modal-job', parseArr(d.jobCd));
+                    set('modal-sbiz', parseArr(d.sbizCd));
+                    set('modal-apply-prd', d.aplyYmd);
+                    const bizDates = (d.bizPrdBgngYmd && d.bizPrdEndYmd) ? `${d.bizPrdBgngYmd} ~ ${d.bizPrdEndYmd}` : '정보 없음';
+                    set('modal-biz-prd', bizDates);
+                    set('modal-documents', d.sbmsnDcmntCn);
+                    set('modal-etc', d.etcMttrCn);
+                    set('modal-inq-cnt', d.inqCnt);
 
-            // 2. 링크 버튼들 처리 (신청 홈페이지, 참고링크 1, 참고링크 2)
-            const links = {
-                'modal-apply-url': d.url,
-                'modal-ref1': d.ref1,
-                'modal-ref2': d.ref2
-            };
+                    // 링크 3종 처리
+                    const setLink = (id, url) => {
+                        const el = document.getElementById(id);
+                        if(el) { el.href = url || '#'; el.style.display = url ? 'inline-block' : 'none'; }
+                    };
+                    setLink('modal-apply-url', d.aplyUrlAddr);
+                    setLink('modal-ref1-url', d.refUrlAddr1);
+                    setLink('modal-ref2-url', d.refUrlAddr2);
 
-            Object.keys(links).forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    const url = links[id];
-                    if (url && url !== 'null' && url !== '' && url !== 'undefined') {
-                        el.href = url;
-                        el.style.display = 'flex'; // 주소가 있으면 보이기
-                    } else {
-                        el.style.display = 'none'; // 주소가 없으면 숨기기
-                    }
-                }
-            });
+                    const modal = document.getElementById('policy-modal');
+                    modal.classList.remove('hidden');
+                    setTimeout(() => modal.classList.add('opacity-100'), 10);
+                });
+        }
 
-            // 3. 모달 초기 상태 설정 (쉬운 말 모드 해제)
-            easyMode = false;
-            document.getElementById('modal-desc-original').classList.remove('hidden');
-            document.getElementById('modal-desc-easy').classList.add('hidden');
-            const easyBtnSpan = document.querySelector('#btn-easy-toggle span');
-            if (easyBtnSpan) easyBtnSpan.innerText = "쉬운 말로 보기";
-
-            // 4. 모달 열기 및 애니메이션 효과
+        // ✅ 모달 닫기 함수
+        function closeDetail() {
             const modal = document.getElementById('policy-modal');
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.add('opacity-100');
-                const content = modal.querySelector('div');
-                if (content) {
-                    content.classList.add('scale-100');
-                    content.classList.remove('scale-95');
-                }
-            }, 10);
+            if (modal) {
+                // 1. 투명도를 0으로 만들어 서서히 사라지게 함
+                modal.classList.remove('opacity-100');
+
+                // 2. 애니메이션이 끝난 뒤(약 200ms) 완전히 숨김 처리
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 200);
+            }
         }
 
         function closeModal() {
@@ -1047,7 +1056,49 @@
                 restoreSearchConditions();
             }
         });
+        // ✅ 페이지가 켜지자마자 실행되는 '자동 실행기'
+        document.addEventListener('DOMContentLoaded', function() {
+            // 1. 주소창에서 ?id= 뒤에 오는 값을 가져옵니다.
+            const urlParams = new URLSearchParams(window.location.search);
+            const policyId = urlParams.get('id');
 
+            // 2. 만약 ID가 있다면, 바로 모달을 띄우는 함수를 실행합니다.
+            if (policyId) {
+                console.log("메일 링크를 통해 들어오셨군요! 정책 ID:", policyId);
+                openDetailById(policyId);
+            }
+        });
+
+        // ✅ 카드 클릭 없이 'ID만으로' 모달을 여는 전용 함수
+        function openDetailById(plcyNo) {
+            // 이미 만들어둔 API 주소로 데이터를 요청합니다.
+            fetch(`/api/policy/${plcyNo}`)
+                .then(res => res.json())
+                .then(d => {
+                    // 이전에 완성한 "모달에 데이터 꽂아넣기" 로직을 그대로 실행합니다.
+                    const set = (id, val) => {
+                        const el = document.getElementById(id);
+                        if (el) el.innerText = (val && val !== 'null') ? val : '정보 없음';
+                    };
+
+                    set('modal-title', d.plcyNm);
+                    set('modal-desc-original', d.plcyExplnCn);
+                    set('modal-support', d.plcySprtCn);
+                    set('modal-age', `만 ${d.sprtTrgtMinAge || 0}세 ~ ${d.sprtTrgtMaxAge || 99}세`);
+                    set('modal-income', `${d.earnMinAmt || 0}만원 ~ ${(!d.earnMaxAmt || d.earnMaxAmt === 0) ? '무제한' : d.earnMaxAmt + '만원'}`);
+                    set('modal-apply-prd', d.aplyYmd);
+                    set('modal-documents', d.sbmsnDcmntCn);
+                    set('modal-etc', d.etcMttrCn);
+
+                    // 모달 화면에 표시
+                    const modal = document.getElementById('policy-modal');
+                    if (modal) {
+                        modal.classList.remove('hidden');
+                        setTimeout(() => modal.classList.add('opacity-100'), 10);
+                    }
+                })
+                .catch(err => console.error("메일 링크 데이터 로드 실패:", err));
+        }
     /*]]>*/
 </script>
 

@@ -54,7 +54,8 @@ public class SecurityConfig {
                                 "/mail/**", "/user/**",
                                 "/policy/**",       // /policy 관련 모든 하위 경로 허용
                                 "/simulation/**",   // ✅ /simulation/analyze 포함 모든 하위 경로 허용
-                                "/setup"
+                                "/setup",
+                                "/api/policy/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

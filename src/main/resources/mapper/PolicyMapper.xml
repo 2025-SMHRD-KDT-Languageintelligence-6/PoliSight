@@ -27,6 +27,9 @@
         <result property="earnMaxAmt" column="earnMaxAmt"/>
         <result property="inqCnt" column="inqCnt"/>
 
+        <result property="zipCd" column="zipCd"
+                typeHandler="com.simpol.polisight.handler.JsonListTypeHandler"
+                javaType="java.util.List"/>
         <result property="aplyPrdSeCd" column="aplyPrdSeCd"
                 typeHandler="com.simpol.polisight.handler.CodeEnumTypeHandler"
                 javaType="com.simpol.polisight.type.AplyPrdType"/>
@@ -61,7 +64,7 @@
         p.bizPrdSeCd, p.mrgSttsCd, p.earnCndSeCd, p.plcyMajorCd, p.jobCd, p.schoolCd, p.sbizCd,
         p.plcySprtCn, p.sprtTrgtMinAge, p.sprtTrgtMaxAge, p.earnEtcCn, p.sbmsnDcmntCn, p.etcMttrCn,
         p.aplyUrlAddr, p.refUrlAddr1, p.refUrlAddr2,
-        p.earnMinAmt, p.earnMaxAmt, p.inqCnt FROM policy p
+        p.earnMinAmt, p.earnMaxAmt, p.inqCnt, p.zipCd FROM policy p
 
         -- ✅ [핵심 추가] 즐겨찾기 테이블 조인 (로그인 유저 기준)
         LEFT JOIN favorite f
@@ -183,7 +186,8 @@
         etcMttrCn,
         aplyUrlAddr,
         refUrlAddr1,
-        refUrlAddr2
+        refUrlAddr2,
+        zipCd
         FROM policy
         WHERE plcyNo = #{id}
     </select>

@@ -48,6 +48,7 @@ public class PolicyDto {
     private MrgSttsType mrgSttsCd;
     private EarnCndType earnCndSeCd;
 
+    private List<String> zipCd;
     private List<MajorType> plcyMajorCd;
     private List<JobType> jobCd;
     private List<SchoolType> schoolCd;

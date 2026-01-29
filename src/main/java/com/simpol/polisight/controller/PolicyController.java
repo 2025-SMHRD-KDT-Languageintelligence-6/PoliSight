@@ -11,6 +11,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,5 +57,11 @@ public class PolicyController {
         model.addAttribute("favIds", favIds);
 
         return "policy";
+    }
+    @GetMapping("/api/policy/{id}")
+    @ResponseBody // ✅ 데이터를 JSON 형태로 반환합니다.
+    public PolicyDto getPolicyDetail(@PathVariable("id") String id) {
+        // 이미 만들어두신 mapper.selectPolicyById(id)를 호출하세요.
+        return policyService.getPolicyById(id);
     }
 }

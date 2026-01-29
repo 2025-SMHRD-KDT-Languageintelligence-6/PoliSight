@@ -112,7 +112,7 @@ public class MailService {
             helper.setTo(toEmail);
             helper.setSubject("[PoliSight] 마감 임박 알림: '" + policyName + "' 신청이 3일 남았습니다.");
 
-            String policyLink = baseUrl + "/policy";
+            String policyLink = baseUrl + "/policy?id=" + policyNo;
 
             String body = getHtmlHeader();
             body += "  <div style='padding: 30px 20px; text-align: center;'>";
