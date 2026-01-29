@@ -321,9 +321,19 @@
             <th:block th:unless="${policyList == null or #lists.isEmpty(policyList)}">
                 <div th:each="policy : ${policyList}"
                      class="policy-card bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition relative w-full min-w-0"
-                     th:data-title="${policy.title}"
-                     th:data-desc="${policy.description}"
-                     th:data-desc-easy="${policy.description}"
+                     th:data-title="${policy.plcyNm ?: '정보 없음'}"
+                     th:data-desc="${policy.plcyExplnCn ?: ''}"
+                     th:data-desc-easy="${policy.plcyExplnCn ?: ''}"
+                     th:data-support="${policy.plcySprtCn ?: '상세 내용 참조'}"
+                     th:data-apply-prd="${policy.aplyYmd ?: '상세 공고 참조'}"
+                     th:data-biz-prd="${(policy.bizPrdBgngYmd != null && policy.bizPrdEndYmd != null) ? (policy.bizPrdBgngYmd + ' ~ ' + policy.bizPrdEndYmd) : '상시'}"
+                     th:data-age="${'만 ' + (policy.sprtTrgtMinAge ?: '0') + '세 ~ 만 ' + (policy.sprtTrgtMaxAge ?: '99') + '세'}"
+                     th:data-income="${policy.earnEtcCn ?: '제한 없음'}"
+                     th:data-documents="${policy.sbmsnDcmntCn ?: '제출 서류 없음'}"
+                     th:data-etc="${policy.etcMttrCn ?: ''}"
+                     th:data-url="${policy.aplyUrlAddr ?: ''}"
+                     th:data-ref1="${policy.refUrlAddr1 ?: ''}"
+                     th:data-ref2="${policy.refUrlAddr2 ?: ''}"
                      th:data-id="${policy.plcyNo}"
                      onclick="selectPolicy(this)">
                     <div class="flex justify-between items-start mb-2">
@@ -392,27 +402,49 @@
 
 <div id="policy-modal"
      class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300">
-    <div class="bg-white w-full max-w-xl rounded-2xl shadow-2xl transform scale-95 transition-transform duration-300 p-6 relative mx-4">
-        <button onclick="closeModal()"
-                class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition bg-slate-100 rounded-full w-7 h-7 flex items-center justify-center">
-            <i class="fa-solid fa-xmark text-sm"></i></button>
-        <div class="mb-5">
-            <span class="text-blue-600 font-bold text-[10px] bg-blue-50 px-2 py-0.5 rounded-md mb-1.5 inline-block">정책 상세 정보</span>
-            <h3 class="text-xl font-extrabold text-slate-900" id="modal-title">정책 제목</h3>
-        </div>
-        <div class="bg-slate-50 p-5 rounded-xl border border-slate-100 mb-5 min-h-[100px] flex items-center">
-            <p id="modal-desc-original" class="text-slate-600 leading-relaxed font-medium text-sm">상세 내용이 없습니다.</p>
-            <p id="modal-desc-easy" class="text-slate-800 leading-relaxed font-bold text-base hidden"></p>
-        </div>
-        <div class="flex gap-3">
-            <button id="btn-easy-toggle" onclick="toggleEasyMode()"
-                    class="flex-1 py-3 rounded-xl font-bold border-2 border-blue-600 text-blue-600 hover:bg-blue-50 transition flex justify-center items-center gap-2 text-sm">
-                <i class="fa-solid fa-face-smile"></i> <span>쉬운 말로 보기</span>
+    <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl transform scale-95 transition-transform duration-300 p-0 relative mx-4 overflow-hidden">
+
+        <div class="p-6 border-b border-slate-100 bg-slate-50/50">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 bg-white rounded-full w-8 h-8 flex items-center justify-center shadow-sm">
+                <i class="fa-solid fa-xmark"></i>
             </button>
-            <button onclick="closeModal()"
-                    class="flex-1 py-3 bg-slate-800 text-white rounded-xl font-bold hover:bg-black transition text-sm">
-                확인
-            </button>
+            <span class="text-blue-600 font-bold text-[10px] bg-blue-50 px-2 py-0.5 rounded-md mb-2 inline-block">정책 상세 정보</span>
+            <h3 class="text-xl font-extrabold text-slate-900 leading-tight" id="modal-title">정책 제목</h3>
+        </div>
+
+        <div class="p-6 overflow-y-auto max-h-[65vh] custom-scroll space-y-8">
+            <section>
+                <h4 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info text-blue-500"></i> 정책 설명
+                </h4>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <p id="modal-desc-original" class="text-slate-600 text-sm leading-relaxed"></p>
+                    <p id="modal-desc-easy" class="text-slate-800 text-base leading-relaxed font-bold hidden"></p>
+                </div>
+            </section>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div><h5 class="text-[11px] font-bold text-slate-400 mb-1">🎁 지원 내용</h5><p id="modal-support" class="text-sm text-slate-700 font-semibold"></p></div>
+                    <div><h5 class="text-[11px] font-bold text-slate-400 mb-1">🎂 지원 연령</h5><p id="modal-age" class="text-sm text-blue-600 font-extrabold"></p></div>
+                </div>
+                <div class="space-y-4">
+                    <div><h5 class="text-[11px] font-bold text-slate-400 mb-1">📅 신청 기간</h5><p id="modal-apply-prd" class="text-sm text-slate-700 font-semibold"></p></div>
+                    <div><h5 class="text-[11px] font-bold text-slate-400 mb-1">💰 소득 조건</h5><p id="modal-income" class="text-sm text-slate-700 font-semibold"></p></div>
+                </div>
+            </div>
+
+            <hr class="border-slate-100">
+
+            <div class="space-y-6">
+                <section><h4 class="text-sm font-bold text-slate-800 mb-2">📄 제출 서류</h4><div class="bg-slate-50 p-4 rounded-xl border border-slate-100 text-sm text-slate-600 whitespace-pre-line" id="modal-documents"></div></section>
+                <section><h4 class="text-sm font-bold text-slate-800 mb-2">💡 기타 사항</h4><p class="text-sm text-slate-600 whitespace-pre-line" id="modal-etc"></p></section>
+            </div>
+        </div>
+
+        <div class="p-6 border-t border-slate-100 flex gap-3 bg-white">
+            <button id="btn-easy-toggle" onclick="toggleEasyMode()" class="flex-1 py-3.5 rounded-xl font-bold border-2 border-blue-600 text-blue-600 text-sm"><i class="fa-solid fa-face-smile"></i> <span>쉬운 말로 보기</span></button>
+            <a id="modal-apply-url" target="_blank" href="#" class="flex-1 py-3.5 bg-blue-600 text-white rounded-xl font-bold text-center text-sm shadow-lg shadow-blue-200"><i class="fa-solid fa-paper-plane"></i> 신청 홈페이지</a>
         </div>
     </div>
 </div>
@@ -646,16 +678,28 @@
 
         // ✅ 상세 모달
         let easyMode = false;
+        // 540라인 근처: 기존 openDetail 함수를 통째로 교체
         function openDetail(e, btnOrCard) {
             e.stopPropagation();
             const card = btnOrCard.closest('.policy-card');
-            const title = card.dataset.title || '';
-            const desc = card.dataset.desc || '';
-            const descEasy = card.dataset.descEasy || desc;
+            const d = card.dataset;
 
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-desc-original').innerText = desc;
-            document.getElementById('modal-desc-easy').innerText = descEasy;
+            document.getElementById('modal-title').innerText = d.title || '정보 없음';
+            document.getElementById('modal-desc-original').innerText = d.desc || '설명이 없습니다.';
+            document.getElementById('modal-support').innerText = d.support || '정보 없음';
+            document.getElementById('modal-apply-prd').innerText = d.applyPrd || '상세 공고 참조';
+            document.getElementById('modal-age').innerText = d.age;
+            document.getElementById('modal-income').innerText = d.income;
+            document.getElementById('modal-documents').innerText = d.documents || '제출 서류 정보가 없습니다.';
+            document.getElementById('modal-etc').innerText = d.etc || '특이사항 없음';
+
+            const applyBtn = document.getElementById('modal-apply-url');
+            if (d.url && d.url !== 'null' && d.url !== '') {
+                applyBtn.href = d.url;
+                applyBtn.style.display = 'flex';
+            } else {
+                applyBtn.style.display = 'none';
+            }
 
             easyMode = false;
             document.getElementById('modal-desc-original').classList.remove('hidden');
@@ -664,11 +708,11 @@
 
             const modal = document.getElementById('policy-modal');
             modal.classList.remove('hidden');
-            requestAnimationFrame(() => {
+            setTimeout(() => {
                 modal.classList.add('opacity-100');
-                modal.querySelector('div').classList.add('scale-100');
-                modal.querySelector('div').classList.remove('scale-95');
-            });
+                const content = modal.querySelector('div');
+                content.classList.add('scale-100'); content.classList.remove('scale-95');
+            }, 10);
         }
 
         function closeModal() {
