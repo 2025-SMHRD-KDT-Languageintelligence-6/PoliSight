@@ -71,16 +71,16 @@
 
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                 <nav class="flex flex-col">
-                    <a class="px-6 py-4 text-sm font-bold text-slate-700 hover:bg-slate-50 border-l-4 border-blue-600 bg-blue-50/50 flex items-center gap-3"
-                       href="#conditions">
+                    <a class="nav-link px-6 py-4 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 border-l-4 border-transparent transition flex items-center gap-3"
+                       href="#conditions" data-target="conditions">
                         <i class="fa-solid fa-sliders w-5 text-center"></i> 내 조건 관리
                     </a>
-                    <a class="px-6 py-4 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 border-l-4 border-transparent transition flex items-center gap-3"
-                       href="#favorites">
+                    <a class="nav-link px-6 py-4 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 border-l-4 border-transparent transition flex items-center gap-3"
+                       href="#favorites" data-target="favorites">
                         <i class="fa-solid fa-bookmark w-5 text-center"></i> 즐겨찾기 및 알림
                     </a>
-                    <a class="px-6 py-4 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 border-l-4 border-transparent transition flex items-center gap-3"
-                       href="#account">
+                    <a class="nav-link px-6 py-4 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-blue-600 border-l-4 border-transparent transition flex items-center gap-3"
+                       href="#account" data-target="account">
                         <i class="fa-solid fa-key w-5 text-center"></i> 비밀번호 수정
                     </a>
                 </nav>
@@ -658,17 +658,15 @@
         }
     });
 
-    // [수정] 알림 모달 호출 함수 - 아이콘 타입 추가 (default: 'info')
     function showCustomAlert(msg, type = 'info') {
         const modal = document.getElementById('alert-modal');
         const content = document.getElementById('alert-content');
         const iconContainer = document.getElementById('alert-icon-container');
 
-        // 아이콘 변경 로직
         if (type === 'bell') {
-            iconContainer.innerHTML = '<i class="fa-regular fa-bell"></i>'; // [수정 2] 종 모양
+            iconContainer.innerHTML = '<i class="fa-regular fa-bell"></i>';
         } else {
-            iconContainer.innerHTML = '<i class="fa-solid fa-circle-info"></i>'; // 기본 i 모양
+            iconContainer.innerHTML = '<i class="fa-solid fa-circle-info"></i>';
         }
 
         document.getElementById('alert-msg').innerText = msg;
@@ -991,16 +989,11 @@
         checkboxes.forEach(cb => cb.checked = false);
     }
 
-    // [수정] 알림 토글 로직: 서버 DB 업데이트 포함
     function toggleNotification(btn, plcyNo) {
         const icon = btn.querySelector('i');
-
-        // 현재 아이콘 상태를 보고, 변경할 목표 상태(targetStatus)를 결정합니다.
-        // fa-regular(빈 종)이면 켜야 하므로 1, 아니면 0
         const isCurrentlyOff = icon.classList.contains('fa-regular');
         const targetStatus = isCurrentlyOff ? 1 : 0;
 
-        // 서버로 데이터 전송
         fetch('/api/favorite/notify', {
             method: 'POST',
             headers: {
@@ -1008,30 +1001,26 @@
             },
             body: JSON.stringify({
                 plcyNo: plcyNo,
-                notify: targetStatus // 1 또는 0
+                notify: targetStatus
             })
         })
         .then(response => {
             if (response.ok) {
-                return response.json(); // 성공 시 JSON 반환 가정
+                return response.json();
             } else {
                 throw new Error('Server Error');
             }
         })
         .then(data => {
-            // DB 업데이트 성공 시에만 UI 변경
             if (targetStatus === 1) {
-                // 알림 켜기 UI 적용
                 icon.classList.remove('fa-regular');
                 icon.classList.add('fa-solid', 'text-yellow-500');
                 btn.classList.add('text-yellow-600', 'bg-yellow-50');
                 showCustomAlert("알림이 설정되었습니다.", 'bell');
             } else {
-                // 알림 끄기 UI 적용
                 icon.classList.remove('fa-solid', 'text-yellow-500');
                 icon.classList.add('fa-regular');
                 btn.classList.remove('text-yellow-600', 'bg-yellow-50');
-                // 끄는 경우 알림창을 띄우지 않거나, 필요하면 띄움
             }
         })
         .catch(error => {
@@ -1040,20 +1029,16 @@
         });
     }
 
-    // [수정 3] 삭제 버튼 클릭 시 -> 모달 열기
     function confirmDeleteFavs() {
         const checkboxes = document.querySelectorAll('input[name="favCheckbox"]:checked');
         if (checkboxes.length === 0) {
             showCustomAlert("삭제할 항목을 선택해주세요.");
             return;
         }
-
-        // 모달 메시지 업데이트 및 열기
         document.getElementById('delete-confirm-msg').innerText = `선택한 ${checkboxes.length}개의 항목을 삭제하시겠습니까?`;
         openDeleteModal();
     }
 
-    // 삭제 모달 열기
     function openDeleteModal() {
         const modal = document.getElementById('delete-confirm-modal');
         const content = document.getElementById('delete-confirm-content');
@@ -1064,7 +1049,6 @@
         }, 10);
     }
 
-    // 삭제 모달 닫기
     function closeDeleteModal() {
         const modal = document.getElementById('delete-confirm-modal');
         const content = document.getElementById('delete-confirm-content');
@@ -1073,9 +1057,8 @@
         setTimeout(() => modal.classList.add('hidden'), 200);
     }
 
-    // [수정 3] 실제 삭제 실행 (모달 내부 '삭제' 버튼에서 호출)
     async function executeDeleteFavs() {
-        closeDeleteModal(); // 모달 닫기
+        closeDeleteModal();
 
         const checkboxes = document.querySelectorAll('input[name="favCheckbox"]:checked');
         let successCount = 0;
@@ -1133,7 +1116,6 @@
         }
     }
 
-    // --- 회원탈퇴 모달 제어 함수 ---
     function openWithdrawStep1() {
         const modal = document.getElementById('withdraw-step1-modal');
         const content = document.getElementById('withdraw-step1-content');
@@ -1180,8 +1162,74 @@
             closeAlertModal();
             closeNameChangeModal();
             closeWithdrawModal();
-            closeDeleteModal(); // ESC로 삭제 모달도 닫기
+            closeDeleteModal();
         }
+    });
+
+    // --- [추가됨] 스크롤 스파이 (사이드바 메뉴 활성화) 스크립트 ---
+    document.addEventListener("DOMContentLoaded", function() {
+        const sections = document.querySelectorAll("#conditions, #favorites, #account");
+        const navLinks = document.querySelectorAll(".nav-link");
+
+        // 활성화/비활성화 시 적용할 Tailwind 클래스 정의
+        const activeClasses = ["text-slate-700", "border-blue-600", "bg-blue-50/50", "font-bold"];
+        const inactiveClasses = ["text-slate-600", "border-transparent", "hover:bg-slate-50", "hover:text-blue-600", "font-medium"];
+
+        function activateLink(targetId) {
+            navLinks.forEach(link => {
+                const linkTarget = link.getAttribute("data-target");
+                if (linkTarget === targetId) {
+                    // 활성화 상태로 변경
+                    link.classList.remove(...inactiveClasses);
+                    link.classList.add(...activeClasses);
+                } else {
+                    // 비활성화 상태로 변경
+                    link.classList.remove(...activeClasses);
+                    link.classList.add(...inactiveClasses);
+                }
+            });
+        }
+
+        // IntersectionObserver 설정
+        const observerOptions = {
+            root: null,
+            rootMargin: '-20% 0px -60% 0px', // 화면 상단 20% 지점부터 인식
+            threshold: 0
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    activateLink(entry.target.id);
+                }
+            });
+        }, observerOptions);
+
+        sections.forEach(section => {
+            observer.observe(section);
+        });
+
+        // 메뉴 클릭 시 부드러운 스크롤 처리 및 즉시 활성화
+        navLinks.forEach(link => {
+            link.addEventListener("click", (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute("href").substring(1);
+                const targetSection = document.getElementById(targetId);
+
+                // 해당 섹션으로 부드럽게 스크롤
+                const headerOffset = 100; // 헤더 높이만큼 보정
+                const elementPosition = targetSection.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: "smooth"
+                });
+
+                // 클릭 즉시 메뉴 활성화 (스크롤 완료 전 미리 반응)
+                activateLink(targetId);
+            });
+        });
     });
 
     /*]]>*/
