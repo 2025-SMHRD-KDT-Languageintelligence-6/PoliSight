@@ -49,7 +49,6 @@ public class PolicyDto {
     public String getTitle() { return plcyNm; }
     public String getDescription() { return plcyExplnCn; }
     public String getDepartment() { return lclsfNm; }
-    public String getRegion() { return "전국/서울"; }
 
     public String getRequirement() {
         if (schoolCd != null && !schoolCd.isEmpty()) {
