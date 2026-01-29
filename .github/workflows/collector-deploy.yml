@@ -1,0 +1,31 @@
+name: Python Collector Deploy
+
+on:
+  push:
+    paths:
+      - 'collector/**' # collector 폴더의 파일이 수정될 때만 작동
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      # 1. GCP 인증 (등록한 키 사용)
+      - name: Google Auth
+        uses: 'google-github-actions/auth@v1'
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+      # 2. 도커 이미지 빌드 및 GCP 저장
+      - name: Build and Push
+        run: |
+          gcloud builds submit --tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/policy-collector ./collector
+
+      # 3. Cloud Run Job 생성 및 환경 변수 주입
+      - name: Deploy Cloud Run Job
+        run: |
+          gcloud run jobs deploy policy-collector-job \
+            --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/policy-collector \
+            --region asia-northeast3 \
+            --set-env-vars "DB_PASS=${{ secrets.DB_PASS }},API_KEY=${{ secrets.API_KEY }}"

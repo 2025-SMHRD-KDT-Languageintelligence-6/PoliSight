@@ -1,0 +1,6 @@
+requests
+pandas
+sqlalchemy
+pymysql
+cryptography
+urllib3
