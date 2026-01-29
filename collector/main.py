@@ -16,7 +16,7 @@ from sqlalchemy import create_engine, text
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # =============================================================================
-# [설정] 본인의 환경에 맞게 수정해주세요
+# [설정] 본인의 환경에 맞게 해주세요
 # =============================================================================
 API_KEY = os.environ.get("API_KEY")
 
