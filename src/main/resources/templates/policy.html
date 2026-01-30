@@ -590,6 +590,12 @@
             "NONE": "제한없음"
         };
 
+        const incomeMap = {
+            "IRRELEVANT": "무관",
+            "ANNUAL_INCOME": "연소득",
+            "ETC": "기타"
+        };
+
         // --- 행정구역 데이터 ---
         const areaData = {
             "서울특별시": ["종로구","중구","용산구","성동구","광진구","동대문구","중랑구","성북구","강북구","도봉구","노원구","은평구","서대문구","마포구","양천구","강서구","구로구","금천구","영등포구","동작구","관악구","서초구","강남구","송파구","강동구"],
@@ -820,7 +826,10 @@
                     set('modal-support', d.plcySprtCn);
                     set('modal-age', `만 ${d.sprtTrgtMinAge || 0}세 ~ ${d.sprtTrgtMaxAge || 99}세`);
                     set('modal-marry', parseArr(d.mrgSttsCd, marriageMap));
-                    set('modal-income', `[${d.earnCndSeCd || '기준없음'}] ${d.earnMinAmt || 0}만원 ~ ${(!d.earnMaxAmt || d.earnMaxAmt === 0) ? '무제한' : d.earnMaxAmt + '만원'}`);
+                    const incomeText = (d.earnCndSeCd === 'IRRELEVANT')
+                        ? '무관'
+                        : `[${parseArr(d.earnCndSeCd, incomeMap)}] ${d.earnMinAmt || 0}만원 ~ ${(!d.earnMaxAmt || d.earnMaxAmt === 0) ? '무제한' : d.earnMaxAmt + '만원'}`;
+                    set('modal-income', incomeText);
                     set('modal-earn-etc', d.earnEtcCn);
                     set('modal-zip', parseArr(d.zipCd, zipMap));       // 1. 거주 지역
                     set('modal-school', parseArr(d.schoolCd, schoolMap)); // 2. 학력 요건
