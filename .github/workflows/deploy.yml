@@ -42,6 +42,7 @@ jobs:
           host: ${{ secrets.GCP_HOST }}
           username: ${{ secrets.GCP_USERNAME }}
           key: ${{ secrets.GCP_SSH_KEY }}
+          envs: DB_PASS,GOOGLE_CLIENT_SECRET,KAKAO_CLIENT_SECRET,MAIL_PASSWORD
           script: |
             # 1. [필수] 포트 킬러 도구 설치 (비밀번호 없이 설치됨)
             echo "Installing psmisc..."
