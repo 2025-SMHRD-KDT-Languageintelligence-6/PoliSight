@@ -228,4 +228,36 @@ public class MemberController {
         // 로직이 완전히 동일하기 때문입니다.
         return updateConditions(memberDto, session);
     }
+
+
+    // 이용약관 페이지 요청
+    @GetMapping("/terms")
+    public String terms(Model model) {
+        model.addAttribute("activeTab", "terms");
+        return "legal"; // templates/legal.html
+    }
+
+    // 개인정보처리방침 페이지 요청
+    @GetMapping("/privacy")
+    public String privacy(Model model) {
+        model.addAttribute("activeTab", "privacy");
+        return "legal"; // templates/legal.html
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
