@@ -72,7 +72,6 @@
                             initialized = true;
                             await initLive2D();
                         } else {
-                            // 창이 열릴 때마다 리사이즈 재계산 (안전장치)
                             setTimeout(() => resizeLive2D(), 50);
                         }
                     }
@@ -139,6 +138,42 @@
                             try { model.motion('Tap'); } catch(e) {}
                         });
 
+                        // -----------------------------------------------------------
+                        // [수정됨] 데드존 및 정면 응시 로직 개선
+                        // -----------------------------------------------------------
+                        stage.addEventListener('mousemove', (e) => {
+                            if (!model) return;
+
+                            const rect = live2dCanvas.getBoundingClientRect();
+                            const mouseX = e.clientX - rect.left;
+                            const mouseY = e.clientY - rect.top;
+
+                            // 데드존의 중심점 (화면 중앙)
+                            const centerX = rect.width / 2;
+                            const centerY = rect.height / 2;
+
+                            // 거리 계산
+                            const dist = Math.sqrt(
+                                Math.pow(mouseX - centerX, 2) +
+                                Math.pow(mouseY - centerY, 2)
+                            );
+
+                            // 데드존 반경
+                            const deadZoneRadius = 120;
+
+                            if (dist < deadZoneRadius) {
+                                // [중요] 데드존 내부: 내부 컨트롤러에 (0,0)을 보내야 진짜 정면을 봅니다.
+                                // model.focus(centerX, centerY)는 화면 중앙(배꼽)을 보게 만듭니다.
+                                if (model.internalModel && model.internalModel.focusController) {
+                                    model.internalModel.focusController.focus(0, 0);
+                                }
+                            } else {
+                                // 데드존 외부: 마우스 좌표 응시
+                                model.focus(mouseX, mouseY);
+                            }
+                        });
+                        // -----------------------------------------------------------
+
                         window.addEventListener('resize', resizeLive2D);
 
                     } catch (err) {
@@ -154,31 +189,22 @@
                     fitModel();
                 }
 
-                // ================= [핵심] 전신 맞춤 로직 =================
                 function fitModel() {
                     if (!model || !stage) return;
                     const w = stage.clientWidth;
                     const h = stage.clientHeight;
 
-                    // 1. 계산 전에 스케일을 1로 초기화하여 '원본 크기'를 기준으로 계산하도록 함
                     model.scale.set(1, 1);
 
-                    // 2. 기준점: 중앙 하단 (발 끝)
                     if (model.anchor) {
                         model.anchor.set(0.5, 1.0);
                     }
 
-                    // 3. 위치: 가로 중앙, 세로 맨 아래
                     model.x = w * 0.5;
                     model.y = h;
 
-                    // 4. 크기: 전신이 다 보이게 (높이 기준 95%)
-                    // 화면 높이의 95% 크기로 맞춥니다. (약간의 여백 포함)
                     const scaleHeight = (h * 0.95) / model.height;
-
-                    // 혹시 가로폭이 좁아서 잘리는 경우를 대비해 가로/세로 중 작은 비율 선택
                     const scaleWidth = (w * 0.9) / model.width;
-
                     const scale = Math.min(scaleHeight, scaleWidth);
 
                     model.scale.set(scale);
