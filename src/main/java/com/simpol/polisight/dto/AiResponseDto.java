@@ -3,36 +3,64 @@ package com.simpol.polisight.dto;
 import com.google.gson.annotations.SerializedName;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.util.List; // ★ List 사용을 위해 필수 import
+import java.util.List;
 
 @Data
 @NoArgsConstructor
 public class AiResponseDto {
 
-    // 1. 적합 여부 (Python: "suitability")
+    // 1. 적합 여부
     @SerializedName("suitability")
     private String suitability;
 
-    // 2. 지역 헤더 (Python: "region_header")
+    // 2. 지역 헤더
     @SerializedName("region_header")
     private String regionHeader;
 
-    // 3. 분석 내용 (Python: "content")
+    // 3. 분석 내용
+    @SerializedName("content")
     private String content;
 
-    // 4. 미래 시뮬레이션 시나리오 (Python: "future_scenario")
-    @SerializedName("future_scenario")
-    private String futureScenario;
+    // [변경 1] 미래 시뮬레이션 (기존 String -> List<Scenario> 객체로 변경)
+    // Python 프롬프트가 'scenarios' 라는 이름의 리스트를 줍니다.
+    @SerializedName("scenarios")
+    private List<Scenario> scenarios;
 
-    // 5. 추천 정책 리스트 (Python: "recommendations")
+    // [변경 2] 추천 정책 (기존 List<String> -> List<RecommendationItem> 객체로 변경)
+    // ★★★ 여기가 에러의 핵심 원인입니다! ★★★
     @SerializedName("recommendations")
-    private List<String> recommendations;
+    private List<RecommendationItem> recommendations;
 
-    // 6. 근거 데이터 (Python: "basis")
+    // 6. 근거 데이터
+    @SerializedName("basis")
     private String basis;
 
-    // (선택사항) 보험용 메서드
-    public String get적합여부() {
-        return this.suitability;
+    // ==========================================
+    // ★ 내부 클래스 1: 시나리오 구조 (Type, Title, Content)
+    // ==========================================
+    @Data
+    @NoArgsConstructor
+    public static class Scenario {
+        @SerializedName("type")
+        private String type;    // risk, benefit, solution, roadmap
+
+        @SerializedName("title")
+        private String title;   // 제목
+
+        @SerializedName("content")
+        private String content; // 내용
+    }
+
+    // ==========================================
+    // ★ 내부 클래스 2: 추천 정책 구조 (Name, Reason)
+    // ==========================================
+    @Data
+    @NoArgsConstructor
+    public static class RecommendationItem {
+        @SerializedName("name")
+        private String name;    // 정책 이름
+
+        @SerializedName("reason")
+        private String reason;  // 추천 사유
     }
 }

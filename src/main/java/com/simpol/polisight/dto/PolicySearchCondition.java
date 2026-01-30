@@ -7,6 +7,9 @@ import java.util.List;
 
 @Data
 public class PolicySearchCondition {
+
+    private String plcyNo;
+
     // 1. 기본 검색 및 지역
     private String keyword;
     private String regionSi; // 시/도

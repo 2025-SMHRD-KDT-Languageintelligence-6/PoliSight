@@ -22,7 +22,12 @@ public class AiSimulationService {
     // ✅ Ngrok 주소 (공백 없이 정확함)
     private static final String AI_SERVER_URL = "https://lanelle-bottlelike-everett.ngrok-free.dev/simulate";
 
-    private final OkHttpClient client = new OkHttpClient();
+    // 타임아웃 설정을 위해 Builder를 사용합니다.
+    private final OkHttpClient client = new OkHttpClient.Builder()
+            .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS) // 연결 타임아웃 30초
+            .readTimeout(60, java.util.concurrent.TimeUnit.SECONDS)    // ★ 읽기 타임아웃 60초 (AI 답변 대기 시간)
+            .writeTimeout(30, java.util.concurrent.TimeUnit.SECONDS)   // 쓰기 타임아웃 30초
+            .build();
     private final Gson gson = new Gson();
 
     public AiResponseDto getPolicyRecommendation(PolicySearchCondition condition) {

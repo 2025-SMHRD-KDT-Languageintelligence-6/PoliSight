@@ -80,47 +80,53 @@ public class SimulationController {
             model.addAttribute("age", condition.getAge());
         }
 
-        // 정책 정보 확인
+        // =================================================================
+        // ★ [핵심 수정] 정책 번호(ID) 확보 로직 강화
+        // =================================================================
         String policyId = (String) model.asMap().get("policyId");
-        if (policyId != null) {
+
+        // 1. Model에 없으면 DTO(condition)에서 꺼내옵니다. (이게 있어야 DB 에러 방지!)
+        if (policyId == null || policyId.isBlank()) {
+            policyId = condition.getPlcyNo();
+        }
+
+        // 2. 정책 정보 조회
+        if (policyId != null && !policyId.isBlank()) {
             PolicyDto policy = policyService.getPolicyById(policyId);
             model.addAttribute("policy", policy);
             condition.setPolicyTitle(policy.getTitle());
         } else {
-            policyId = null;
+            // ID가 끝까지 없으면 로그를 남겨 디버깅을 돕습니다.
+            log.warn("⚠️ 정책 ID(plcyNo)가 누락되었습니다. DB 저장 시 에러가 발생할 수 있습니다.");
         }
 
         // =================================================================
-        // ★ [핵심 수정] AI 분석 호출 및 Model 데이터 전달
+        // AI 분석 호출
         // =================================================================
         AiResponseDto aiResponseDto = aiSimulationService.getPolicyRecommendation(condition);
 
-        // 기본값 설정 (DB 저장을 위해 필요)
+        // 기본값 설정
         String content = "분석 결과 없음";
         String suitability = "N";
         String basis = "분석 근거 정보가 없습니다.";
 
-        // 결과가 정상적으로 왔다면 변수 업데이트
         if (aiResponseDto != null) {
             content = aiResponseDto.getContent();
             suitability = aiResponseDto.getSuitability();
             basis = aiResponseDto.getBasis();
         }
 
-        // 1. HTML에서 "result"로 접근할 수 있도록 DTO 객체 전체 전달 (필수!)
+        // 결과 전달
         model.addAttribute("result", aiResponseDto);
-
-        // 2. 기존 로직 호환성을 위해 개별 속성도 전달 (선택사항이나 안전하게 유지)
         model.addAttribute("aiResult", content);
         model.addAttribute("suitability", suitability);
         model.addAttribute("basis", basis);
 
-
-        // DB 저장 (RecordDto) - 기존 로직 유지
+        // DB 저장 (RecordDto)
         try {
             RecordDto newRecord = RecordDto.builder()
                     .memberIdx(memberIdx)
-                    .plcyNo(policyId)
+                    .plcyNo(policyId) // 위에서 확보한 policyId 사용
                     .province(condition.getRegionSi())
                     .city(condition.getRegionGu())
                     .birthDate(parseDate(condition.getBirthDate()))
@@ -134,7 +140,7 @@ public class SimulationController {
                     .child(condition.getChildCount())
                     .home("Y".equals(condition.getHouse()))
                     .prompt(condition.getUserPrompt())
-                    .content(content) // AI 분석 결과 저장
+                    .content(content)
                     .build();
 
             recordService.saveRecord(newRecord);
