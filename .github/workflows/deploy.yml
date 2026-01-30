@@ -77,8 +77,14 @@ jobs:
             sudo sync && echo 3 | sudo tee /proc/sys/vm/drop_caches
 
             # 5. 새 서버 실행
-            echo "Starting new application..."
-            nohup java -Duser.timezone=Asia/Seoul -Xms512m -Xmx512m -jar /home/${{ secrets.GCP_USERNAME }}/app/*.jar > /home/${{ secrets.GCP_USERNAME }}/nohup.out 2>&1 &
+            echo "Starting new application with memory limits and secrets..."
+            nohup java -Duser.timezone=Asia/Seoul \
+              -Xms512m -Xmx512m \
+              -Dspring.datasource.password=$DB_PASS \
+              -Dspring.security.oauth2.client.registration.google.client-secret=$GOOGLE_CLIENT_SECRET \
+              -Dspring.security.oauth2.client.registration.kakao.client-secret=$KAKAO_CLIENT_SECRET \
+              -Dspring.mail.password=$MAIL_PASSWORD \
+              -jar /home/${{ secrets.GCP_USERNAME }}/app/*.jar > /home/${{ secrets.GCP_USERNAME }}/nohup.out 2>&1 &
 
             # 6. 배포 확인 (15초 대기)
             sleep 15
