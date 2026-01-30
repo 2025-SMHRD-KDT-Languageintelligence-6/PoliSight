@@ -76,14 +76,14 @@ jobs:
             # 4. 메모리 정리 (프리 티어 서버 필수)
             sudo sync && echo 3 | sudo tee /proc/sys/vm/drop_caches
 
-            # 5. 새 서버 실행
-            echo "Starting new application with memory limits and secrets..."
+            # 5. 새 서버 실행 (메모리 설정은 유지하고, 비밀번호만 '추가'합니다)
+            echo "Starting application: Keeping memory limits and adding secrets..."
             nohup java -Duser.timezone=Asia/Seoul \
               -Xms512m -Xmx512m \
-              -Dspring.datasource.password=$DB_PASS \
-              -Dspring.security.oauth2.client.registration.google.client-secret=$GOOGLE_CLIENT_SECRET \
-              -Dspring.security.oauth2.client.registration.kakao.client-secret=$KAKAO_CLIENT_SECRET \
-              -Dspring.mail.password=$MAIL_PASSWORD \
+              -DDB_PASS=$DB_PASS \
+              -DGOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET \
+              -DKAKAO_CLIENT_SECRET=$KAKAO_CLIENT_SECRET \
+              -DMAIL_PASSWORD=$MAIL_PASSWORD \
               -jar /home/${{ secrets.GCP_USERNAME }}/app/*.jar > /home/${{ secrets.GCP_USERNAME }}/nohup.out 2>&1 &
 
             # 6. 배포 확인 (15초 대기)
