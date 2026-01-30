@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>PoliSight - 서비스 정책</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; }
+        .tab-content { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 flex flex-col min-h-screen">
+
+<th:block th:replace="~{HF :: header('legal')}"></th:block>
+
+<main class="flex-grow py-12 px-4">
+    <div class="max-w-4xl mx-auto">
+
+        <div class="text-center mb-10">
+            <h1 class="text-3xl font-bold text-slate-900">서비스 정책</h1>
+            <p class="text-slate-500 mt-2 text-sm">PoliSight의 이용약관 및 개인정보처리방침을 확인하세요.</p>
+        </div>
+
+        <div class="bg-white rounded-t-2xl border border-slate-200 border-b-0 flex overflow-hidden">
+            <button onclick="switchTab('terms')" id="tab-btn-terms"
+                    class="flex-1 py-4 text-sm font-bold text-center transition-colors border-b-2 border-blue-600 text-blue-600 bg-slate-50 hover:bg-slate-50">
+                이용약관
+            </button>
+            <button onclick="switchTab('privacy')" id="tab-btn-privacy"
+                    class="flex-1 py-4 text-sm font-medium text-center transition-colors border-b border-slate-200 text-slate-400 hover:text-slate-600 hover:bg-slate-50">
+                개인정보처리방침
+            </button>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-b-2xl shadow-sm p-8 md:p-12 min-h-[500px]">
+
+            <div id="content-terms" class="tab-content block">
+                <h2 class="text-2xl font-bold text-slate-900 mb-6 pb-4 border-b border-slate-100">PoliSight 서비스 이용약관</h2>
+                <div class="space-y-8 text-slate-700 leading-relaxed text-sm md:text-base">
+                    <section>
+                        <h3 class="font-bold text-slate-900 mb-2">제1조 (목적)</h3>
+                        <p>이 약관은 PoliSight(이하 “서비스”라 한다)가 제공하는 AI 기반 정책 정보 탐색 및 시뮬레이션 관련 제반 서비스를 이용함에 있어 “서비스”와 이용자의 권리·의무 및 책임사항을 규정함을 목적으로 합니다.</p>
+                    </section>
+                    <section>
+                        <h3 class="font-bold text-slate-900 mb-2">제2조 (정의)</h3>
+                        <ol class="list-decimal pl-5 space-y-1">
+                            <li>“서비스”란 단말기(PC, 휴대형단말기 등)와 상관없이 이용자가 정책 정보를 검색하고 AI 시뮬레이션을 이용할 수 있도록 PoliSight가 제공하는 가상의 공간 및 제반 서비스를 말합니다.</li>
+                            <li>“이용자”란 “서비스”에 접속하여 이 약관에 따라 “서비스”가 제공하는 기능을 이용하는 회원 및 비회원을 말합니다.</li>
+                            <li>“회원”이라 함은 “서비스”에 개인정보를 제공하여 회원등록을 한 자로서, 소셜 로그인(구글, 카카오 등) 또는 이메일 인증을 통해 가입하여 지속적으로 서비스를 이용할 수 있는 자를 말합니다.</li>
+                            <li>“비회원”이라 함은 회원에 가입하지 않고 “서비스”를 이용하는 자를 말합니다.</li>
+                            <li>“시뮬레이션 데이터”란 이용자가 정책 수급 자격 예측을 위해 입력하는 소득, 가구 정보, 거주지 등의 데이터를 의미합니다.</li>
+                        </ol>
+                    </section>
+                    <section>
+                        <h3 class="font-bold text-slate-900 mb-2">제3조 (약관의 게시와 개정)</h3>
+                        <ol class="list-decimal pl-5 space-y-1">
+                            <li>“서비스”는 이 약관의 내용을 이용자가 쉽게 알 수 있도록 초기 화면에 게시합니다.</li>
+                            <li>“서비스”는 「약관의 규제에 관한 법률」, 「개인정보 보호법」 등 관련 법을 위배하지 않는 범위에서 이 약관을 개정할 수 있습니다.</li>
+                            <li>“서비스”가 약관을 개정할 경우에는 적용일자 및 개정사유를 명시하여 현행약관과 함께 초기화면에 그 적용일자 7일 이전부터 공지합니다. 다만, 이용자에게 불리한 변경의 경우에는 30일 이상의 유예기간을 둡니다.</li>
+                        </ol>
+                    </section>
+                    <section>
+                        <h3 class="font-bold text-slate-900 mb-2">제4조 (서비스의 제공 및 변경)</h3>
+                        <p>① “서비스”는 다음과 같은 업무를 수행합니다.</p>
+                        <ul class="list-disc pl-5 mt-1 mb-2 space-y-1">
+                            <li>정책 정보 데이터베이스 검색 및 제공</li>
+                            <li>이용자 입력 데이터 기반 맞춤형 정책 추천</li>
+                            <li>AI(LLM/RAG) 기술을 활용한 수급 자격 시뮬레이션</li>
+                            <li>기타 “서비스”가 정하는 업무</li>
+                        </ul>
+                        <p>② (중요) 서비스의 한계: 본 “서비스”가 제공하는 시뮬레이션 결과와 챗봇의 답변은 참고용 정보이며, 법적 효력을 갖지 않습니다. 실제 정책 수급 여부는 해당 관공서의 심사를 통해 확정되므로, “서비스”는 결과의 정확성 및 최신성을 보장하지 않습니다.</p>
+                    </section>
+                    <section>
+                        <h3 class="font-bold text-slate-900 mb-2">제5조 (서비스의 중단)</h3>
+                        <ol class="list-decimal pl-5 space-y-1">
+                            <li>“서비스”는 시스템 보수점검, 교체, 고장, 통신두절 또는 AI 모델 제공사의 API 장애 등의 사유가 발생한 경우 서비스의 제공을 일시적으로 중단할 수 있습니다.</li>
+                            <li>“서비스”는 무료로 제공되는 서비스의 중단으로 인하여 이용자가 입은 손해에 대하여 고의 또는 중대한 과실이 없는 한 배상 책임을 지지 않습니다.</li>
+                        </ol>
+                    </section>
+                    <section>
+                        <h3 class="font-bold text-slate-900 mb-2">제6조 (회원가입)</h3>
+                        <p>① 이용자는 “서비스”가 정한 가입 양식에 따라 회원정보를 기입하거나 소셜 로그인(구글, 카카오) 연동을 통해 이 약관에 동의한다는 의사표시를 함으로서 회원가입을 신청합니다.</p>
+                        <p>② “서비스”는 다음 각 호에 해당하지 않는 한 회원으로 등록합니다.</p>
+                        <ul class="list-disc pl-5 mt-1 space-y-1">
+                            <li>가입 신청자가 이 약관에 의하여 이전에 회원자격을 상실한 적이 있는 경우</li>
+                            <li>등록 내용에 허위, 기재누락, 오기가 있는 경우</li>
+                            <li>사회의 안녕질서 또는 미풍양속을 저해할 목적으로 신청한 경우</li>
+                        </ul>
+                    </section>
+                    <section>
+                        <h3 class="font-bold text-slate-900 mb-2">제7조 (회원 탈퇴 및 자격 상실)</h3>
+                        <p>① 회원은 “서비스”에 언제든지 탈퇴를 요청할 수 있으며 “서비스”는 즉시 회원탈퇴를 처리합니다.</p>
+                        <p>② 회원이 다음 각 호의 사유에 해당하는 경우, “서비스”는 회원자격을 제한 및 정지시킬 수 있습니다.</p>
+                        <ul class="list-disc pl-5 mt-1 space-y-1">
+                            <li>가입 신청 시에 허위 내용을 등록한 경우</li>
+                            <li>다른 사람의 “서비스” 이용을 방해하거나 정보를 도용하는 경우</li>
+                            <li>“서비스”를 이용하여 법령 또는 이 약관이 금지하는 행위를 하는 경우</li>
+                        </ul>
+                    </section>
+                    <section>
+                        <h3 class="font-bold text-slate-900 mb-2">제8조 (회원에 대한 통지)</h3>
+                        <ol class="list-decimal pl-5 space-y-1">
+                            <li>“서비스”가 회원에 대한 통지를 하는 경우, 회원이 등록한 이메일 주소로 할 수 있습니다.</li>
+                            <li>불특정다수 회원에 대한 통지의 경우 1주일 이상 “서비스” 공지사항에 게시함으로써 개별 통지에 갈음할 수 있습니다.</li>
+                        </ol>
+                    </section>
+                    <section>
+                        <h3 class="font-bold text-slate-900 mb-2">제9조 (개인정보보호)</h3>
+                        <ol class="list-decimal pl-5 space-y-1">
+                            <li>“서비스”는 이용자의 개인정보를 보호하기 위해 노력하며, 개인정보의 보호 및 사용에 대해서는 관련 법령 및 “서비스”의 개인정보처리방침이 적용됩니다.</li>
+                            <li>다만, “서비스”의 공식 사이트 이외의 링크된 사이트에서는 “서비스”의 개인정보처리방침이 적용되지 않습니다.</li>
+                        </ol>
+                    </section>
+                    <section>
+                        <h3 class="font-bold text-slate-900 mb-2">제10조 (이용자의 의무)</h3>
+                        <p>이용자는 다음 행위를 하여서는 안 됩니다.</p>
+                        <ul class="list-disc pl-5 mt-1 space-y-1">
+                            <li>신청 또는 변경 시 허위 내용의 등록</li>
+                            <li>타인의 정보 도용</li>
+                            <li>“서비스”에 게시된 정보의 무단 변경 또는 해킹</li>
+                            <li>“서비스”의 운영을 방해하는 행위</li>
+                            <li>AI 시뮬레이션 결과를 영리 목적으로 재판매하는 행위</li>
+                        </ul>
+                    </section>
+                    <section>
+                        <h3 class="font-bold text-slate-900 mb-2">제11조 (저작권의 귀속)</h3>
+                        <ol class="list-decimal pl-5 space-y-1">
+                            <li>“서비스”가 작성한 저작물에 대한 저작권 기타 지적재산권은 “서비스”에 귀속합니다.</li>
+                            <li>이용자는 “서비스”를 이용함으로써 얻은 정보를 사전 승낙 없이 영리 목적으로 이용하거나 제3자에게 이용하게 하여서는 안 됩니다.</li>
+                        </ol>
+                    </section>
+                    <section>
+                        <h3 class="font-bold text-slate-900 mb-2">제12조 (면책조항)</h3>
+                        <ol class="list-decimal pl-5 space-y-1">
+                            <li>“서비스”는 천재지변 또는 이에 준하는 불가항력으로 인하여 서비스를 제공할 수 없는 경우에는 서비스 제공에 관한 책임이 면제됩니다.</li>
+                            <li>“서비스”는 이용자가 “서비스”로부터 얻은 정보(AI 예측 결과 등)를 신뢰하여 발생한 손해에 대하여 책임을 지지 않습니다. 모든 정책 신청 및 결정의 책임은 이용자 본인에게 있습니다.</li>
+                        </ol>
+                    </section>
+                    <section>
+                        <h3 class="font-bold text-slate-900 mb-2">제13조 (분쟁해결 및 준거법)</h3>
+                        <ol class="list-decimal pl-5 space-y-1">
+                            <li>“서비스”와 이용자 간에 발생한 분쟁에 대해서는 대한민국 법을 준거법으로 하며, 민사소송법상의 관할법원에 소를 제기합니다.</li>
+                        </ol>
+                    </section>
+                </div>
+            </div>
+
+            <div id="content-privacy" class="tab-content hidden">
+                <h2 class="text-2xl font-bold text-slate-900 mb-6 pb-4 border-b border-slate-100">개인정보처리방침</h2>
+                <div class="space-y-8 text-slate-700 leading-relaxed text-sm md:text-base">
+
+                    <div class="bg-slate-50 p-4 rounded-lg text-sm mb-6 border border-slate-100">
+                        PoliSight(이하 ‘서비스’라 함)는 개인정보보호법 제30조에 따라 이용자의 개인정보를 보호하고 이와 관련한 고충을 신속하고 원활하게 처리할 수 있도록 하기 위하여 다음과 같이 개인정보 처리방침을 수립·공개합니다.
+                    </div>
+
+                    <section>
+                        <h3 class="font-bold text-slate-900 mb-2">1. 개인정보의 처리 목적</h3>
+                        <p>‘서비스’는 다음의 목적을 위하여 개인정보를 처리합니다. 처리하고 있는 개인정보는 다음의 목적 이외의 용도로는 이용되지 않으며 이용 목적이 변경될 시에는 「개인정보 보호법」 제18조에 따라 별도의 동의를 받는 등 필요한 조치를 이행할 예정입니다.</p>
+                        <ul class="list-disc pl-5 mt-2 space-y-2">
+                            <li>
+                                <strong>가. 홈페이지 회원가입 및 관리</strong><br>
+                                회원 가입의사 확인, 회원제 서비스 제공에 따른 본인 식별·인증(소셜 로그인 포함), 회원자격 유지·관리, 서비스 부정이용 방지, 각종 고지·통지 등을 목적으로 개인정보를 처리합니다.
+                            </li>
+                            <li>
+                                <strong>나. 정책 정보 추천 및 시뮬레이션 서비스 제공</strong><br>
+                                이용자의 인구통계학적 특성 및 경제적 상황(소득, 자산 등)을 분석하여 맞춤형 정책 정보를 제공하고, AI 기반 수급 자격 시뮬레이션 결과를 산출하기 위해 개인정보를 처리합니다.
+                            </li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h3 class="font-bold text-slate-900 mb-2">2. 수집하는 개인정보의 항목 및 수집방법</h3>
+                        <p>‘서비스’는 서비스 제공을 위해 필요한 최소한의 범위 내에서 다음과 같은 개인정보를 수집하고 있습니다.</p>
+                        <div class="mt-3 space-y-4">
+                            <div>
+                                <h4 class="font-semibold text-slate-800">① 회원가입 및 로그인 시 (기본 정보)</h4>
+                                <ul class="list-disc pl-5 text-slate-600 mt-1">
+                                    <li><strong>수집항목:</strong> 이메일 주소, 비밀번호, 닉네임, (소셜 로그인 시) 소셜 식별자(Key), 프로필 이미지</li>
+                                    <li><strong>수집방법:</strong> 홈페이지 회원가입, 소셜 로그인 연동(Google, Kakao)</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-slate-800">② 정책 검색 및 시뮬레이션 이용 시 (상세 정보)</h4>
+                                <ul class="list-disc pl-5 text-slate-600 mt-1">
+                                    <li><strong>수집항목:</strong>
+                                        <ul class="list-circle pl-4 mt-1 space-y-1">
+                                            <li>인적사항: 성별, 생년월일, 거주지역(시/군/구), 최종학력, 고용상태, 결혼여부</li>
+                                            <li>가구정보: 가구원 수, 자녀 수(만 나이 포함)</li>
+                                            <li>경제정보: 주택 소유 여부, 본인 월 소득, 가구 월 소득</li>
+                                        </ul>
+                                    </li>
+                                    <li><strong>수집방법:</strong> 서비스 내 시뮬레이션 입력 폼 작성</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-slate-800">③ 서비스 이용 과정에서 자동 수집되는 항목</h4>
+                                <p class="pl-5 text-slate-600">IP 주소, 쿠키, 서비스 이용 기록, 방문 기록, 기기 정보</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h3 class="font-bold text-slate-900 mb-2">3. 개인정보의 처리 및 보유 기간</h3>
+                        <p>① ‘서비스’는 법령에 따른 개인정보 보유·이용기간 또는 정보주체로부터 개인정보를 수집 시에 동의 받은 개인정보 보유·이용기간 내에서 개인정보를 처리·보유합니다.</p>
+                        <p>② 각각의 개인정보 처리 및 보유 기간은 다음과 같습니다.</p>
+                        <ul class="list-disc pl-5 mt-2 space-y-2">
+                            <li>
+                                <strong>홈페이지 회원정보:</strong> 회원 탈퇴 시까지
+                                <br><span class="text-sm text-slate-500">(단, 관계 법령 위반에 따른 수사·조사 등이 진행 중인 경우에는 해당 수사·조사 종료 시까지)</span>
+                            </li>
+                            <li>
+                                <strong>시뮬레이션 입력 데이터:</strong> 회원 탈퇴 시까지
+                                <br><span class="text-sm text-slate-500">(단, 이용자가 저장하지 않고 단순 1회성으로 이용한 시뮬레이션 데이터는 결과 제공 후 즉시 파기되거나, 개인을 식별할 수 없는 통계적 형태로만 가공되어 서비스 개선에 활용될 수 있습니다.)</span>
+                            </li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h3 class="font-bold text-slate-900 mb-2">4. 개인정보의 제3자 제공</h3>
+                        <ol class="list-decimal pl-5 space-y-1">
+                            <li>‘서비스’는 정보주체의 동의, 법률의 특별한 규정 등 「개인정보 보호법」 제17조 및 제18조에 해당하는 경우에만 개인정보를 제3자에게 제공합니다.</li>
+                            <li>‘서비스’는 원칙적으로 이용자의 개인정보를 외부에 제공하지 않습니다. 단, 소셜 로그인을 이용하는 경우 해당 소셜 플랫폼(Google, Kakao)과 인증 정보를 송수신할 수 있습니다.</li>
+                        </ol>
+                    </section>
+
+                    <section>
+                        <h3 class="font-bold text-slate-900 mb-2">5. 개인정보 처리의 위탁</h3>
+                        <p>① ‘서비스’는 원활한 개인정보 업무처리를 위하여 다음과 같이 개인정보 처리업무를 위탁할 수 있습니다.</p>
+                        <ul class="list-disc pl-5 mt-1 space-y-1">
+                            <li><strong>서버 호스팅 및 DB 관리:</strong> Google Cloud</li>
+                            <li><strong>위탁 업무:</strong> 데이터 보관 및 시스템 운영</li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h3 class="font-bold text-slate-900 mb-2">6. 정보주체의 권리·의무 및 그 행사방법</h3>
+                        <ol class="list-decimal pl-5 space-y-1">
+                            <li>이용자는 ‘서비스’에 대해 언제든지 개인정보 열람·정정·삭제·처리정지 요구 등의 권리를 행사할 수 있습니다.</li>
+                            <li>권리 행사는 ‘서비스’의 [마이페이지 > 회원정보 수정] 메뉴를 통해 직접 가능하며, 서면, 전자우편 등을 통해서도 요청하실 수 있습니다.</li>
+                            <li>‘서비스’는 이용자의 요청이 있는 경우 지체 없이 조치하겠습니다.</li>
+                        </ol>
+                    </section>
+
+                    <section>
+                        <h3 class="font-bold text-slate-900 mb-2">7. 개인정보의 파기</h3>
+                        <p>① ‘서비스’는 개인정보 보유기간의 경과, 처리목적 달성 등 개인정보가 불필요하게 되었을 때에는 지체 없이 해당 개인정보를 파기합니다.</p>
+                        <p>② 파기절차 및 방법</p>
+                        <ul class="list-disc pl-5 mt-1 space-y-1">
+                            <li><strong>파기절차:</strong> 파기 사유가 발생한 개인정보를 선정하고, 개인정보 보호책임자의 승인을 받아 파기합니다.</li>
+                            <li><strong>파기방법:</strong> 전자적 파일 형태의 정보는 기록을 재생할 수 없는 기술적 방법을 사용합니다.</li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h3 class="font-bold text-slate-900 mb-2">8. 개인정보의 안전성 확보 조치</h3>
+                        <p>‘서비스’는 개인정보의 안전성 확보를 위해 다음과 같은 조치를 취하고 있습니다.</p>
+                        <ul class="list-disc pl-5 mt-1 space-y-1">
+                            <li><strong>비밀번호 암호화:</strong> 회원의 비밀번호는 일방향 암호화되어 저장 및 관리됩니다.</li>
+                            <li><strong>중요 데이터 보호:</strong> 소득 정보 등 민감할 수 있는 시뮬레이션 데이터는 보안 프로토콜(SSL)을 통해 안전하게 전송됩니다.</li>
+                            <li><strong>해킹 대비:</strong> 해킹이나 바이러스 등에 의한 개인정보 유출을 막기 위해 보안 프로그램을 설치하고 주기적으로 점검합니다.</li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h3 class="font-bold text-slate-900 mb-2">9. 개인정보 보호책임자</h3>
+                        <p>① ‘서비스’는 개인정보 처리에 관한 업무를 총괄해서 책임지고, 이용자의 고충 처리를 위하여 아래와 같이 개인정보 보호책임자를 지정하고 있습니다.</p>
+                        <div class="mt-2 bg-slate-50 p-4 rounded border border-slate-100">
+                            <h4 class="font-bold text-sm">개인정보 보호책임자</h4>
+                            <ul class="list-none text-sm mt-1 space-y-1">
+                                <li><strong>담당자:</strong> PoliSight 관리자</li>
+                                <li><strong>이메일:</strong> bsb0107p@gmail.com</li>
+                            </ul>
+                        </div>
+                        <p class="mt-2">② 이용자께서는 서비스를 이용하시면서 발생한 모든 개인정보 보호 관련 문의를 위 연락처로 문의하실 수 있습니다.</p>
+                    </section>
+
+                    <section>
+                        <h3 class="font-bold text-slate-900 mb-2">10. 개인정보 처리방침 변경</h3>
+                        <p>이 개인정보처리방침은 2026년 1월 30일부터 적용됩니다.</p>
+                    </section>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<th:block th:replace="~{HF :: footer}"></th:block>
+
+<script th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", function() {
+        // Thymeleaf 변수 처리를 더 안전하게 변경 (데이터가 없어도 에러나지 않음)
+        /*<![CDATA[*/
+        var activeTab = /*[[${activeTab}]]*/ 'terms';
+        /*]]>*/
+
+        // 만약 activeTab이 null이거나 비어있으면 기본값 'terms'
+        if (!activeTab) {
+            activeTab = 'terms';
+        }
+
+        switchTab(activeTab);
+    });
+
+    function switchTab(tabName) {
+        const termsBtn = document.getElementById('tab-btn-terms');
+        const privacyBtn = document.getElementById('tab-btn-privacy');
+        const termsContent = document.getElementById('content-terms');
+        const privacyContent = document.getElementById('content-privacy');
+
+        if (tabName === 'terms') {
+            // UI 변경
+            termsBtn.classList.add('border-b-2', 'border-blue-600', 'text-blue-600', 'bg-slate-50');
+            termsBtn.classList.remove('border-b', 'border-slate-200', 'text-slate-400', 'hover:text-slate-600');
+
+            privacyBtn.classList.remove('border-b-2', 'border-blue-600', 'text-blue-600', 'bg-slate-50');
+            privacyBtn.classList.add('border-b', 'border-slate-200', 'text-slate-400', 'hover:text-slate-600');
+
+            termsContent.classList.remove('hidden');
+            termsContent.classList.add('block');
+            privacyContent.classList.remove('block');
+            privacyContent.classList.add('hidden');
+
+            // 주소창 URL 업데이트
+            history.replaceState(null, '', '/terms');
+
+        } else {
+            // UI 변경
+            privacyBtn.classList.add('border-b-2', 'border-blue-600', 'text-blue-600', 'bg-slate-50');
+            privacyBtn.classList.remove('border-b', 'border-slate-200', 'text-slate-400', 'hover:text-slate-600');
+
+            termsBtn.classList.remove('border-b-2', 'border-blue-600', 'text-blue-600', 'bg-slate-50');
+            termsBtn.classList.add('border-b', 'border-slate-200', 'text-slate-400', 'hover:text-slate-600');
+
+            privacyContent.classList.remove('hidden');
+            privacyContent.classList.add('block');
+            termsContent.classList.remove('block');
+            termsContent.classList.add('hidden');
+
+            // 주소창 URL 업데이트
+            history.replaceState(null, '', '/privacy');
+        }
+    }
+</script>
+</body>
+</html>
