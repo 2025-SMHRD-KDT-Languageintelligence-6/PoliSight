@@ -28,7 +28,7 @@
         <result property="inqCnt" column="inqCnt"/>
 
         <result property="zipCd" column="zipCd"
-                typeHandler="com.simpol.polisight.handler.JsonListTypeHandler"
+                typeHandler="com.simpol.polisight.handler.StringListTypeHandler"
                 javaType="java.util.List"/>
         <result property="aplyPrdSeCd" column="aplyPrdSeCd"
                 typeHandler="com.simpol.polisight.handler.CodeEnumTypeHandler"
@@ -190,6 +190,14 @@
         zipCd
         FROM policy
         WHERE plcyNo = #{id}
+    </select>
+
+    <select id="selectRegionMapping" resultType="map">
+        SELECT
+        zipCd,
+        TRIM(CONCAT(IFNULL(province, ''), ' ', IFNULL(city, ''), ' ', IFNULL(district, ''))) AS regionName
+        FROM region
+        WHERE province IS NOT NULL OR city IS NOT NULL
     </select>
 
 </mapper>

@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface PolicyMapper {
@@ -14,4 +15,6 @@ public interface PolicyMapper {
 
     // 단일 조회 (ID가 DB에서 VARCHAR이므로 String으로 받음)
     PolicyDto selectPolicyById(@Param("id") String id);
+
+    List<Map<String, String>> selectRegionMapping();
 }

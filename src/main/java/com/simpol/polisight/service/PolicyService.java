@@ -11,6 +11,8 @@ import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -81,5 +83,15 @@ public class PolicyService {
 
     public PolicyDto getPolicyById(String id) {
         return policyMapper.selectPolicyById(id);
+    }
+
+    public Map<String, String> getRegionMapping() {
+        List<Map<String, String>> regions = policyMapper.selectRegionMapping();
+        return regions.stream()
+                .collect(Collectors.toMap(
+                        r -> String.valueOf(r.get("zipCd")),
+                        r -> String.valueOf(r.get("regionName")),
+                        (existing, replacement) -> existing
+                ));
     }
 }

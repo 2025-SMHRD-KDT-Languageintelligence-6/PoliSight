@@ -55,13 +55,23 @@ public class PolicyController {
         model.addAttribute("policyList", policies);
         model.addAttribute("condition", condition);
         model.addAttribute("favIds", favIds);
+        model.addAttribute("regionMapping", policyService.getRegionMapping());
 
         return "policy";
     }
     @GetMapping("/api/policy/{id}")
-    @ResponseBody // ✅ 데이터를 JSON 형태로 반환합니다.
+    @ResponseBody
     public PolicyDto getPolicyDetail(@PathVariable("id") String id) {
-        // 이미 만들어두신 mapper.selectPolicyById(id)를 호출하세요.
-        return policyService.getPolicyById(id);
+        PolicyDto dto = policyService.getPolicyById(id);
+
+        // ✅ 서버 콘솔(IntelliJ 등)에 출력하여 데이터가 자바까지는 오는지 확인
+        if (dto != null) {
+            System.out.println("====== [DEBUG] 정책 상세 조회 ======");
+            System.out.println("정책번호: " + dto.getPlcyNo());
+            System.out.println("거주지역 데이터(zipCd): " + dto.getZipCd()); // 여기서 [] 가 찍히면 Handler 문제!
+            System.out.println("==================================");
+        }
+
+        return dto;
     }
 }
