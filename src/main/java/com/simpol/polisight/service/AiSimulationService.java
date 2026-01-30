@@ -55,6 +55,8 @@ public class AiSimulationService {
         }
         requestData.put("conditions", conditionSentence);
 
+        // requestData 키-값 추가
+        requestData.put("userPrompt",userCustomPrompt);
         // ★ 핵심 수정: 'policyName'이 아니라 '정책명'이라는 키값을 직접 넣습니다.
         Map<String, String> policyInfo = new HashMap<>();
         policyInfo.put("정책명", pName);

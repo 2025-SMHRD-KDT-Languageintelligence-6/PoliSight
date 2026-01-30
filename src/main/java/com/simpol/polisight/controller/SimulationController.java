@@ -109,11 +109,13 @@ public class SimulationController {
         String content = "분석 결과 없음";
         String suitability = "N";
         String basis = "분석 근거 정보가 없습니다.";
+        String answer = "";
 
         if (aiResponseDto != null) {
             content = aiResponseDto.getContent();
             suitability = aiResponseDto.getSuitability();
             basis = aiResponseDto.getBasis();
+            answer = aiResponseDto.getAnswer();
         }
 
         // 결과 전달
@@ -121,6 +123,7 @@ public class SimulationController {
         model.addAttribute("aiResult", content);
         model.addAttribute("suitability", suitability);
         model.addAttribute("basis", basis);
+        model.addAttribute("answer", answer);
 
         // DB 저장 (RecordDto)
         try {

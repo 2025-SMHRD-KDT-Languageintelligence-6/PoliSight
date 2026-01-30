@@ -34,6 +34,9 @@ public class AiResponseDto {
     // 6. 근거 데이터
     @SerializedName("basis")
     private String basis;
+    // 7. 답변
+    @SerializedName("answer")
+    private String answer;
 
     // ==========================================
     // ★ 내부 클래스 1: 시나리오 구조 (Type, Title, Content)
