@@ -49,13 +49,13 @@
 
     /* 스크롤바 커스텀 */
     .custom-scroll::-webkit-scrollbar { width: 6px; }
-    .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+    .custom-scroll::-webkit-scrollbar-track { background: transparent; }
     .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
     /* 카드 선택 스타일 */
     .policy-card { position: relative; cursor: pointer; transition: all 0.2s; }
     .policy-card:hover { transform: translateY(-2px); }
-    /* 수정2 적용: ::after 가상 요소(체크표시) 제거됨 */
     .policy-card.selected { border-color: #2563EB; background-color: #f0f7ff; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1); }
 
     /* 인풋 공통 */
@@ -377,87 +377,150 @@
     </div>
 </div>
 
-<div id="policy-modal" class="fixed inset-0 z-[100] hidden overflow-y-auto" role="dialog" aria-modal="true">
-    <div class="flex min-h-screen items-center justify-center p-4 text-center sm:p-0">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeDetail()"></div>
+<div id="policy-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center" role="dialog" aria-modal="true">
 
-        <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl p-8">
-            <button onclick="closeDetail()" class="absolute right-6 top-6 text-gray-400 hover:text-gray-500">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeDetail()"></div>
+
+    <div class="relative bg-white w-full max-w-5xl h-[85vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col transform transition-all">
+
+        <div class="px-8 py-6 border-b border-slate-100 flex-shrink-0 bg-white z-10 flex justify-between items-start">
+            <div class="pr-10">
+                <h2 id="modal-title" class="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug break-keep">
+                    정책 제목
+                </h2>
+                <p id="modal-keywords" class="text-sm text-slate-500 font-medium mt-2">
+                    #키워드
+                </p>
+            </div>
+            <button onclick="closeDetail()" class="text-slate-400 hover:text-slate-700 transition p-2 rounded-full hover:bg-slate-100">
                 <i class="fa-solid fa-xmark text-2xl"></i>
             </button>
-
-            <div class="mb-6 border-b pb-4">
-                <span class="inline-block px-2 py-1 rounded bg-blue-50 text-blue-600 text-xs font-bold mb-2" id="modal-category">대분류 > 중분류</span>
-                <h2 class="text-3xl font-bold text-gray-900 mb-2" id="modal-title">정책 제목</h2>
-                <p class="text-blue-500 text-sm font-medium" id="modal-keywords">#키워드</p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="space-y-6">
-                    <div>
-                        <h4 class="flex items-center text-lg font-bold text-gray-800 mb-2"><i class="fa-solid fa-circle-info mr-2 text-blue-500"></i>정책 설명</h4>
-                        <div id="modal-desc-original" class="bg-gray-50 p-4 rounded-xl text-sm leading-relaxed text-gray-600 whitespace-pre-wrap"></div>
-                    </div>
-                    <div>
-                        <h4 class="flex items-center text-lg font-bold text-gray-800 mb-2"><i class="fa-solid fa-gift mr-2 text-pink-500"></i>지원 내용</h4>
-                        <div id="modal-support" class="bg-pink-50 p-4 rounded-xl text-sm text-gray-700 whitespace-pre-wrap"></div>
-                    </div>
-                    <div>
-                        <h4 class="flex items-center text-lg font-bold text-gray-800 mb-2"><i class="fa-solid fa-file-invoice mr-2 text-purple-500"></i>제출 서류</h4>
-                        <div id="modal-documents" class="bg-gray-50 p-4 rounded-xl text-sm text-gray-600 whitespace-pre-wrap"></div>
-                    </div>
-                </div>
-
-                <div class="space-y-6">
-                    <div class="bg-slate-50 p-5 rounded-xl space-y-4">
-                        <div class="flex justify-between border-b pb-2">
-                            <span class="text-gray-500 font-bold">지원 연령</span>
-                            <span id="modal-age" class="text-gray-900"></span>
-                        </div>
-                        <div class="flex justify-between border-b pb-2">
-                            <span class="text-gray-500 font-bold">결혼 상태</span>
-                            <span id="modal-marry" class="text-gray-900"></span>
-                        </div>
-                        <div class="flex justify-between border-b pb-2">
-                            <span class="text-gray-500 font-bold">소득 조건</span>
-                            <span id="modal-income" class="text-right text-gray-900"></span>
-                        </div>
-                        <p id="modal-earn-etc" class="text-xs text-gray-400 mt-1"></p>
-                    </div>
-
-                    <div class="bg-blue-50 p-5 rounded-xl space-y-2 text-sm">
-                        <p><strong>거주 지역:</strong> <span id="modal-zip"></span></p>
-                        <p><strong>학력 요건:</strong> <span id="modal-school"></span></p>
-                        <p><strong>전공 요건:</strong> <span id="modal-major"></span></p>
-                        <p><strong>취업 상태:</strong> <span id="modal-job"></span></p>
-                        <p><strong>특화 분야:</strong> <span id="modal-sbiz"></span></p>
-                    </div>
-
-                    <div class="space-y-2">
-                        <p class="text-sm"><strong>신청 기간:</strong> <span id="modal-apply-prd" class="text-blue-600 font-bold"></span></p>
-                        <p class="text-sm"><strong>사업 기간:</strong> <span id="modal-biz-prd" class="text-gray-600"></span></p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mt-8 border-t pt-4">
-                <p class="text-sm text-gray-500"><strong>기타 사항:</strong> <span id="modal-etc"></span></p>
-                <p class="text-xs text-gray-300 mt-2 text-right">조회수: <span id="modal-inq-cnt">0</span></p>
-            </div>
-
-            <div class="mt-8 flex flex-wrap gap-4">
-                <button onclick="toggleEasyMode()" class="flex-1 px-6 py-4 border-2 border-blue-500 text-blue-500 font-bold rounded-xl hover:bg-blue-50 transition">
-                    <i class="fa-solid fa-face-smile mr-2"></i>쉬운 말로 보기
-                </button>
-                <a id="modal-apply-url" target="_blank" class="flex-1 px-6 py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition text-center">
-                    <i class="fa-solid fa-paper-plane mr-2"></i>신청 홈페이지
-                </a>
-            </div>
-            <div class="mt-4 flex gap-4 text-xs">
-                <a id="modal-ref1-url" target="_blank" class="text-gray-400 hover:text-blue-500 underline">참고 사이트 1</a>
-                <a id="modal-ref2-url" target="_blank" class="text-gray-400 hover:text-blue-500 underline">참고 사이트 2</a>
-            </div>
         </div>
+
+        <div class="flex-grow overflow-y-auto custom-scroll p-6 md:p-8 bg-white">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+                <div class="lg:col-span-8 space-y-10">
+
+                    <section>
+                        <h4 class="flex items-center text-lg font-bold text-slate-800 mb-3">
+                            <span class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center mr-2 text-sm">
+                                <i class="fa-solid fa-circle-info"></i>
+                            </span>
+                            정책 설명
+                        </h4>
+                        <div id="modal-desc-original" class="bg-slate-50 p-6 rounded-2xl text-[15px] leading-relaxed text-slate-700 border border-slate-200 whitespace-pre-wrap"></div>
+                        <div id="modal-desc-easy" class="hidden bg-yellow-50 p-6 rounded-2xl text-[15px] leading-relaxed text-slate-700 border border-yellow-100">
+                            (쉬운 말) 아직 변환된 내용이 없습니다.
+                        </div>
+                    </section>
+
+                    <section>
+                        <h4 class="flex items-center text-lg font-bold text-slate-800 mb-3">
+                            <span class="w-8 h-8 rounded-lg bg-pink-100 text-pink-500 flex items-center justify-center mr-2 text-sm">
+                                <i class="fa-solid fa-gift"></i>
+                            </span>
+                            지원 내용
+                        </h4>
+                        <div id="modal-support" class="bg-slate-50 p-6 rounded-2xl text-[15px] leading-relaxed text-slate-700 border border-slate-200 whitespace-pre-wrap"></div>
+                    </section>
+
+                    <section>
+                        <h4 class="flex items-center text-lg font-bold text-slate-800 mb-3">
+                            <span class="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center mr-2 text-sm">
+                                <i class="fa-solid fa-file-invoice"></i>
+                            </span>
+                            신청 절차 및 서류
+                        </h4>
+                        <div id="modal-documents" class="bg-slate-50 p-6 rounded-2xl text-[15px] leading-relaxed text-slate-700 border border-slate-200 whitespace-pre-wrap"></div>
+                    </section>
+
+                    <section>
+                        <h4 class="flex items-center text-sm font-bold text-slate-500 mb-2">
+                            <i class="fa-solid fa-circle-exclamation mr-2"></i>기타 유의사항
+                        </h4>
+                        <p id="modal-etc" class="text-xs text-slate-400 leading-5"></p>
+                    </section>
+
+                </div> <div class="lg:col-span-4 space-y-5">
+
+                <div class="bg-blue-50/50 border border-blue-100 rounded-2xl p-5">
+                    <h5 class="text-blue-800 font-bold text-sm mb-4 flex items-center">
+                        <i class="fa-regular fa-calendar-check mr-2"></i>신청 및 사업 기간
+                    </h5>
+                    <div class="space-y-3">
+                        <div>
+                            <p class="text-xs text-slate-500 mb-1">신청 기간</p>
+                            <p id="modal-apply-prd" class="text-slate-800 font-bold text-sm"></p>
+                        </div>
+                        <div class="w-full h-px bg-blue-100"></div>
+                        <div>
+                            <p class="text-xs text-slate-500 mb-1">사업 운영 기간</p>
+                            <p id="modal-biz-prd" class="text-slate-800 font-medium text-sm"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                    <h5 class="text-slate-800 font-bold text-sm mb-4 flex items-center">
+                        <i class="fa-solid fa-user-check mr-2 text-slate-400"></i>신청 자격 요건
+                    </h5>
+
+                    <ul class="space-y-4 text-sm">
+                        <li class="flex justify-between items-start">
+                            <span class="text-slate-700 font-bold flex-shrink-0">나이</span>
+                            <span id="modal-age" class="font-medium text-slate-600 text-right"></span>
+                        </li>
+                        <li class="flex justify-between items-start">
+                            <span class="text-slate-700 font-bold flex-shrink-0">소득</span>
+                            <div class="text-right">
+                                <span id="modal-income" class="font-medium text-slate-600 block"></span>
+                                <span id="modal-earn-etc" class="text-[10px] text-slate-400 block mt-0.5"></span>
+                            </div>
+                        </li>
+                        <li class="flex justify-between items-start">
+                            <span class="text-slate-700 font-bold flex-shrink-0">거주지</span>
+                            <span id="modal-zip" class="font-medium text-slate-600 text-right"></span>
+                        </li>
+                        <li class="flex justify-between items-start">
+                            <span class="text-slate-700 font-bold flex-shrink-0">학력</span>
+                            <span id="modal-school" class="font-medium text-slate-600 text-right"></span>
+                        </li>
+                        <li class="flex justify-between items-start">
+                            <span class="text-slate-700 font-bold flex-shrink-0">전공</span>
+                            <span id="modal-major" class="font-medium text-slate-600 text-right"></span>
+                        </li>
+                        <li class="flex justify-between items-start">
+                            <span class="text-slate-700 font-bold flex-shrink-0">취업상태</span>
+                            <span id="modal-job" class="font-medium text-slate-600 text-right"></span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="pt-2">
+                    <a id="modal-ref1-url" href="#" target="_blank" class="block w-full text-center py-2 text-xs text-slate-900 hover:text-blue-600 hover:underline transition">
+                        <i class="fa-solid fa-link mr-1"></i> 참고 사이트 바로가기 1
+                    </a>
+                    <a id="modal-ref2-url" href="#" target="_blank" class="block w-full text-center py-1 text-xs text-slate-900 hover:text-blue-600 hover:underline transition">
+                        <i class="fa-solid fa-link mr-1"></i> 참고 사이트 바로가기 2
+                    </a>
+                </div>
+
+            </div> </div>
+        </div>
+
+        <div class="border-t border-slate-100 p-5 bg-white flex flex-col sm:flex-row gap-3 items-center justify-between flex-shrink-0 z-10">
+            <button id="btn-easy-toggle" onclick="toggleEasyMode()" class="w-full sm:w-auto px-5 py-3 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 hover:border-slate-300 transition flex items-center justify-center gap-2 text-sm">
+                <i class="fa-regular fa-face-smile"></i>
+                <span>쉬운 말로 보기</span>
+            </button>
+
+            <a id="modal-apply-url" href="#" target="_blank" class="w-full sm:flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-200 text-center flex items-center justify-center gap-2 text-sm">
+                <span>신청 홈페이지 바로가기</span>
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </a>
+        </div>
+
     </div>
 </div>
 
@@ -529,74 +592,31 @@
         const rawZipData = /*[[${regionMapping}]]*/ {} || {};
         const zipMap = Object.assign({ "NONE": "제한없음", "null": "제한없음" }, rawZipData);
 
-        // 1. 전공 요건 매핑 (보내주신 MajorType 기준)
         const majorMap = {
-            "HUMANITIES": "인문계열",
-            "SOCIAL": "사회계열",
-            "COMMERCE": "상경계열",
-            "SCIENCE": "이학계열",
-            "ENGINEERING": "공학계열",
-            "ARTS_SPORTS": "예체능계열",
-            "AGRICULTURE": "농산업계열",
-            "ETC": "기타",
-            "NONE": "제한없음"
+            "HUMANITIES": "인문계열", "SOCIAL": "사회계열", "COMMERCE": "상경계열",
+            "SCIENCE": "이학계열", "ENGINEERING": "공학계열", "ARTS_SPORTS": "예체능계열",
+            "AGRICULTURE": "농산업계열", "ETC": "기타", "NONE": "제한없음"
         };
-
-        // 2. 학력 요건 매핑
         const schoolMap = {
-            "UNDER_HIGH_SCHOOL": "고졸 미만",
-            "HIGH_SCHOOL_ATTENDING": "고교 재학",
-            "HIGH_SCHOOL_GRADUATING": "고졸 예정",
-            "HIGH_SCHOOL_GRADUATE": "고교 졸업",
-            "UNIV_ATTENDING": "대학 재학",
-            "UNIV_GRADUATING": "대졸 예정",
-            "UNIV_GRADUATE": "대학 졸업",
-            "MASTER_DOCTOR": "석·박사",
-            "ETC": "기타",
-            "NONE": "제한없음"
+            "UNDER_HIGH_SCHOOL": "고졸 미만", "HIGH_SCHOOL_ATTENDING": "고교 재학",
+            "HIGH_SCHOOL_GRADUATING": "고졸 예정", "HIGH_SCHOOL_GRADUATE": "고교 졸업",
+            "UNIV_ATTENDING": "대학 재학", "UNIV_GRADUATING": "대졸 예정",
+            "UNIV_GRADUATE": "대학 졸업", "MASTER_DOCTOR": "석·박사",
+            "ETC": "기타", "NONE": "제한없음"
         };
-
-        // 3. 취업 상태 매핑
         const jobMap = {
-            "WORKER": "재직자",
-            "SELF_EMPLOYED": "자영업자",
-            "UNEMPLOYED": "미취업자",
-            "FREELANCER": "프리랜서",
-            "DAILY_WORKER": "일용근로자",
-            "ENTREPRENEUR": "(예비)창업자",
-            "SHORT_TERM_WORKER": "단기근로자",
-            "FARMER": "영농종사자",
-            "ETC": "기타",
-            "NONE": "제한없음"
+            "WORKER": "재직자", "SELF_EMPLOYED": "자영업자", "UNEMPLOYED": "미취업자",
+            "FREELANCER": "프리랜서", "DAILY_WORKER": "일용근로자", "ENTREPRENEUR": "(예비)창업자",
+            "SHORT_TERM_WORKER": "단기근로자", "FARMER": "영농종사자", "ETC": "기타", "NONE": "제한없음"
         };
-
-        // 4. 특화 분야 매핑
         const sbizMap = {
-            "SME": "중소기업",
-            "FEMALE": "여성",
-            "LOW_INCOME": "기초생활수급자",
-            "SINGLE_PARENT": "한부모가정",
-            "DISABLED": "장애인",
-            "FARMER": "농업인",
-            "SOLDIER": "군인",
-            "LOCAL_TALENT": "지역인재",
-            "ETC": "기타",
-            "NONE": "제한없음"
+            "SME": "중소기업", "FEMALE": "여성", "LOW_INCOME": "기초생활수급자",
+            "SINGLE_PARENT": "한부모가정", "DISABLED": "장애인", "FARMER": "농업인",
+            "SOLDIER": "군인", "LOCAL_TALENT": "지역인재", "ETC": "기타", "NONE": "제한없음"
         };
+        const marriageMap = { "MARRIED": "기혼", "SINGLE": "미혼", "NONE": "제한없음" };
+        const incomeMap = { "IRRELEVANT": "무관", "ANNUAL_INCOME": "연소득", "ETC": "기타" };
 
-        const marriageMap = {
-            "MARRIED": "기혼",
-            "SINGLE": "미혼",
-            "NONE": "제한없음"
-        };
-
-        const incomeMap = {
-            "IRRELEVANT": "무관",
-            "ANNUAL_INCOME": "연소득",
-            "ETC": "기타"
-        };
-
-        // --- 행정구역 데이터 ---
         const areaData = {
             "서울특별시": ["종로구","중구","용산구","성동구","광진구","동대문구","중랑구","성북구","강북구","도봉구","노원구","은평구","서대문구","마포구","양천구","강서구","구로구","금천구","영등포구","동작구","관악구","서초구","강남구","송파구","강동구"],
             "부산광역시": ["중구","서구","동구","영도구","부산진구","동래구","남구","북구","해운대구","사하구","금정구","강서구","연제구","수영구","사상구","기장군"],
@@ -617,16 +637,9 @@
             "제주특별자치도": ["제주시","서귀포시"]
         };
 
-        // DB 저장을 위한 매핑
-        const eduCodeMap = {
-        "0049001": 1, "0049002": 2, "0049003": 3, "0049004": 4,
-        "0049005": 5, "0049006": 6, "0049007": 7, "0049008": 8
-    };
-        const empCodeMap = {
-            "UNEMPLOYED": 1, "EMPLOYED": 2, "SELF_EMPLOYED": 3, "FREELANCER": 4, "FOUNDER": 5
-        };
+        const eduCodeMap = { "0049001": 1, "0049002": 2, "0049003": 3, "0049004": 4, "0049005": 5, "0049006": 6, "0049007": 7, "0049008": 8 };
+        const empCodeMap = { "UNEMPLOYED": 1, "EMPLOYED": 2, "SELF_EMPLOYED": 3, "FREELANCER": 4, "FOUNDER": 5 };
 
-        // ✅ 선택된 정책 ID 저장용
         let selectedPolicyId = null;
 
         function updateRegionGu() {
@@ -637,8 +650,7 @@
             if (selectedSi && areaData[selectedSi]) {
                 areaData[selectedSi].forEach(gu => {
                     const option = document.createElement("option");
-                    option.value = gu;
-                    option.text = gu;
+                    option.value = gu; option.text = gu;
                     guSelect.appendChild(option);
                 });
             }
@@ -654,7 +666,6 @@
             document.querySelectorAll('input[type="text"], input[type="number"], input[type="date"]').forEach(el => el.value = '');
             document.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
             document.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(el => el.checked = false);
-
             document.getElementById('my_income_range').value = 0;
             document.getElementById('my_income_text').value = 0;
             document.getElementById('household_income_range').value = 0;
@@ -675,90 +686,80 @@
             });
         }
 
-        // ✅ [수정] 정책 카드 선택 (토글 기능 적용)
         function selectPolicy(card) {
             const clickedId = card.dataset.id;
-
-            // 이미 선택된 카드를 다시 클릭한 경우 -> 선택 해제
             if (selectedPolicyId === clickedId) {
                 card.classList.remove('selected');
                 selectedPolicyId = null;
                 document.getElementById('selected-title').innerText = '선택된 정책 없음';
-                document.getElementById('action-bar').classList.add('translate-y-full'); // 바 숨기기
-            }
-            // 새로운 카드를 선택한 경우
-            else {
+                document.getElementById('action-bar').classList.add('translate-y-full');
+            } else {
                 document.querySelectorAll('.policy-card').forEach(el => el.classList.remove('selected'));
                 card.classList.add('selected');
                 selectedPolicyId = clickedId;
                 const title = card.dataset.title || "선택된 정책";
                 document.getElementById('selected-title').innerText = title;
-                document.getElementById('action-bar').classList.remove('translate-y-full'); // 바 보이기
+                document.getElementById('action-bar').classList.remove('translate-y-full');
             }
         }
 
-        // ✅ [추가] 즐겨찾기 토글 기능
-        // ✅ [수정됨] 서버와 통신하는 진짜 즐겨찾기 기능
         function toggleFavorite(event, btn) {
-            event.stopPropagation(); // 카드 클릭 방지
-
-            // 1. 정책 ID 가져오기
+            event.stopPropagation();
             const card = btn.closest('.policy-card');
-            const plcyNo = card.dataset.id; // 위에서 th:data-id로 심어둔 plcyNo 값
+            const plcyNo = card.dataset.id;
             const icon = btn.querySelector('i');
 
-            if (!plcyNo) {
-                alert("정책 ID 오류");
-                return;
-            }
+            if (!plcyNo) { alert("정책 ID 오류"); return; }
 
-            // 2. 서버로 저장/삭제 요청 (AJAX)
             fetch(`/api/favorite/${plcyNo}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' }
             })
             .then(res => {
-                if (res.status === 401) {
-                    alert("로그인이 필요합니다.");
-                    return null;
-                }
+                if (res.status === 401) { alert("로그인이 필요합니다."); return null; }
                 return res.json();
             })
             .then(data => {
                 if (!data) return;
-
-                // 3. 서버 응답에 따라 별 모양 바꾸기
                 if (data.favorited) {
-                    // 찜 성공 -> 노란 별
                     btn.classList.add('active');
                     icon.className = 'fa-solid fa-star text-yellow-500';
-
-                    // -------------------------------------------------------
-                    // ✅ [추가된 기능] 카드를 즉시 목록 최상단으로 이동시키기
-                    // -------------------------------------------------------
-                    const container = card.parentElement; // 카드가 담긴 부모 컨테이너
+                    const container = card.parentElement;
                     container.prepend(card);
-
-                    // 모달 띄우기
                     const modal = document.getElementById('fav-modal');
                     if(modal) modal.classList.remove('hidden');
                 } else {
-                    // 찜 해제 -> 빈 별
                     btn.classList.remove('active');
                     icon.className = 'fa-regular fa-star';
                 }
             })
-            .catch(err => {
-                console.error(err);
-                alert("오류가 발생했습니다.");
+            .catch(err => { console.error(err); alert("오류가 발생했습니다."); });
+        }
+
+        function closeFavModal() { document.getElementById('fav-modal').classList.add('hidden'); }
+
+        function formatDateStr(str) {
+            if (!str) return str;
+            return str.replace(/(\d{4})(\d{2})(\d{2})/g, '$1-$2-$3');
+        }
+
+        // ✅ 텍스트 정리 함수: 불릿 포인트 통일 및 정리
+        function cleanAndFormatText(text) {
+            if (!text) return "";
+            const lines = text.split('\n');
+            const processed = lines.map(line => {
+                let trimmed = line.trim();
+                if (!trimmed) return "";
+                const isIndented = /^\s+([-ㅇ○□❍•·*]|\d+\.)/.test(line);
+                let cleanContent = trimmed.replace(/^([-ㅇ○□❍•·*]|\d+\.)\s*/, '').trim();
+                if (!cleanContent) return line;
+                if (isIndented) return `    - ${cleanContent}`;
+                if (/^([-ㅇ○□❍•·*]|\d+\.)/.test(trimmed)) return `• ${cleanContent}`;
+                return line;
             });
+            return processed.join('\n');
         }
 
-        function closeFavModal() {
-            document.getElementById('fav-modal').classList.add('hidden');
-        }
-
-        // ✅ 상세 모달
         let easyMode = false;
         function openDetail(e, btnOrCard) {
             if (e) e.stopPropagation();
@@ -770,83 +771,70 @@
                 .then(d => {
                     const set = (id, val) => {
                         const el = document.getElementById(id);
-                        if (el) {
-                            // 값이 null, undefined, 빈 문자열이 아니면 출력, 아니면 '정보 없음'
-                            el.innerText = (val !== null && val !== undefined && val !== '' && val !== 'null') ? val : '정보 없음';
-                        }
+                        if (el) el.innerText = (val && val !== 'null') ? val : '정보 없음';
                     };
-                    // 2. parseArr 함수 수정: 단일 코드(예: "46150")가 들어와도 처리되도록 수정
                     const parseArr = (data, mapObj) => {
-                        // 1. 데이터가 없거나 빈 배열인 경우
-                        if (!data || (Array.isArray(data) && data.length === 0) || data === 'null' || data === 'NONE') {
-                            return '제한 없음';
-                        }
-
-                        // 2. 정확하게 일치해야 하는 전국 코드 목록 (사용자 제공 241개)
+                        if (!data || (Array.isArray(data) && data.length === 0) || data === 'null' || data === 'NONE') return '제한 없음';
                         const nationwideList = ["11110","11140","11170","11200","11215","11230","11260","11290","11305","11320","11350","11380","11410","11440","11470","11500","11530","11545","11560","11590","11620","11650","11680","11710","11740","26110","26140","26170","26200","26230","26260","26290","26320","26350","26380","26410","26440","26470","26500","26530","26710","27110","27140","27170","27200","27230","27260","27290","27710","27720","28110","28140","28177","28185","28200","28237","28245","28260","28710","28720","29110","29140","29155","29170","29200","30110","30140","30170","30200","30230","31110","31140","31170","31200","31710","36110","41111","41113","41115","41117","41131","41133","41135","41150","41171","41173","41192","41194","41196","41210","41220","41250","41271","41273","41281","41285","41287","41290","41310","41360","41370","41390","41410","41430","41450","41461","41463","41465","41480","41500","41550","41570","41590","41610","41630","41650","41670","41800","41820","41830","43111","43112","43113","43114","43130","43150","43720","43730","43740","43745","43750","43760","43770","43800","44131","44133","44150","44180","44200","44210","44230","44250","44270","44710","44760","44770","44790","44800","44810","44825","46110","46130","46150","46170","46230","46710","46720","46730","46770","46780","46790","46800","46810","46820","46830","46840","46860","46870","46880","46890","46900","46910","47111","47113","47130","47150","47170","47190","47210","47230","47250","47280","47290","47730","47750","47760","47770","47820","47830","47840","47850","47900","47920","47930","47940","48121","48123","48125","48127","48129","48170","48220","48240","48250","48270","48310","48330","48720","48730","48740","48820","48840","48850","48860","48870","48880","48890","50110","50130","51110","51130","51150","51170","51190","51210","51230","51720","51730","51750","51760","51770","51780","51790","51800","51810","51820","51830","52111","52113","52130","52140","52180","52190","52210","52710","52720","52730","52740","52750","52770","52790","52800"];
-
                         try {
-                            // 3. 배열인 경우 체크
                             if (Array.isArray(data)) {
-                                // 개수가 정확히 241개일 때만 내용 전수 조사
                                 if (data.length === nationwideList.length) {
-                                    const isExactMatch = data.every(code => nationwideList.includes(String(code)));
-                                    if (isExactMatch) return "전국";
+                                    if (data.every(code => nationwideList.includes(String(code)))) return "전국";
                                 }
-
-                                return data.map(item => {
-                                    const key = String(item).trim();
-                                    return (mapObj && mapObj[key]) ? mapObj[key] : key;
-                                }).join(', ');
+                                return data.map(item => { const key = String(item).trim(); return (mapObj && mapObj[key]) ? mapObj[key] : key; }).join(', ');
                             }
-
-                            // 4. 문자열 파싱 시도 (JSON으로 올 경우)
                             let parsed = (typeof data === 'string' && data.startsWith('[')) ? JSON.parse(data) : data;
                             if (Array.isArray(parsed)) {
                                 if (parsed.length === nationwideList.length) {
-                                    const isExactMatch = parsed.every(code => nationwideList.includes(String(code)));
-                                    if (isExactMatch) return "전국";
+                                    if (parsed.every(code => nationwideList.includes(String(code)))) return "전국";
                                 }
                                 return parsed.map(item => (mapObj && mapObj[String(item).trim()]) ? mapObj[String(item).trim()] : item).join(', ');
                             }
-
                             return (mapObj && mapObj[data]) ? mapObj[data] : data;
-
-                        } catch(e) {
-                            return (mapObj && mapObj[data]) ? mapObj[data] : data;
-                        }
+                        } catch(e) { return (mapObj && mapObj[data]) ? mapObj[data] : data; }
                     };
 
-                    // 데이터 주입 시작
                     set('modal-title', d.plcyNm);
-                    set('modal-keywords', d.plcyKywdNm);
-                    set('modal-desc-original', d.plcyExplnCn);
-                    const categoryText = d.mclsfNm ? `${d.lclsfNm} > ${d.mclsfNm}` : (d.lclsfNm || '정보 없음');
-                    set('modal-category', categoryText);
-                    set('modal-support', d.plcySprtCn);
+
+                    let formattedKeywords = "";
+                    if (d.plcyKywdNm && d.plcyKywdNm !== 'null') {
+                        formattedKeywords = d.plcyKywdNm.split(',')
+                            .map(tag => tag.trim())
+                            .filter(tag => tag.length > 0)
+                            .map(tag => tag.startsWith('#') ? tag : '#' + tag)
+                            .join(' ');
+                    }
+                    if(document.getElementById('modal-keywords')) document.getElementById('modal-keywords').innerText = formattedKeywords;
+
+                    set('modal-desc-original', cleanAndFormatText(d.plcyExplnCn));
+                    set('modal-support', cleanAndFormatText(d.plcySprtCn));
                     set('modal-age', `만 ${d.sprtTrgtMinAge || 0}세 ~ ${d.sprtTrgtMaxAge || 99}세`);
-                    set('modal-marry', parseArr(d.mrgSttsCd, marriageMap));
                     const incomeText = (d.earnCndSeCd === 'IRRELEVANT')
                         ? '무관'
                         : `[${parseArr(d.earnCndSeCd, incomeMap)}] ${d.earnMinAmt || 0}만원 ~ ${(!d.earnMaxAmt || d.earnMaxAmt === 0) ? '무제한' : d.earnMaxAmt + '만원'}`;
                     set('modal-income', incomeText);
                     set('modal-earn-etc', d.earnEtcCn);
-                    set('modal-zip', parseArr(d.zipCd, zipMap));       // 1. 거주 지역
-                    set('modal-school', parseArr(d.schoolCd, schoolMap)); // 2. 학력 요건
-                    set('modal-major', parseArr(d.plcyMajorCd, majorMap)); // 3. 전공 요건
-                    set('modal-job', parseArr(d.jobCd, jobMap));          // 4. 취업 상태
-                    set('modal-sbiz', parseArr(d.sbizCd, sbizMap));      // 5. 특화 분야
-                    set('modal-apply-prd', d.aplyYmd);
+                    set('modal-zip', parseArr(d.zipCd, zipMap));
+                    set('modal-school', parseArr(d.schoolCd, schoolMap));
+                    set('modal-major', parseArr(d.plcyMajorCd, majorMap));
+                    set('modal-job', parseArr(d.jobCd, jobMap));
+                    set('modal-apply-prd', formatDateStr(d.aplyYmd));
                     const bizDates = (d.bizPrdBgngYmd && d.bizPrdEndYmd) ? `${d.bizPrdBgngYmd} ~ ${d.bizPrdEndYmd}` : '정보 없음';
                     set('modal-biz-prd', bizDates);
-                    set('modal-documents', d.sbmsnDcmntCn);
-                    set('modal-etc', d.etcMttrCn);
-                    set('modal-inq-cnt', d.inqCnt);
+                    set('modal-documents', cleanAndFormatText(d.sbmsnDcmntCn));
 
-                    // 링크 3종 처리
+                    let etcText = d.etcMttrCn;
+                    if (!etcText || etcText === 'null' || etcText.trim() === '') {
+                        etcText = "정책 내용은 정부 및 지자체의 사정에 따라 사전 예고 없이 변경되거나 종료될 수 있습니다.";
+                    }
+                    if(document.getElementById('modal-etc')) document.getElementById('modal-etc').innerText = etcText;
+
                     const setLink = (id, url) => {
                         const el = document.getElementById(id);
-                        if(el) { el.href = url || '#'; el.style.display = url ? 'inline-block' : 'none'; }
+                        if(el) {
+                            el.href = url || '#';
+                            el.style.display = (url && url !== 'null' && url.trim() !== '') ? 'flex' : 'none';
+                        }
                     };
                     setLink('modal-apply-url', d.aplyUrlAddr);
                     setLink('modal-ref1-url', d.refUrlAddr1);
@@ -858,24 +846,45 @@
                 });
         }
 
-        // ✅ 모달 닫기 함수
+        function openDetailById(plcyNo) {
+            fetch(`/api/policy/${plcyNo}`)
+                .then(res => res.json())
+                .then(d => {
+                    const set = (id, val) => {
+                        const el = document.getElementById(id);
+                        if (el) el.innerText = (val && val !== 'null') ? val : '정보 없음';
+                    };
+                    set('modal-title', d.plcyNm);
+
+                    let formattedKeywords = "";
+                    if (d.plcyKywdNm && d.plcyKywdNm !== 'null') {
+                        formattedKeywords = d.plcyKywdNm.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0).map(tag => tag.startsWith('#') ? tag : '#' + tag).join(' ');
+                    }
+                    if(document.getElementById('modal-keywords')) document.getElementById('modal-keywords').innerText = formattedKeywords;
+
+                    set('modal-desc-original', cleanAndFormatText(d.plcyExplnCn));
+                    set('modal-support', cleanAndFormatText(d.plcySprtCn));
+                    set('modal-age', `만 ${d.sprtTrgtMinAge || 0}세 ~ ${d.sprtTrgtMaxAge || 99}세`);
+                    set('modal-income', `${d.earnMinAmt || 0}만원 ~ ${(!d.earnMaxAmt || d.earnMaxAmt === 0) ? '무제한' : d.earnMaxAmt + '만원'}`);
+                    set('modal-apply-prd', formatDateStr(d.aplyYmd));
+                    set('modal-documents', cleanAndFormatText(d.sbmsnDcmntCn));
+                    set('modal-etc', d.etcMttrCn || "정책 내용은 정부 및 지자체의 사정에 따라 사전 예고 없이 변경되거나 종료될 수 있습니다.");
+
+                    const modal = document.getElementById('policy-modal');
+                    if (modal) {
+                        modal.classList.remove('hidden');
+                        setTimeout(() => modal.classList.add('opacity-100'), 10);
+                    }
+                })
+                .catch(err => console.error("메일 링크 데이터 로드 실패:", err));
+        }
+
         function closeDetail() {
             const modal = document.getElementById('policy-modal');
             if (modal) {
-                // 1. 투명도를 0으로 만들어 서서히 사라지게 함
                 modal.classList.remove('opacity-100');
-
-                // 2. 애니메이션이 끝난 뒤(약 200ms) 완전히 숨김 처리
-                setTimeout(() => {
-                    modal.classList.add('hidden');
-                }, 200);
+                setTimeout(() => { modal.classList.add('hidden'); }, 200);
             }
-        }
-
-        function closeModal() {
-            const modal = document.getElementById('policy-modal');
-            modal.classList.remove('opacity-100');
-            setTimeout(() => modal.classList.add('hidden'), 200);
         }
 
         function toggleEasyMode() {
@@ -885,7 +894,6 @@
             document.getElementById('btn-easy-toggle').querySelector('span').innerText = easyMode ? "원문 보기" : "쉬운 말로 보기";
         }
 
-        // ✅ (중요) 정책검색 조건 -> 시뮬레이션 페이지로 넘길 데이터 저장
         function saveSimDataFromPolicyPage() {
             const getRadioVal = (name) => document.querySelector(`input[name="${name}"]:checked`)?.value ?? "";
             const getSelectVal = (name) => document.querySelector(`select[name="${name}"]`)?.value ?? "";
@@ -895,36 +903,26 @@
                 gender: getRadioVal("gender"),
                 marry:  getRadioVal("marry"),
                 house:  getRadioVal("house"),
-
                 birthDate: getInputVal("birthDate"),
-                childCount: getInputVal("childCount"),   // ✅ 0도 문자열로 저장됨
+                childCount: getInputVal("childCount"),
                 familySize: getInputVal("familySize"),
-
                 regionSi: getSelectVal("regionSi"),
                 regionGu: getSelectVal("regionGu"),
-
                 educationLevel: getSelectVal("educationLevel"),
                 employmentStatus: getSelectVal("employmentStatus"),
-
                 income: getInputVal("income"),
                 householdIncome: getInputVal("householdIncome")
             };
-
             sessionStorage.setItem("simData", JSON.stringify(data));
         }
 
-        // ✅ 시뮬레이션 이동 (저장 후 이동)
         function goToSimulation() {
-            if (!selectedPolicyId) {
-                alert("정책을 먼저 선택해주세요.");
-                return;
-            }
+            if (!selectedPolicyId) { alert("정책을 먼저 선택해주세요."); return; }
             saveSimDataFromPolicyPage();
             window.location.href = `/simulation?policyId=${encodeURIComponent(selectedPolicyId)}`;
         }
 
         function resetConditions() { forceClearAllInputs(); }
-
         function openSaveModal() { document.getElementById('save-confirm-modal').classList.remove('hidden'); }
         function closeSaveModal() { document.getElementById('save-confirm-modal').classList.add('hidden'); }
         function closeSuccessModal() { document.getElementById('save-success-modal').classList.add('hidden'); }
@@ -936,50 +934,37 @@
             return `${s.substring(0,4)}-${s.substring(4,6)}-${s.substring(6,8)}`;
         }
 
-        // (기존 유지) 내 조건 불러오기
         function loadMemberConditions() {
             const btn = document.querySelector('button[onclick="loadMemberConditions()"]');
             const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 불러오는 중...';
 
             fetch('/api/my-info')
-                .then(response => {
-                    if (!response.ok) throw new Error("세션 만료");
-                    return response.json();
-                })
+                .then(response => { if (!response.ok) throw new Error("세션 만료"); return response.json(); })
                 .then(data => {
                     if(!data) { alert("저장된 회원 정보가 없습니다."); return; }
                     forceClearAllInputs();
-                    setTimeout(() => {
-                        populateForm(data);
-                    }, 50);
+                    setTimeout(() => { populateForm(data); }, 50);
                 })
                 .catch(error => { console.error(error); alert("정보 불러오기 실패"); })
                 .finally(() => btn.innerHTML = originalText);
         }
 
-        // DB 데이터를 폼에 채워넣는 함수
         function populateForm(data) {
             if (!data) return;
-
-            // 1. 시/군/구 (딜레이 없음)
             const si = data.regionSi || data.province;
             const gu = data.regionGu || data.city;
-
             if(si) {
                 document.getElementById('regionSi').value = si;
                 updateRegionGu();
                 if(gu) document.getElementById('regionGu').value = gu;
             }
-
             if(data.birthDate) document.getElementById('birthDate').value = String(data.birthDate).replace(/-/g, '');
-
             if(data.gender) {
                 const val = (data.gender === 'M' || data.gender === 'male') ? 'male' : 'female';
                 const radio = document.querySelector(`input[name="gender"][value="${val}"]`);
                 if(radio) radio.checked = true;
             }
-
             const eduCode = data.educationLevel || data.eduLevelCode;
             const idToCodeMap = { 1: '0049001', 2: '0049002', 3: '0049003', 4: '0049004', 5: '0049005', 6: '0049006', 7: '0049007', 8: '0049008' };
             const eduVal = (typeof eduCode === 'number') ? idToCodeMap[eduCode] : eduCode;
@@ -987,55 +972,35 @@
                 const el = document.getElementById('educationLevel');
                 if(el && el.querySelector(`option[value="${eduVal}"]`)) el.value = eduVal;
             }
-
             const empCode = data.employmentStatus || data.empStatusCode;
-            const jobMap = { 1: 'UNEMPLOYED', 2: 'EMPLOYED', 3: 'SELF_EMPLOYED', 4: 'STUDENT', 5: 'FOUNDER' };
-            const jobVal = (typeof empCode === 'number') ? jobMap[empCode] : empCode;
+            const jobMapLocal = { 1: 'UNEMPLOYED', 2: 'EMPLOYED', 3: 'SELF_EMPLOYED', 4: 'STUDENT', 5: 'FOUNDER' };
+            const jobVal = (typeof empCode === 'number') ? jobMapLocal[empCode] : empCode;
             if(jobVal) document.getElementById('employmentStatus').value = jobVal;
 
-            // [수정됨] 결혼 여부 (Y면 Y, N이면 N, 없으면 패스)
-            if (data.married === true || data.marry === 'Y') {
-                document.querySelector('input[name="marry"][value="Y"]').checked = true;
-            } else if (data.married === false || data.marry === 'N') {
-                document.querySelector('input[name="marry"][value="N"]').checked = true;
-            }
+            if (data.married === true || data.marry === 'Y') document.querySelector('input[name="marry"][value="Y"]').checked = true;
+            else if (data.married === false || data.marry === 'N') document.querySelector('input[name="marry"][value="N"]').checked = true;
 
             if(data.child != null) document.getElementById('childCount').value = data.child;
             if(data.familySize != null) document.getElementById('family-count').value = data.familySize;
 
-            // [수정됨] 주택 소유 (Y면 Y, N이면 N, 없으면 패스)
-            if (data.home === true || data.house === 'Y') {
-                document.querySelector('input[name="house"][value="Y"]').checked = true;
-            } else if (data.home === false || data.house === 'N') {
-                document.querySelector('input[name="house"][value="N"]').checked = true;
-            }
+            if (data.home === true || data.house === 'Y') document.querySelector('input[name="house"][value="Y"]').checked = true;
+            else if (data.home === false || data.house === 'N') document.querySelector('input[name="house"][value="N"]').checked = true;
 
             const pIncome = (data.personalIncome !== undefined) ? data.personalIncome : data.income;
-            if(pIncome != null) {
-                document.getElementById('my_income_text').value = pIncome;
-                document.getElementById('my_income_range').value = pIncome;
-            }
-
+            if(pIncome != null) { document.getElementById('my_income_text').value = pIncome; document.getElementById('my_income_range').value = pIncome; }
             const fIncome = (data.familyIncome !== undefined) ? data.familyIncome : data.householdIncome;
-            if(fIncome != null) {
-                document.getElementById('household_income_text').value = fIncome;
-                document.getElementById('household_income_range').value = fIncome;
-            }
+            if(fIncome != null) { document.getElementById('household_income_text').value = fIncome; document.getElementById('household_income_range').value = fIncome; }
         }
 
-        // URL 파라미터 복구
         function restoreSearchConditions() {
             const params = new URLSearchParams(window.location.search);
-
-            const textInputs = ['birthDate', 'childCount', 'familySize'];
-            textInputs.forEach(name => {
+            ['birthDate', 'childCount', 'familySize'].forEach(name => {
                 const val = params.get(name);
                 if (val !== null && val !== undefined && val !== "") {
                     const el = document.querySelector(`[name="${name}"]`);
                     if (el) el.value = val;
                 }
             });
-
             ['gender', 'marry', 'house'].forEach(name => {
                 const val = params.get(name);
                 if (val) {
@@ -1043,12 +1008,10 @@
                     if (radio) radio.checked = true;
                 }
             });
-
             ['educationLevel', 'employmentStatus'].forEach(name => {
                 const val = params.get(name);
                 if (val) document.querySelector(`select[name="${name}"]`).value = val;
             });
-
             const si = params.get('regionSi');
             if (si) {
                 document.getElementById('regionSi').value = si;
@@ -1056,19 +1019,16 @@
                 const gu = params.get('regionGu');
                 if (gu) document.getElementById('regionGu').value = gu;
             }
-
             const myIncome = params.get('income');
             if (myIncome !== null && myIncome !== undefined && myIncome !== "") {
                 document.getElementById('my_income_text').value = myIncome;
                 document.getElementById('my_income_range').value = myIncome;
             }
-
             const hhIncome = params.get('householdIncome');
             if (hhIncome !== null && hhIncome !== undefined && hhIncome !== "") {
                 document.getElementById('household_income_text').value = hhIncome;
                 document.getElementById('household_income_range').value = hhIncome;
             }
-
             const keyword = params.get('keyword');
             if (keyword) {
                 document.getElementById('visual-keyword').value = keyword;
@@ -1076,76 +1036,50 @@
             }
         }
 
-        // 저장 기능
         function performSaveConditions() {
             const genderVal = document.querySelector('input[name="gender"]:checked')?.value;
             const gender = (genderVal === 'male') ? 'M' : (genderVal === 'female' ? 'F' : null);
-
             const regionSi = document.getElementById('regionSi').value;
             const regionGu = document.getElementById('regionGu').value;
-
             const eduKey = document.getElementById('educationLevel').value;
             const empKey = document.getElementById('employmentStatus').value;
             const educationLevel = eduCodeMap[eduKey] ?? null;
             const employmentStatus = empCodeMap[empKey] ?? null;
-
             const marryVal = document.querySelector('input[name="marry"]:checked')?.value;
             const married = (marryVal === 'Y');
-
             const houseVal = document.querySelector('input[name="house"]:checked')?.value;
             const home = (houseVal === 'Y');
-
             const child = parseInt(document.getElementById('childCount').value) || 0;
             const familySize = parseInt(document.getElementById('family-count').value) || 1;
-
             const pIncomeMan = parseInt(document.getElementById('my_income_text').value) || 0;
             const fIncomeMan = parseInt(document.getElementById('household_income_text').value) || 0;
 
             const data = {
-                gender: gender,
-                birthDate: yyyymmddToDate(document.getElementById('birthDate').value),
-                regionSi: regionSi,
-                regionGu: regionGu,
-                educationLevel: educationLevel,
-                employmentStatus: employmentStatus,
-                married: married,
-                home: home,
-                child: child,
-                familySize: familySize,
-                personalIncome: pIncomeMan,
-                familyIncome: fIncomeMan
+                gender: gender, birthDate: yyyymmddToDate(document.getElementById('birthDate').value),
+                regionSi: regionSi, regionGu: regionGu, educationLevel: educationLevel,
+                employmentStatus: employmentStatus, married: married, home: home,
+                child: child, familySize: familySize, personalIncome: pIncomeMan, familyIncome: fIncomeMan
             };
 
             fetch('/updateConditions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data)
             })
             .then(res => res.text())
             .then(result => {
                 closeSaveModal();
-                if (result === 'success') {
-                    document.getElementById('save-success-modal').classList.remove('hidden');
-                } else {
-                    alert("저장 실패");
-                }
+                if (result === 'success') document.getElementById('save-success-modal').classList.remove('hidden');
+                else alert("저장 실패");
             })
-            .catch(err => {
-                console.error(err);
-                closeSaveModal();
-                alert("저장 실패");
-            });
+            .catch(err => { console.error(err); closeSaveModal(); alert("저장 실패"); });
         }
 
         document.addEventListener("DOMContentLoaded", function() {
             const siSelect = document.getElementById("regionSi");
             for (const si in areaData) {
                 const option = document.createElement("option");
-                option.value = si;
-                option.text = si;
+                option.value = si; option.text = si;
                 siSelect.appendChild(option);
             }
-
             syncInput('my_income_range', 'my_income_text');
             syncInput('household_income_range', 'household_income_text');
 
@@ -1164,53 +1098,17 @@
                         }
                     }, 20);
                 }
-            } else {
-                restoreSearchConditions();
-            }
+            } else { restoreSearchConditions(); }
         });
-        // ✅ 페이지가 켜지자마자 실행되는 '자동 실행기'
+
         document.addEventListener('DOMContentLoaded', function() {
-            // 1. 주소창에서 ?id= 뒤에 오는 값을 가져옵니다.
             const urlParams = new URLSearchParams(window.location.search);
             const policyId = urlParams.get('id');
-
-            // 2. 만약 ID가 있다면, 바로 모달을 띄우는 함수를 실행합니다.
             if (policyId) {
                 console.log("메일 링크를 통해 들어오셨군요! 정책 ID:", policyId);
                 openDetailById(policyId);
             }
         });
-
-        // ✅ 카드 클릭 없이 'ID만으로' 모달을 여는 전용 함수
-        function openDetailById(plcyNo) {
-            // 이미 만들어둔 API 주소로 데이터를 요청합니다.
-            fetch(`/api/policy/${plcyNo}`)
-                .then(res => res.json())
-                .then(d => {
-                    // 이전에 완성한 "모달에 데이터 꽂아넣기" 로직을 그대로 실행합니다.
-                    const set = (id, val) => {
-                        const el = document.getElementById(id);
-                        if (el) el.innerText = (val && val !== 'null') ? val : '정보 없음';
-                    };
-
-                    set('modal-title', d.plcyNm);
-                    set('modal-desc-original', d.plcyExplnCn);
-                    set('modal-support', d.plcySprtCn);
-                    set('modal-age', `만 ${d.sprtTrgtMinAge || 0}세 ~ ${d.sprtTrgtMaxAge || 99}세`);
-                    set('modal-income', `${d.earnMinAmt || 0}만원 ~ ${(!d.earnMaxAmt || d.earnMaxAmt === 0) ? '무제한' : d.earnMaxAmt + '만원'}`);
-                    set('modal-apply-prd', d.aplyYmd);
-                    set('modal-documents', d.sbmsnDcmntCn);
-                    set('modal-etc', d.etcMttrCn);
-
-                    // 모달 화면에 표시
-                    const modal = document.getElementById('policy-modal');
-                    if (modal) {
-                        modal.classList.remove('hidden');
-                        setTimeout(() => modal.classList.add('opacity-100'), 10);
-                    }
-                })
-                .catch(err => console.error("메일 링크 데이터 로드 실패:", err));
-        }
     /*]]>*/
 </script>
 
