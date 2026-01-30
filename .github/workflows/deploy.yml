@@ -38,6 +38,11 @@ jobs:
       # 4. 서버에서 실행 (강력한 종료 + 청소 + 재실행)
       - name: Deploy on Server
         uses: appleboy/ssh-action@master
+        env:
+          DB_PASS: ${{ secrets.DB_PASS }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
         with:
           host: ${{ secrets.GCP_HOST }}
           username: ${{ secrets.GCP_USERNAME }}
@@ -80,12 +85,11 @@ jobs:
             echo "Starting application: Keeping memory limits and adding secrets..."
             nohup java -Duser.timezone=Asia/Seoul \
               -Xms512m -Xmx512m \
-              -DDB_PASS=$DB_PASS \
-              -DGOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET \
-              -DKAKAO_CLIENT_SECRET=$KAKAO_CLIENT_SECRET \
-              -DMAIL_PASSWORD=$MAIL_PASSWORD \
+              -DDB_PASS="$DB_PASS" \
+              -DGOOGLE_CLIENT_SECRET="$GOOGLE_CLIENT_SECRET" \
+              -DKAKAO_CLIENT_SECRET="$KAKAO_CLIENT_SECRET" \
+              -DMAIL_PASSWORD="$MAIL_PASSWORD" \
               -jar /home/${{ secrets.GCP_USERNAME }}/app/*.jar > /home/${{ secrets.GCP_USERNAME }}/nohup.out 2>&1 &
-
             # 6. 배포 확인 (15초 대기)
             sleep 15
             if pgrep -f 'java -jar' > /dev/null
