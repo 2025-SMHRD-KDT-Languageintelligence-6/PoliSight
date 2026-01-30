@@ -176,6 +176,7 @@
                             </h3>
                             <div class="bg-slate-50 rounded-xl p-6 border border-slate-200 text-slate-700 leading-relaxed text-sm shadow-inner overflow-hidden">
                                 <div id="raw-ai-result" style="display:none;" th:text="${result.content}"></div>
+                                <div id="raw-ai-result-answer" style="display:none;" th:text="${result.answer}"></div>
                                 <div id="parsed-ai-result" class="prose prose-sm max-w-none">
                                     <div class="flex flex-col items-center justify-center py-10 text-slate-400"><i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><span>분석 중...</span></div>
                                 </div>
@@ -285,12 +286,23 @@
 </main>
 <footer th:replace="~{HF :: footer}"></footer>
 <div th:replace="~{chatbot :: chatbot}"></div>
-<script>
+<script th:inline="javascript">
     document.addEventListener("DOMContentLoaded", function() {
         const rawText = document.getElementById('raw-ai-result').textContent;
+        const answer = document.getElementById('raw-ai-result-answer').textContent;
+        let result = "";
         if(rawText && rawText.trim() !== "") {
-            document.getElementById('parsed-ai-result').innerHTML = marked.parse(rawText);
+
+            result += rawText;
         }
+        if(answer && answer.trim() !== "") {
+
+            result += "\n\n"+answer;
+        }
+
+        document.getElementById('parsed-ai-result').innerHTML = marked.parse(result);
+
+
         checkDescriptionOverflow();
     });
 
@@ -316,4 +328,3 @@
     }
 </script>
 </body>
-</html>
