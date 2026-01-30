@@ -54,7 +54,7 @@ public class SecurityConfig {
                                 "/mail/**", "/user/**",
                                 "/policy/**",       // /policy 관련 모든 하위 경로 허용
                                 "/simulation/**",   // ✅ /simulation/analyze 포함 모든 하위 경로 허용
-                                "/setup",
+                                "/setup", "/image/**",
                                 "/api/policy/**",
                                 // ▼▼▼ [여기만 추가됨] 비회원도 접근 가능해야 하는 약관 페이지 ▼▼▼
                                 "/terms", "/privacy", "/legal"
