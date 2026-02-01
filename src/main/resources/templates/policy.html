@@ -977,14 +977,24 @@
             const jobVal = (typeof empCode === 'number') ? jobMapLocal[empCode] : empCode;
             if(jobVal) document.getElementById('employmentStatus').value = jobVal;
 
-            if (data.married === true || data.marry === 'Y') document.querySelector('input[name="marry"][value="Y"]').checked = true;
-            else if (data.married === false || data.marry === 'N') document.querySelector('input[name="marry"][value="N"]').checked = true;
+            if (data.married === true || data.married === 'Y' || data.marry === 'Y') {
+                const el = document.querySelector('input[name="marry"][value="Y"]');
+                if(el) el.checked = true;
+            } else if (data.married === false || data.married === 'N' || data.marry === 'N') {
+                const el = document.querySelector('input[name="marry"][value="N"]');
+                if(el) el.checked = true;
+            }
 
             if(data.child != null) document.getElementById('childCount').value = data.child;
             if(data.familySize != null) document.getElementById('family-count').value = data.familySize;
 
-            if (data.home === true || data.house === 'Y') document.querySelector('input[name="house"][value="Y"]').checked = true;
-            else if (data.home === false || data.house === 'N') document.querySelector('input[name="house"][value="N"]').checked = true;
+            if (data.home === true || data.home === 'Y' || data.house === 'Y') {
+                const el = document.querySelector('input[name="house"][value="Y"]');
+                if(el) el.checked = true;
+            } else if (data.home === false || data.home === 'N' || data.house === 'N') {
+                const el = document.querySelector('input[name="house"][value="N"]');
+                if(el) el.checked = true;
+            }
 
             const pIncome = (data.personalIncome !== undefined) ? data.personalIncome : data.income;
             if(pIncome != null) { document.getElementById('my_income_text').value = pIncome; document.getElementById('my_income_range').value = pIncome; }
