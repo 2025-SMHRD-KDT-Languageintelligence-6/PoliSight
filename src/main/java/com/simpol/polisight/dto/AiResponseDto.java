@@ -21,41 +21,38 @@ public class AiResponseDto {
     @SerializedName("content")
     private String content;
 
-    // [변경 1] 미래 시뮬레이션 (기존 String -> List<Scenario> 객체로 변경)
-    // Python 프롬프트가 'scenarios' 라는 이름의 리스트를 줍니다.
+    // 4. 미래 시뮬레이션
     @SerializedName("scenarios")
     private List<Scenario> scenarios;
 
-    // [변경 2] 추천 정책 (기존 List<String> -> List<RecommendationItem> 객체로 변경)
-    // ★★★ 여기가 에러의 핵심 원인입니다! ★★★
+    // 5. 추천 정책
     @SerializedName("recommendations")
     private List<RecommendationItem> recommendations;
 
     // 6. 근거 데이터
     @SerializedName("basis")
     private String basis;
+
     // 7. 답변
     @SerializedName("answer")
     private String answer;
 
     // ==========================================
-    // ★ 내부 클래스 1: 시나리오 구조 (Type, Title, Content)
+    // 내부 클래스 1: 시나리오 구조
     // ==========================================
     @Data
     @NoArgsConstructor
     public static class Scenario {
         @SerializedName("type")
-        private String type;    // risk, benefit, solution, roadmap
-
+        private String type;
         @SerializedName("title")
-        private String title;   // 제목
-
+        private String title;
         @SerializedName("content")
-        private String content; // 내용
+        private String content;
     }
 
     // ==========================================
-    // ★ 내부 클래스 2: 추천 정책 구조 (Name, Reason)
+    // 내부 클래스 2: 추천 정책 구조
     // ==========================================
     @Data
     @NoArgsConstructor
@@ -65,5 +62,8 @@ public class AiResponseDto {
 
         @SerializedName("reason")
         private String reason;  // 추천 사유
+
+        // ▼ [추가] DB 조회 후 채워 넣을 정책 ID
+        private String id;
     }
 }

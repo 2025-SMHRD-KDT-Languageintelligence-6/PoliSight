@@ -66,7 +66,6 @@
         p.aplyUrlAddr, p.refUrlAddr1, p.refUrlAddr2,
         p.earnMinAmt, p.earnMaxAmt, p.inqCnt, p.zipCd FROM policy p
 
-        -- ✅ [핵심 추가] 즐겨찾기 테이블 조인 (로그인 유저 기준)
         LEFT JOIN favorite f
         ON p.plcyNo = f.plcyNo
         AND f.memberIdx = #{memberIdx}
@@ -146,14 +145,9 @@
         (CASE WHEN f.plcyNo IS NOT NULL THEN 1 ELSE 0 END) DESC,
 
         CASE
-        -- [그룹 3] 마감: 코드가 마감(003)이거나, 기간제인데 날짜가 지난 경우
         WHEN p.aplyPrdSeCd = '0057003' THEN 3
         WHEN p.aplyPrdSeCd = '0057001' AND STR_TO_DATE(SUBSTRING_INDEX(p.aplyYmd, '~', -1), '%Y%m%d') &lt; CURDATE() THEN 3
-
-        -- [그룹 2] 상시
         WHEN p.aplyPrdSeCd = '0057002' THEN 2
-
-        -- [그룹 1] D-Day
         ELSE 1
         END ASC,
 
@@ -161,35 +155,7 @@
     </select>
 
     <select id="selectPolicyById" resultMap="PolicyResultMap">
-        SELECT
-        plcyNo,
-        plcyNm,
-        plcyExplnCn,
-        lclsfNm,
-        bizPrdBgngYmd,
-        bizPrdEndYmd,
-        plcyKywdNm,
-        aplyPrdSeCd,
-        aplyYmd,
-        bizPrdSeCd,
-        mrgSttsCd,
-        earnCndSeCd,
-        plcyMajorCd,
-        jobCd,
-        schoolCd,
-        sbizCd,
-        plcySprtCn,
-        sprtTrgtMinAge,
-        sprtTrgtMaxAge,
-        earnEtcCn,
-        sbmsnDcmntCn,
-        etcMttrCn,
-        aplyUrlAddr,
-        refUrlAddr1,
-        refUrlAddr2,
-        zipCd
-        FROM policy
-        WHERE plcyNo = #{id}
+        SELECT * FROM policy WHERE plcyNo = #{id}
     </select>
 
     <select id="selectRegionMapping" resultType="map">
@@ -198,6 +164,14 @@
         TRIM(CONCAT(IFNULL(province, ''), ' ', IFNULL(city, ''), ' ', IFNULL(district, ''))) AS regionName
         FROM region
         WHERE province IS NOT NULL OR city IS NOT NULL
+    </select>
+
+    <select id="selectPolicyByName" resultMap="PolicyResultMap">
+        SELECT *
+        FROM policy
+        WHERE REPLACE(plcyNm, ' ', '') LIKE CONCAT('%', REPLACE(#{plcyNm}, ' ', ''), '%')
+        ORDER BY LENGTH(plcyNm) ASC
+        LIMIT 1
     </select>
 
 </mapper>
