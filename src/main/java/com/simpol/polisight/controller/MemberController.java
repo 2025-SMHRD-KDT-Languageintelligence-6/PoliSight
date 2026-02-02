@@ -27,10 +27,11 @@ public class MemberController {
     public String loginPage() { return "login"; }
 
     @PostMapping("/join")
-    public String joinProcess(MemberDto memberDto) {
+    @ResponseBody
+    public ResponseEntity<String> joinProcess(MemberDto memberDto) {
         memberService.join(memberDto);
         // [수정] ?signup=success 파라미터 추가 (이게 있어야 모달이 뜹니다)
-        return "redirect:/login?signup=success";
+        return ResponseEntity.ok("success");
     }
 
     @GetMapping("/logout")
