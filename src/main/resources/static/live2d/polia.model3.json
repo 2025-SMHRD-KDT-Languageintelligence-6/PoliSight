@@ -12,6 +12,13 @@
           "FadeInTime": 2.0,
           "FadeOutTime": 2.0
         }
+      ],
+      "Start": [
+        {
+          "File": "HelloMotion.json",
+          "FadeInTime": 0.5,
+          "FadeOutTime": 0.5
+        }
       ]
     }
   },

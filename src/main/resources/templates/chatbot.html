@@ -85,12 +85,15 @@
 
                 const live2dCanvas = document.getElementById('live2d-canvas');
                 const stage = document.getElementById('live2d-stage');
-                const loadingDiv = document.getElementById('live2d-loading'); // [추가] 로딩 엘리먼트 선택
+                const loadingDiv = document.getElementById('live2d-loading');
 
                 let app = null;
                 let model = null;
                 let initialized = false;
-                let isLoading = false; // [추가] 중복 로딩 방지 플래그
+                let isLoading = false;
+
+                // 마우스 추적 제어용 플래그
+                let isTrackingSuspended = false;
 
                 if (!toggleBtn || !chatWindow) return;
 
@@ -103,18 +106,27 @@
 
                         if (!initialized && !isLoading) {
                             isLoading = true;
-                            // [추가] 로딩 표시 시작
                             if(loadingDiv) loadingDiv.style.display = 'block';
 
                             await initLive2D();
 
-                            // [추가] 로딩 표시 종료 (initLive2D 완료 후)
                             if(loadingDiv) loadingDiv.style.display = 'none';
 
                             initialized = true;
                             isLoading = false;
+
+                            // 처음 로딩 시 0.2초 딜레이 후 HelloMotion 실행
+                            setTimeout(() => {
+                                playHelloMotion();
+                            }, 200);
+
                         } else if (initialized) {
                             setTimeout(() => resizeLive2D(), 50);
+
+                            // 다시 열 때마다 0.2초 딜레이 후 HelloMotion 실행
+                            setTimeout(() => {
+                                playHelloMotion();
+                            }, 200);
                         }
                     }
                 });
@@ -122,32 +134,27 @@
                 closeBtn?.addEventListener('click', () => {
                     chatWindow.classList.remove('visible');
                 });
-                // ▼▼▼▼▼ [수정된 부분] 실제 서버 통신 로직 적용 ▼▼▼▼▼
+
                 async function sendMessage() {
                     const text = input.value.trim();
                     if (!text) return;
 
-                    // 1. 내 메시지 화면 표시
                     addMessage(text, 'user-message');
                     input.value = '';
 
                     try {
-                        // 2. Java 서버(/api/chat)로 전송
                         const response = await fetch('/api/chat', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                             },
-                            body: JSON.stringify({ user_input: text }) // DTO 변수명 일치
+                            body: JSON.stringify({ user_input: text })
                         });
 
                         if (response.ok) {
                             const data = await response.json();
-
-                            // 3. 리아(Bot) 답변 표시
                             addMessage(data.answer, 'bot-message');
 
-                            // 4. 답변 시 캐릭터 모션 재생
                             if (model) {
                                 try { model.motion('Tap'); } catch(e){}
                             }
@@ -160,7 +167,6 @@
                         addMessage("오류가 발생했습니다.", 'bot-message');
                     }
                 }
-                // ▲▲▲▲▲ [수정 끝] ▲▲▲▲▲
 
                 sendBtn?.addEventListener('click', sendMessage);
                 input?.addEventListener('keypress', e => {
@@ -173,6 +179,32 @@
                     div.textContent = text;
                     messages.appendChild(div);
                     messages.scrollTop = messages.scrollHeight;
+                }
+
+                // HelloMotion 실행 및 3초간 마우스 추적 중단 함수
+                function playHelloMotion() {
+                    if (!model) return;
+                    try {
+                        // 1. 마우스 추적 기능 끄기
+                        isTrackingSuspended = true;
+
+                        // 2. 모션 시작 전 시선 정면 고정 (선택사항)
+                        if (model.internalModel && model.internalModel.focusController) {
+                            model.internalModel.focusController.focus(0, 0);
+                        }
+
+                        // 3. HelloMotion ('Start') 실행
+                        model.motion('Start', 0, 3);
+
+                        // 4. 3초 뒤에 마우스 추적 기능 다시 켜기
+                        setTimeout(() => {
+                            isTrackingSuspended = false;
+                        }, 3000);
+
+                    } catch (e) {
+                        console.warn(e);
+                        isTrackingSuspended = false;
+                    }
                 }
 
                 // ================= Live2D 로직 =================
@@ -195,7 +227,6 @@
 
                         const modelUrl = "/live2d/polia.model3.json";
 
-                        // [핵심] 여기서 시간이 걸리므로 위에서 로딩바를 띄웠음
                         model = await PIXI.live2d.Live2DModel.from(modelUrl);
 
                         app.stage.addChild(model);
@@ -203,16 +234,21 @@
                         fitModel();
 
                         model.interactive = true;
+
+                        // 자동 추적 끄기 (수동 제어 필수)
+                        model.autoInteract = false;
+
                         model.buttonMode = true;
                         model.on('pointertap', () => {
                             try { model.motion('Tap'); } catch(e) {}
                         });
 
-                        // -----------------------------------------------------------
-                        // [수정됨] 데드존 및 정면 응시 로직 개선
-                        // -----------------------------------------------------------
-                        stage.addEventListener('mousemove', (e) => {
+                        // [수정됨] stage 대신 window 전체에 이벤트를 걸어 멀리서도 추적되게 변경
+                        window.addEventListener('mousemove', (e) => {
                             if (!model) return;
+
+                            // 추적 중단 상태(3초간)이면 마우스 이벤트 무시
+                            if (isTrackingSuspended) return;
 
                             const rect = live2dCanvas.getBoundingClientRect();
                             const mouseX = e.clientX - rect.left;
@@ -241,7 +277,6 @@
 
                     } catch (err) {
                         console.error("Live2D Load Error:", err);
-                        // 에러 발생 시에도 로딩 문구를 숨기거나 에러 메시지를 띄우는 처리가 필요할 수 있음
                         if(loadingDiv) loadingDiv.textContent = "캐릭터 로딩 실패";
                     }
                 }
