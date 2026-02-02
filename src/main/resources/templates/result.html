@@ -93,10 +93,76 @@
                     <div class="pt-0">
                         <h4 class="text-xs font-bold text-slate-400 mb-3">기본 인적 사항</h4>
                         <ul class="space-y-2">
-                            <li class="flex justify-between text-sm"><span class="text-slate-500">성별</span> <span class="font-bold text-slate-800" th:text="${condition.gender == 'male' ? '남성' : '여성'}">남성</span></li>
-                            <li class="flex justify-between text-sm"><span class="text-slate-500">나이</span> <span class="font-bold text-blue-600" th:text="|${age}세|">26세</span></li>
-                            <li class="flex justify-between text-sm"><span class="text-slate-500">거주지</span> <span class="font-bold text-slate-800" th:text="|${condition.regionSi} ${condition.regionGu}|">지역</span></li>
+                            <li class="flex justify-between text-sm">
+                                <span class="text-slate-500">성별</span>
+                                <span class="font-bold text-slate-800" th:text="${condition.gender == 'male' ? '남성' : (condition.gender == 'female' ? '여성' : '정보없음')}">정보없음</span>
+                            </li>
+                            <li class="flex justify-between text-sm">
+                                <span class="text-slate-500">나이</span>
+                                <span class="font-bold text-blue-600" th:text="${age != null ? age + '세' : '정보없음'}">정보없음</span>
+                            </li>
+                            <li class="flex justify-between text-sm">
+                                <span class="text-slate-500">거주지</span>
+                                <span class="font-bold text-slate-800" th:text="${(condition.regionSi != null and condition.regionSi != '') ? (condition.regionSi + ' ' + (condition.regionGu != null ? condition.regionGu : '')) : '정보없음'}">정보없음</span>
+                            </li>
                         </ul>
+                    </div>
+                    <div class="pt-4">
+                        <h4 class="text-xs font-bold text-slate-400 mb-3">사회적 상태</h4>
+                        <ul class="space-y-2">
+                            <li class="flex justify-between text-sm">
+                                <span class="text-slate-500">학력</span>
+                                <span class="font-bold text-slate-800"
+                                      th:with="edu=${condition.educationLevel != null ? #strings.toString(condition.educationLevel) : ''}"
+                                      th:text="${edu == '' ? '정보없음' : (edu.contains('001') ? '중졸 이하' : (edu.contains('004') ? '고졸' : (edu.contains('007') ? '대졸' : '기타')))}">정보없음</span>
+                            </li>
+                            <li class="flex justify-between text-sm">
+                                <span class="text-slate-500">고용</span>
+                                <span class="font-bold text-blue-600"
+                                      th:with="emp=${condition.employmentStatus != null ? #strings.toString(condition.employmentStatus) : ''}"
+                                      th:text="${emp == '' ? '정보없음' : (emp.contains('UNEMPLOYED') ? '미취업' : (emp.contains('EMPLOYED') ? '재직중' : '기타'))}">정보없음</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="pt-4">
+                        <h4 class="text-xs font-bold text-slate-400 mb-3">가구 및 주거</h4>
+                        <ul class="space-y-2">
+                            <li class="flex justify-between text-sm">
+                                <span class="text-slate-500">결혼</span>
+                                <span class="font-bold text-slate-800" th:text="${condition.marry == 'Y' ? '기혼' : (condition.marry == 'N' ? '미혼' : '정보없음')}">정보없음</span>
+                            </li>
+                            <li class="flex justify-between text-sm">
+                                <span class="text-slate-500">가구원</span>
+                                <span class="font-bold text-slate-800" th:text="${condition.familySize != null ? condition.familySize + '명' : '정보없음'}">정보없음</span>
+                            </li>
+                            <li class="flex justify-between text-sm">
+                                <span class="text-slate-500">자녀</span>
+                                <span class="font-bold text-slate-800" th:text="${condition.childCount != null ? condition.childCount + '명' : '정보없음'}">정보없음</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="pt-4">
+                        <h4 class="text-xs font-bold text-slate-400 mb-3">경제 상황</h4>
+                        <ul class="space-y-2">
+                            <li class="flex justify-between text-sm">
+                                <span class="text-slate-500">본인소득</span>
+                                <span class="font-bold text-slate-800" th:text="${condition.income != null ? #numbers.formatInteger(condition.income, 0, 'COMMA') + ' 만원' : '정보없음'}">정보없음</span>
+                            </li>
+                            <li class="flex justify-between text-sm">
+                                <span class="text-slate-500">가구소득</span>
+                                <span class="font-bold text-slate-800" th:text="${condition.householdIncome != null ? #numbers.formatInteger(condition.householdIncome, 0, 'COMMA') + ' 만원' : '정보없음'}">정보없음</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="pt-6 mt-2 border-t border-slate-50">
+                        <h4 class="font-bold text-sm text-slate-800 mb-3 flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 bg-indigo-600 rounded-full"></span>
+                            AI 정밀 분석 요청사항
+                        </h4>
+                        <div class="bg-indigo-50/60 rounded-xl p-3 border border-indigo-100 min-h-[60px]">
+                            <p class="text-sm text-indigo-900 leading-relaxed font-medium max-h-24 overflow-y-auto custom-scroll break-keep"
+                               th:text="${(condition.userPrompt != null and condition.userPrompt != '') ? condition.userPrompt : '추가 요청사항 없음'}"></p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -106,7 +172,11 @@
             <div th:if="${result == null}" class="bg-red-50 border border-red-200 rounded-2xl p-10 text-center animate-fade-in">
                 <div class="text-red-500 text-6xl mb-4"><i class="fa-solid fa-triangle-exclamation"></i></div>
                 <h2 class="text-2xl font-bold text-slate-800 mb-2">분석 결과를 불러오지 못했습니다.</h2>
-                <button onclick="location.reload()" class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-xl font-bold transition shadow-lg shadow-red-200 mt-4">
+                <p class="text-slate-600 mb-6 leading-relaxed">
+                    AI 서버와의 통신 시간이 초과되었거나 일시적인 오류가 발생했습니다.<br>
+                    잠시 후 다시 시도해 주시기 바랍니다.
+                </p>
+                <button onclick="location.reload()" class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-xl font-bold transition shadow-lg shadow-red-200">
                     <i class="fa-solid fa-rotate-right mr-2"></i> 페이지 새로고침
                 </button>
             </div>
@@ -209,7 +279,6 @@
                                     class="flex flex-col p-3 bg-white rounded-lg border border-slate-100 hover:border-blue-200 hover:shadow-md transition group">
 
                                     <div class="flex justify-between items-center mb-1">
-
                                         <div class="flex items-center gap-2">
                                             <span class="text-blue-500 text-xs group-hover:scale-110 transition-transform">🔗</span>
                                             <strong class="text-slate-800 text-sm" th:text="${item.name}">정책 이름</strong>
@@ -221,6 +290,7 @@
                                             <i class="fa-solid fa-chevron-right text-[9px]"></i>
                                         </button>
                                     </div>
+
                                     <p class="text-xs text-slate-500 pl-6 leading-relaxed" th:text="${item.reason}">
                                         추천 사유 내용
                                     </p>
