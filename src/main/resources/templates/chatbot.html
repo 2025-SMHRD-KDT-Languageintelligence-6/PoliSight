@@ -9,6 +9,32 @@
         <script>window.PIXI = PIXI;</script>
         <script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.4.0/dist/cubism4.min.js"></script>
 
+        <style>
+            #live2d-loading {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                text-align: center;
+                color: #555;
+                font-size: 14px;
+                display: none; /* 기본은 숨김 */
+                z-index: 10;
+                width: 100%;
+            }
+            .loading-spinner {
+                display: inline-block;
+                width: 24px;
+                height: 24px;
+                border: 3px solid rgba(0, 0, 0, 0.1);
+                border-radius: 50%;
+                border-top-color: #333;
+                animation: spin 1s ease-in-out infinite;
+                margin-bottom: 8px;
+            }
+            @keyframes spin { to { transform: rotate(360deg); } }
+        </style>
+
         <div id="chatbot-container">
             <button id="chatbot-toggle-btn" aria-label="챗봇 열기">
                 <img class="chatbot-icon-img" th:src="@{/image/chatbot_icon.png}" alt="PoliSight 챗봇 아이콘">
@@ -18,6 +44,11 @@
 
                 <div id="live2d-stage">
                     <canvas id="live2d-canvas"></canvas>
+
+                    <div id="live2d-loading">
+                        <div class="loading-spinner"></div>
+                        <div>Lia가 준비중입니다...<br>잠시만 기다려주세요.</div>
+                    </div>
                 </div>
 
                 <div id="chatbot-right-panel">
@@ -54,10 +85,12 @@
 
                 const live2dCanvas = document.getElementById('live2d-canvas');
                 const stage = document.getElementById('live2d-stage');
+                const loadingDiv = document.getElementById('live2d-loading'); // [추가] 로딩 엘리먼트 선택
 
                 let app = null;
                 let model = null;
                 let initialized = false;
+                let isLoading = false; // [추가] 중복 로딩 방지 플래그
 
                 if (!toggleBtn || !chatWindow) return;
 
@@ -68,10 +101,19 @@
                     if (chatWindow.classList.contains('visible')) {
                         setTimeout(() => input?.focus(), 100);
 
-                        if (!initialized) {
-                            initialized = true;
+                        if (!initialized && !isLoading) {
+                            isLoading = true;
+                            // [추가] 로딩 표시 시작
+                            if(loadingDiv) loadingDiv.style.display = 'block';
+
                             await initLive2D();
-                        } else {
+
+                            // [추가] 로딩 표시 종료 (initLive2D 완료 후)
+                            if(loadingDiv) loadingDiv.style.display = 'none';
+
+                            initialized = true;
+                            isLoading = false;
+                        } else if (initialized) {
                             setTimeout(() => resizeLive2D(), 50);
                         }
                     }
@@ -127,7 +169,10 @@
                         });
 
                         const modelUrl = "/live2d/polia.model3.json";
+
+                        // [핵심] 여기서 시간이 걸리므로 위에서 로딩바를 띄웠음
                         model = await PIXI.live2d.Live2DModel.from(modelUrl);
+
                         app.stage.addChild(model);
 
                         fitModel();
@@ -148,36 +193,31 @@
                             const mouseX = e.clientX - rect.left;
                             const mouseY = e.clientY - rect.top;
 
-                            // 데드존의 중심점 (화면 중앙)
                             const centerX = rect.width / 2;
                             const centerY = rect.height / 2;
 
-                            // 거리 계산
                             const dist = Math.sqrt(
                                 Math.pow(mouseX - centerX, 2) +
                                 Math.pow(mouseY - centerY, 2)
                             );
 
-                            // 데드존 반경
                             const deadZoneRadius = 120;
 
                             if (dist < deadZoneRadius) {
-                                // [중요] 데드존 내부: 내부 컨트롤러에 (0,0)을 보내야 진짜 정면을 봅니다.
-                                // model.focus(centerX, centerY)는 화면 중앙(배꼽)을 보게 만듭니다.
                                 if (model.internalModel && model.internalModel.focusController) {
                                     model.internalModel.focusController.focus(0, 0);
                                 }
                             } else {
-                                // 데드존 외부: 마우스 좌표 응시
                                 model.focus(mouseX, mouseY);
                             }
                         });
-                        // -----------------------------------------------------------
 
                         window.addEventListener('resize', resizeLive2D);
 
                     } catch (err) {
                         console.error("Live2D Load Error:", err);
+                        // 에러 발생 시에도 로딩 문구를 숨기거나 에러 메시지를 띄우는 처리가 필요할 수 있음
+                        if(loadingDiv) loadingDiv.textContent = "캐릭터 로딩 실패";
                     }
                 }
 
