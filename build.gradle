@@ -25,6 +25,8 @@ repositories {
 }
 
 dependencies {
+    // Apache Commons Text
+    implementation 'org.apache.commons:commons-text:1.10.0'
 
     // 카카오 구글 로그인
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'

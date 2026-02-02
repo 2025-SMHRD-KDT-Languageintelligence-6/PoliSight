@@ -374,8 +374,8 @@
                               th:text="${policy.dDayText}">D-Day</span>
                     </div>
 
-                    <h4 class="font-bold text-slate-800 text-lg mb-1 break-keep" th:text="${policy.plcyNm}">정책명</h4>
-                    <p class="text-xs text-slate-500 line-clamp-2 break-keep" th:text="${policy.plcyExplnCn}">설명</p>
+                    <h4 class="font-bold text-slate-800 text-lg mb-1 break-keep" th:text="${policy.title}">정책명</h4>
+                    <p class="text-xs text-slate-500 line-clamp-2 break-keep" th:text="${policy.description}">설명</p>
 
                     <div class="mt-4 flex flex-wrap gap-2 text-[11px] text-slate-500 font-medium">
                         <th:block th:if="${policy.plcyKywdNm != null}">
@@ -806,9 +806,19 @@
             return str.replace(/(\d{4})(\d{2})(\d{2})/g, '$1-$2-$3');
         }
 
+        // [추가] HTML 특수문자(&quot; 등)를 원래 문자로 바꿔주는 함수
+        function decodeHtml(str) {
+            if (!str) return str;
+            const txt = document.createElement('textarea');
+            txt.innerHTML = str;
+            return txt.value;
+        }
+
         // ✅ 텍스트 정리 함수: 불릿 포인트 통일 및 정리
         function cleanAndFormatText(text) {
             if (!text) return "";
+
+            text = decodeHtml(text);
             const lines = text.split('\n');
             const processed = lines.map(line => {
                 let trimmed = line.trim();
@@ -857,7 +867,7 @@
                         } catch(e) { return (mapObj && mapObj[data]) ? mapObj[data] : data; }
                     };
 
-                    set('modal-title', d.plcyNm);
+                    set('modal-title', decodeHtml(d.plcyNm));
 
                     let formattedKeywords = "";
                     if (d.plcyKywdNm && d.plcyKywdNm !== 'null') {
@@ -890,7 +900,8 @@
                     if (!etcText || etcText === 'null' || etcText.trim() === '') {
                         etcText = "정책 내용은 정부 및 지자체의 사정에 따라 사전 예고 없이 변경되거나 종료될 수 있습니다.";
                     }
-                    if(document.getElementById('modal-etc')) document.getElementById('modal-etc').innerText = etcText;
+                    if(document.getElementById('modal-etc'))
+                        document.getElementById('modal-etc').innerText = decodeHtml(etcText);
 
                     const setLink = (id, url) => {
                         const el = document.getElementById(id);

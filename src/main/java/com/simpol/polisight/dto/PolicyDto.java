@@ -2,6 +2,8 @@ package com.simpol.polisight.dto;
 
 import com.simpol.polisight.type.*;
 import lombok.Data;
+import org.apache.commons.text.StringEscapeUtils; // ★ 1. 이 줄 추가!
+
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -62,8 +64,15 @@ public class PolicyDto {
     // ==========================================
 
     public String getId() { return plcyNo; }
-    public String getTitle() { return plcyNm; }
-    public String getDescription() { return plcyExplnCn; }
+    // ★ 2. 제목 변환 적용
+    public String getTitle() {
+        return StringEscapeUtils.unescapeHtml4(plcyNm);
+    }
+
+    // ★ 3. 내용 변환 적용 (plcyExplnCn)
+    public String getDescription() {
+        return StringEscapeUtils.unescapeHtml4(plcyExplnCn);
+    }
     public String getDepartment() { return lclsfNm; }
 
     public String getRequirement() {
@@ -75,7 +84,22 @@ public class PolicyDto {
         return "상세 요건 참조";
     }
 
-    public String getSupportContent() { return plcyExplnCn; }
+    // ★ 4. 지원내용 변환 적용 (plcyExplnCn 재활용 중이시라면)
+    public String getSupportContent() {
+        return StringEscapeUtils.unescapeHtml4(plcyExplnCn);
+    }
+
+    // ★ 5. (추천) 새로 추가하신 필드들도 깨끗하게 가져오려면 아래처럼 메서드를 추가하세요
+
+    // 지원내용 (plcySprtCn)용 Alias
+    public String getCleanSupportContent() {
+        return StringEscapeUtils.unescapeHtml4(plcySprtCn);
+    }
+
+    // 기타사항 (etcMttrCn)용 Alias
+    public String getCleanEtcContent() {
+        return StringEscapeUtils.unescapeHtml4(etcMttrCn);
+    }
 
     // ==========================================
     // 1. 색상/정렬을 위한 숫자 계산 (HTML의 classappend 등에서 사용)
