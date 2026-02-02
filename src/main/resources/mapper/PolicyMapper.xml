@@ -71,6 +71,14 @@
         AND f.memberIdx = #{memberIdx}
 
         <where>
+            <if test="hideExpired == true">
+                AND p.aplyPrdSeCd != '0057003'
+                AND (
+                p.aplyPrdSeCd != '0057001'
+                OR STR_TO_DATE(SUBSTRING_INDEX(p.aplyYmd, '~', -1), '%Y%m%d') >= CURDATE()
+                )
+            </if>
+
             <if test="keyword != null and keyword != ''">
                 AND (
                 p.plcyNm LIKE CONCAT('%', #{keyword}, '%')
@@ -142,13 +150,18 @@
         </where>
 
         ORDER BY
-        (CASE WHEN f.plcyNo IS NOT NULL THEN 1 ELSE 0 END) DESC,
+
+        <if test="sortOrder == 'favorite' or sortOrder == null">
+            (CASE WHEN f.plcyNo IS NOT NULL THEN 1 ELSE 0 END) DESC,
+        </if>
 
         CASE
-        WHEN p.aplyPrdSeCd = '0057003' THEN 3
-        WHEN p.aplyPrdSeCd = '0057001' AND STR_TO_DATE(SUBSTRING_INDEX(p.aplyYmd, '~', -1), '%Y%m%d') &lt; CURDATE() THEN 3
+        -- (1순위) 진행중인 기간제 (가장 급함)
+        WHEN p.aplyPrdSeCd = '0057001' AND STR_TO_DATE(SUBSTRING_INDEX(p.aplyYmd, '~', -1), '%Y%m%d') >= CURDATE() THEN 1
+        -- (2순위) 상시 운영
         WHEN p.aplyPrdSeCd = '0057002' THEN 2
-        ELSE 1
+        -- (3순위) 마감됨 / 기간 지남 (맨 아래)
+        ELSE 3
         END ASC,
 
         STR_TO_DATE(SUBSTRING_INDEX(p.aplyYmd, '~', -1), '%Y%m%d') ASC

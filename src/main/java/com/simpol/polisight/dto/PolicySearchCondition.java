@@ -45,4 +45,10 @@ public class PolicySearchCondition {
     private String policyTitle;
 
     private Long memberIdx;
+
+    // [추가] 마감 정책 숨김 여부 (체크박스 값)
+    private Boolean hideExpired;
+
+    // [추가] 정렬 기준 (마감임박순, 추천순 등)
+    private String sortOrder;
 }

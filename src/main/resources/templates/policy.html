@@ -300,11 +300,47 @@
             </button>
         </div>
 
-        <div class="flex justify-between items-center mb-3">
-            <h3 class="font-extrabold text-lg">정책 검색 결과
-                <span class="text-blue-600"
+        <div class="flex flex-wrap justify-between items-end gap-2 mb-3 pb-2 border-b border-slate-100">
+
+            <h3 class="font-extrabold text-lg flex items-center gap-2">
+                정책 검색 결과
+                <span class="text-blue-600 text-base"
                       th:text="${policyList != null ? #lists.size(policyList) + '건' : '0건'}">0건</span>
             </h3>
+
+            <div class="flex items-center gap-4">
+
+                <label class="flex items-center gap-1.5 cursor-pointer select-none group">
+                    <div class="relative">
+                        <input type="checkbox" id="hideExpired" name="hideExpired" value="true"
+                               form="filter-form"
+                               onchange="document.getElementById('filter-form').submit()"
+                               th:checked="${param.hideExpired != null and #strings.toString(param.hideExpired) == 'true'}"
+                               class="peer sr-only">
+
+                        <div class="w-8 h-4 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600 transition-colors"></div>
+                    </div>
+                    <span class="text-xs font-bold text-slate-500 group-hover:text-blue-600 transition">마감제외</span>
+                </label>
+
+                <div class="w-px h-3 bg-slate-300"></div>
+
+                <select id="sortOrder" name="sortOrder"
+                        form="filter-form"
+                        onchange="document.getElementById('filter-form').submit()"
+                        class="text-xs font-bold text-slate-700 bg-transparent border-none outline-none cursor-pointer p-0 pr-4 focus:ring-0 hover:text-blue-600 transition appearance-none bg-no-repeat bg-[right_center]"
+                        style="background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' stroke=\'%23334155\' viewBox=\'0 0 24 24\' stroke-width=\'3\'%3e%3cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' d=\'M19 9l-7 7-7-7\'/%3e%3c/svg%3e'); background-size: 10px;">
+
+                    <option value="favorite"
+                            th:selected="${param.sortOrder == null or #strings.toString(param.sortOrder) == 'favorite'}">
+                        ⭐ 즐겨찾기순
+                    </option>
+                    <option value="deadline"
+                            th:selected="${#strings.toString(param.sortOrder) == 'deadline'}">
+                        🔥 마감임박순
+                    </option>
+                </select>
+            </div>
         </div>
 
         <div class="space-y-3 custom-scroll md:overflow-y-auto md:pr-2 h-auto md:h-[850px] w-full min-w-0">
@@ -704,7 +740,7 @@
         }
 
         function toggleFavorite(event, btn) {
-            event.stopPropagation();
+            event.stopPropagation(); // 카드 클릭 이벤트 버블링 방지
             const card = btn.closest('.policy-card');
             const plcyNo = card.dataset.id;
             const icon = btn.querySelector('i');
@@ -716,21 +752,48 @@
                 headers: { 'Content-Type': 'application/json' }
             })
             .then(res => {
-                if (res.status === 401) { alert("로그인이 필요합니다."); return null; }
+                if (res.status === 401) {
+                    if(confirm("로그인이 필요한 서비스입니다. 로그인 하시겠습니까?")) {
+                        window.location.href = '/login'; // 로그인 페이지 경로에 맞게 수정
+                    }
+                    return null;
+                }
                 return res.json();
             })
             .then(data => {
                 if (!data) return;
+
+                const currentSort = document.getElementById('sortOrder').value; // 현재 정렬 모드 확인
+
                 if (data.favorited) {
+                    // [상태 1] 즐겨찾기 추가됨
                     btn.classList.add('active');
                     icon.className = 'fa-solid fa-star text-yellow-500';
-                    const container = card.parentElement;
-                    container.prepend(card);
+
+                    // 즐겨찾기 모드라면: 시각적으로 맨 위로 즉시 이동 (새로고침 없이)
+                    if (currentSort === 'favorite') {
+                        const container = card.parentElement;
+                        container.prepend(card); // 카드를 목록 맨 위로 올림
+
+                        // 스크롤을 살짝 조정해서 어색하지 않게 (선택사항)
+                        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+
+                    // 즐겨찾기 완료 모달 표시
                     const modal = document.getElementById('fav-modal');
                     if(modal) modal.classList.remove('hidden');
+
                 } else {
+                    // [상태 2] 즐겨찾기 해제됨
                     btn.classList.remove('active');
                     icon.className = 'fa-regular fa-star';
+
+                    // ★ 핵심 수정: 즐겨찾기 모드라면 -> 리스트를 다시 불러와야 원래 자리로 돌아감
+                    if (currentSort === 'favorite') {
+                        // 단순히 아래로 내리는 건 원래 위치를 찾기 어려우므로, 폼을 제출하여 재정렬
+                        document.getElementById('filter-form').submit();
+                        return;
+                    }
                 }
             })
             .catch(err => { console.error(err); alert("오류가 발생했습니다."); });
@@ -1004,6 +1067,8 @@
 
         function restoreSearchConditions() {
             const params = new URLSearchParams(window.location.search);
+
+            // [기존 1] 텍스트/숫자 입력 필드 복원
             ['birthDate', 'childCount', 'familySize'].forEach(name => {
                 const val = params.get(name);
                 if (val !== null && val !== undefined && val !== "") {
@@ -1011,6 +1076,8 @@
                     if (el) el.value = val;
                 }
             });
+
+            // [기존 2] 라디오 버튼 복원
             ['gender', 'marry', 'house'].forEach(name => {
                 const val = params.get(name);
                 if (val) {
@@ -1018,17 +1085,25 @@
                     if (radio) radio.checked = true;
                 }
             });
+
+            // [기존 3] 셀렉트 박스 복원
             ['educationLevel', 'employmentStatus'].forEach(name => {
                 const val = params.get(name);
-                if (val) document.querySelector(`select[name="${name}"]`).value = val;
+                // 요소가 존재하는지 확인 후 값 설정 (안전장치 추가)
+                const el = document.querySelector(`select[name="${name}"]`);
+                if (val && el) el.value = val;
             });
+
+            // [기존 4] 지역 정보 복원
             const si = params.get('regionSi');
             if (si) {
                 document.getElementById('regionSi').value = si;
-                updateRegionGu();
+                updateRegionGu(); // 구/군 목록 갱신
                 const gu = params.get('regionGu');
                 if (gu) document.getElementById('regionGu').value = gu;
             }
+
+            // [기존 5] 소득 정보 복원
             const myIncome = params.get('income');
             if (myIncome !== null && myIncome !== undefined && myIncome !== "") {
                 document.getElementById('my_income_text').value = myIncome;
@@ -1039,10 +1114,32 @@
                 document.getElementById('household_income_text').value = hhIncome;
                 document.getElementById('household_income_range').value = hhIncome;
             }
+
+            // [기존 6] 검색어 복원
             const keyword = params.get('keyword');
             if (keyword) {
                 document.getElementById('visual-keyword').value = keyword;
                 document.getElementById('hidden-keyword').value = keyword;
+            }
+
+            // ============================================================
+            // ▼ [여기부터 추가됨] 정렬(sortOrder) 및 마감숨김(hideExpired) 복원 ▼
+            // ============================================================
+
+            // 1. 정렬 기준 복원
+            const sortVal = params.get('sortOrder');
+            const sortEl = document.getElementById('sortOrder');
+            if (sortEl) {
+                // URL에 값이 있으면 그 값으로, 없으면 기본값 'favorite'
+                sortEl.value = sortVal || 'favorite';
+            }
+
+            // 2. 마감 숨기기 체크박스 복원
+            const hideExpiredVal = params.get('hideExpired');
+            const hideEl = document.getElementById('hideExpired');
+            if (hideEl) {
+                // URL 파라미터가 'true' 문자열일 때만 체크박스 체크
+                hideEl.checked = (hideExpiredVal === 'true');
             }
         }
 
