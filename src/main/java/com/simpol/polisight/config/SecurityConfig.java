@@ -4,6 +4,7 @@ import com.simpol.polisight.dto.MemberDto;
 import com.simpol.polisight.mapper.MemberMapper;
 import com.simpol.polisight.service.MemberService;
 import com.simpol.polisight.service.OAuth2UserCustomService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -93,21 +94,33 @@ public class SecurityConfig {
             String email = authentication.getName();
             MemberDto member = memberMapper.selectMemberByEmail(email);
 
-            // 1. 로그인 세션 처리 (기존 코드 유지)
             if (member != null) {
                 session.setAttribute("loginMember", member);
             }
 
-            // 2. [수정] 신규 유저 꼬리표 확인 (1단계에서 붙인 것)
             Boolean isNew = (Boolean) session.getAttribute("socialIsNew");
 
-            if (isNew != null && isNew) {
-                // ★ [신규 유저] -> 꼬리표 떼고, 로그인 페이지(모달)로 납치
-                session.removeAttribute("socialIsNew");
-                response.sendRedirect("/login?social_welcome=true");
+            // [중요] fetch(AJAX) 요청인지 확인하는 헤더
+            String xRequestedWith = request.getHeader("X-Requested-With");
+            boolean isAjax = "XMLHttpRequest".equals(xRequestedWith) ||
+                    request.getHeader("Accept").contains("application/json");
+
+            if (isAjax) {
+                // [정석] 비동기(fetch) 요청이면 리다이렉트 대신 JSON 응답을 보냅니다.
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.setContentType("application/json;charset=UTF-8");
+
+                String targetUrl = (isNew != null && isNew) ? "/login?social_welcome=true" : "/policy";
+                response.getWriter().print("{\"status\":\"success\", \"redirectUrl\":\"" + targetUrl + "\"}");
+                response.getWriter().flush();
             } else {
-                // ★ [기존 유저] -> 원래 가던 대로 정책 페이지로 이동 (기존 유지)
-                response.sendRedirect("/policy");
+                // 일반 로그인(OAuth2 등 브라우저 직접 이동)일 때는 기존처럼 리다이렉트
+                if (isNew != null && isNew) {
+                    session.removeAttribute("socialIsNew");
+                    response.sendRedirect("/login?social_welcome=true");
+                } else {
+                    response.sendRedirect("/policy");
+                }
             }
         };
     }
