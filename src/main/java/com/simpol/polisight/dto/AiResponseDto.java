@@ -33,7 +33,11 @@ public class AiResponseDto {
     @SerializedName("basis")
     private String basis;
 
-    // 7. 답변
+    // 7. 근거 데이터 리스트
+    @SerializedName("evidence")
+    private List<EvidenceItem> evidence;
+
+    // 8. 답변
     @SerializedName("answer")
     private String answer;
 
@@ -43,12 +47,9 @@ public class AiResponseDto {
     @Data
     @NoArgsConstructor
     public static class Scenario {
-        @SerializedName("type")
-        private String type;
-        @SerializedName("title")
-        private String title;
-        @SerializedName("content")
-        private String content;
+        @SerializedName("type") private String type;
+        @SerializedName("title") private String title;
+        @SerializedName("content") private String content;
     }
 
     // ==========================================
@@ -57,13 +58,29 @@ public class AiResponseDto {
     @Data
     @NoArgsConstructor
     public static class RecommendationItem {
-        @SerializedName("name")
-        private String name;    // 정책 이름
-
-        @SerializedName("reason")
-        private String reason;  // 추천 사유
-
-        // ▼ [추가] DB 조회 후 채워 넣을 정책 ID
+        @SerializedName("name") private String name;
+        @SerializedName("reason") private String reason;
+        // DB에서 조회한 정책 ID를 담을 필드 (JSON에는 없지만 Java에서 채워넣음)
         private String id;
+    } // <--- ★★★ 여기서 닫는 괄호(})가 반드시 있어야 합니다!!! ★★★
+
+    // ==========================================
+    // 내부 클래스 3: 근거 데이터 상세 구조 (EvidenceItem)
+    // ==========================================
+    @Data
+    @NoArgsConstructor
+    public static class EvidenceItem {
+        @SerializedName("type")
+        private String type;
+
+        @SerializedName("title")
+        private String title;
+
+        @SerializedName("content")
+        private String content;
+
+        @SerializedName("match_info")
+        private String matchInfo;
     }
+
 }

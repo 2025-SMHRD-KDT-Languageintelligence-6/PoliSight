@@ -54,6 +54,7 @@
 
     <div class="grid lg:grid-cols-12 gap-8">
         <aside class="lg:col-span-4 space-y-6">
+
             <div class="bg-white rounded-2xl border border-blue-100 shadow-lg shadow-blue-50/50 p-6 relative overflow-hidden animate-fade-in" th:if="${policy != null}">
                 <div class="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-4 -mt-4 z-0"></div>
                 <div class="relative z-10">
@@ -311,12 +312,37 @@
                         </div>
                         AI 분석 근거 데이터
                     </h3>
-                    <div class="bg-slate-50 rounded-xl p-5 border border-slate-200 text-slate-700 text-sm leading-relaxed shadow-inner">
-                        <i class="fa-solid fa-quote-left text-slate-300 mr-2 text-xl align-top"></i>
-                        <span th:text="${result.basis}">여기에 AI가 판단한 근거 정책과 규정이 표시됩니다.</span>
+
+                    <div class="space-y-3">
+                        <th:block th:if="${not #lists.isEmpty(result.evidence)}">
+                            <div th:each="item : ${result.evidence}"
+                                 class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+
+                                <div class="flex items-center gap-2 mb-2">
+                                    <th:block th:switch="${item.type}">
+                                        <span th:case="'법령'" class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold">⚖️ 법령</span>
+                                        <span th:case="'공고'" class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">📢 공고</span>
+                                        <span th:case="*" class="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs font-bold">📊 데이터</span>
+                                    </th:block>
+
+                                    <span th:text="${item.title}" class="font-bold text-slate-700 text-sm">문서 제목</span>
+                                </div>
+
+                                <div class="bg-slate-50 p-2 rounded text-xs text-slate-600">
+                                    <span class="text-blue-600 font-bold mr-1">✔ 적용 포인트:</span>
+                                    <span th:text="${item.matchInfo}">여기에 매칭 정보가 나옵니다.</span>
+                                </div>
+                            </div>
+                        </th:block>
+
+                        <th:block th:if="${#lists.isEmpty(result.evidence)}">
+                            <div class="bg-slate-50 rounded-xl p-5 border border-slate-200 text-slate-700 text-sm leading-relaxed shadow-inner">
+                                <i class="fa-solid fa-quote-left text-slate-300 mr-2 text-xl align-top"></i>
+                                <span th:text="${result.basis}">기존 텍스트 근거</span>
+                            </div>
+                        </th:block>
                     </div>
                 </div>
-            </th:block>
         </section>
     </div>
 </main>

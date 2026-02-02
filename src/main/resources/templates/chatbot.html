@@ -122,20 +122,45 @@
                 closeBtn?.addEventListener('click', () => {
                     chatWindow.classList.remove('visible');
                 });
-
-                function sendMessage() {
+                // ▼▼▼▼▼ [수정된 부분] 실제 서버 통신 로직 적용 ▼▼▼▼▼
+                async function sendMessage() {
                     const text = input.value.trim();
                     if (!text) return;
+
+                    // 1. 내 메시지 화면 표시
                     addMessage(text, 'user-message');
                     input.value = '';
 
-                    setTimeout(() => {
-                        addMessage("알겠습니다! 👍\n해당 정책 데이터를 분석 중입니다.", 'bot-message');
-                        if (model) {
-                            try { model.motion('Tap'); } catch(e){}
+                    try {
+                        // 2. Java 서버(/api/chat)로 전송
+                        const response = await fetch('/api/chat', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ user_input: text }) // DTO 변수명 일치
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+
+                            // 3. 리아(Bot) 답변 표시
+                            addMessage(data.answer, 'bot-message');
+
+                            // 4. 답변 시 캐릭터 모션 재생
+                            if (model) {
+                                try { model.motion('Tap'); } catch(e){}
+                            }
+                        } else {
+                            addMessage("죄송해요, 연결이 원활하지 않아요 😥", 'bot-message');
                         }
-                    }, 600);
+
+                    } catch (error) {
+                        console.error('Chat Error:', error);
+                        addMessage("오류가 발생했습니다.", 'bot-message');
+                    }
                 }
+                // ▲▲▲▲▲ [수정 끝] ▲▲▲▲▲
 
                 sendBtn?.addEventListener('click', sendMessage);
                 input?.addEventListener('keypress', e => {
