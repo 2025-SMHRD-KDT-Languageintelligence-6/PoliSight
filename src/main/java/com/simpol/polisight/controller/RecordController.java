@@ -1,6 +1,6 @@
 package com.simpol.polisight.controller;
 
-import com.simpol.polisight.dto.MemberDto; // MemberDto import 필요
+import com.simpol.polisight.dto.MemberDto;
 import com.simpol.polisight.dto.RecordDto;
 import com.simpol.polisight.service.RecordService;
 import jakarta.servlet.http.HttpSession;

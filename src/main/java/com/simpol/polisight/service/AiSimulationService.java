@@ -1,17 +1,19 @@
 package com.simpol.polisight.service;
 
 import com.google.gson.Gson;
-import com.simpol.polisight.dto.*; // DTO 일괄 import
+import com.simpol.polisight.dto.*;
 import com.simpol.polisight.dto.AiResponseDto.RecommendationItem;
 import com.simpol.polisight.mapper.PolicyMapper;
-import com.simpol.polisight.mapper.RecordMapper; // RecordMapper 추가
+import com.simpol.polisight.mapper.RecordMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional; // 트랜잭션 추가
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,7 +26,7 @@ import java.util.stream.Collectors;
 public class AiSimulationService {
 
     private final PolicyMapper policyMapper;
-    private final RecordMapper recordMapper; // DB 저장을 위해 필요
+    private final RecordMapper recordMapper;
 
     private static final String AI_SERVER_URL = "https://lanelle-bottlelike-everett.ngrok-free.dev/simulate";
 
@@ -36,13 +38,12 @@ public class AiSimulationService {
     private final Gson gson = new Gson();
 
     /**
-     * AI 분석 요청 및 결과 저장 (메인 메서드)
+     * AI 분석 요청 및 결과 저장
      */
-    @Transactional // DB 저장까지 한 번에 처리
+    @Transactional
     public AiResponseDto getPolicyRecommendation(PolicySearchCondition condition, MemberDto member, String plcyNo) {
         log.info("⚡ AI 분석 요청 시작: {}", condition);
 
-        // 1. AI 서버 통신 준비
         String conditionSentence = formatUserConditions(condition);
         String pName = (condition.getPolicyTitle() != null) ? condition.getPolicyTitle() : "정책 정보 없음";
 
@@ -72,7 +73,6 @@ public class AiSimulationService {
                     .post(body)
                     .build();
 
-            // 2. AI 서버 요청 및 응답 대기
             try (Response response = client.newCall(request).execute()) {
                 if (response.isSuccessful() && response.body() != null) {
                     String responseString = response.body().string();
@@ -80,9 +80,8 @@ public class AiSimulationService {
 
                     AiResponseDto result = gson.fromJson(responseString, AiResponseDto.class);
 
-                    // --- [데이터 보정 로직] ---
+                    // 데이터 보정 (테스트용)
                     if (result != null) {
-                        // evidence 보정 (테스트용)
                         if (result.getEvidence() == null || result.getEvidence().isEmpty()) {
                             List<AiResponseDto.EvidenceItem> fakeEvidence = new ArrayList<>();
                             AiResponseDto.EvidenceItem item1 = new AiResponseDto.EvidenceItem();
@@ -110,7 +109,7 @@ public class AiSimulationService {
                         }
                     }
 
-                    // 3. ★ 핵심 수정: 분석 결과를 JSON 문자열로 변환하여 DB에 저장
+                    // 3. DB 저장
                     if (member != null && plcyNo != null) {
                         saveSimulationResult(member, result, condition, plcyNo);
                     }
@@ -129,46 +128,86 @@ public class AiSimulationService {
     }
 
     /**
-     * AI 결과를 JSON 통째로 DB에 저장하는 헬퍼 메서드
+     * AI 결과를 JSON 통째로 DB에 저장
      */
     private void saveSimulationResult(MemberDto member, AiResponseDto aiResult, PolicySearchCondition condition, String plcyNo) {
         try {
-            // (1) AI 결과 전체를 JSON 문자열로 변환 (모든 시나리오, 추천, 근거 포함됨)
             String jsonContent = gson.toJson(aiResult);
 
-            // (2) RecordDto 생성
             RecordDto record = RecordDto.builder()
                     .memberIdx(member.getMemberIdx())
                     .plcyNo(plcyNo)
-                    // 인적 사항 매핑
                     .province(condition.getRegionSi())
                     .city(condition.getRegionGu())
-                    .gender(null) // condition에 gender 필드가 없다면 null 또는 추가 필요
+                    .gender(convertGender(condition.getGender()))
+                    .birthDate(parseDate(condition.getBirthDate()))
                     .personalIncome(condition.getIncome())
-                    // .birthDate(...) 등 필요한 필드 매핑
+                    .familyIncome(condition.getHouseholdIncome())
                     .familySize(condition.getFamilySize())
+                    // ★ 중요: 여기서 학력을 숫자로 변환해 저장함 (이 값이 HTML로 전달됨)
+                    .eduLevelCode(convertEducationToCode(condition.getEducationLevel()))
+                    .empStatusCode(convertEmploymentToCode(condition.getEmploymentStatus()))
+                    .married("Y".equals(condition.getMarry()))
                     .child(condition.getChildCount())
+                    .home("Y".equals(condition.getHouse()))
                     .prompt(condition.getUserPrompt())
-
-                    // ★ 여기가 핵심: 단순 텍스트가 아니라 JSON 전체를 저장
                     .content(jsonContent)
                     .build();
 
-            // (3) DB 저장
             recordMapper.insertRecord(record);
-            log.info("💾 시뮬레이션 기록 DB 저장 완료 (JSON 포맷)");
+            log.info("💾 시뮬레이션 기록 DB 저장 완료");
 
         } catch (Exception e) {
             log.error("💾 DB 저장 실패", e);
         }
     }
 
-    // --- 기존 헬퍼 메서드들 (유지) ---
+    // --- 변환 헬퍼 메서드 ---
+
+    private LocalDate parseDate(String dateStr) {
+        if (dateStr == null || dateStr.length() != 8) return null;
+        try {
+            return LocalDate.parse(dateStr, DateTimeFormatter.ofPattern("yyyyMMdd"));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private String convertGender(String gender) {
+        if ("male".equalsIgnoreCase(gender)) return "M";
+        if ("female".equalsIgnoreCase(gender)) return "F";
+        return null;
+    }
+
+    private Integer convertEducationToCode(List<String> eduList) {
+        if (eduList == null || eduList.isEmpty()) return null;
+        String code = eduList.get(0);
+        // DB 저장용 코드 (1~8)
+        if (code.endsWith("001")) return 1; // 중졸 이하
+        if (code.endsWith("002")) return 2; // 고교 재학
+        if (code.endsWith("003")) return 3; // 고졸 예정
+        if (code.endsWith("004")) return 4; // 고졸
+        if (code.endsWith("005")) return 5; // 대학 재학
+        if (code.endsWith("006")) return 6; // 대졸 예정
+        if (code.endsWith("007")) return 7; // 대졸
+        if (code.endsWith("008")) return 8; // 석/박사
+        return 0; // 기타
+    }
+
+    private Integer convertEmploymentToCode(List<String> empList) {
+        if (empList == null || empList.isEmpty()) return null;
+        String status = empList.get(0);
+        if ("UNEMPLOYED".equals(status)) return 1;
+        if ("EMPLOYED".equals(status)) return 2;
+        if ("SELF_EMPLOYED".equals(status)) return 3;
+        if ("FREELANCER".equals(status)) return 4;
+        if ("FOUNDER".equals(status)) return 5;
+        return 0;
+    }
+
     private String formatUserConditions(PolicySearchCondition c) {
-        // ... (기존 코드와 동일) ...
         String education = convertEducationToKorean(c.getEducationLevel());
         String employment = convertEmploymentToKorean(c.getEmploymentStatus());
-
         String incomeStr = (c.getIncome() != null) ? c.getIncome() + "만원" : "정보 없음";
         String majors = (c.getMajorTypes() != null && !c.getMajorTypes().isEmpty()) ?
                 c.getMajorTypes().stream().map(String::valueOf).collect(Collectors.joining(", ")) : "해당 없음";
@@ -211,11 +250,9 @@ public class AiSimulationService {
 
     private String safeString(String input) { return (input != null) ? input : ""; }
 
-    // 리아 채팅 기능 (기존 유지)
     public com.simpol.polisight.dto.ChatDto.Response chatWithRia(String userMessage) {
         String baseUrl = AI_SERVER_URL.replace("/simulate", "");
         String chatUrl = baseUrl + "/chat";
-        // ... (기존 채팅 로직 동일) ...
         try {
             java.util.Map<String, String> data = new java.util.HashMap<>();
             data.put("user_input", userMessage);
