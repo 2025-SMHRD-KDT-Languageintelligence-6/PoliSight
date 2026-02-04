@@ -3,7 +3,7 @@ package com.simpol.polisight.controller;
 import com.simpol.polisight.dto.*;
 import com.simpol.polisight.service.AiSimulationService;
 import com.simpol.polisight.service.PolicyService;
-import com.simpol.polisight.service.RecordService;
+// import com.simpol.polisight.service.RecordService; // 더 이상 여기서 직접 저장 안 함
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,10 +12,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-
 @Slf4j
 @Controller
 @RequiredArgsConstructor
@@ -23,7 +19,7 @@ public class SimulationController {
 
     private final PolicyService policyService;
     private final AiSimulationService aiSimulationService;
-    private final RecordService recordService;
+    // private final RecordService recordService; // 여기서 사용 안 함 (Service 내부로 이동됨)
 
     // 1. 시뮬레이션 입력 페이지 (기존 유지)
     @GetMapping("/simulation")
@@ -61,12 +57,18 @@ public class SimulationController {
             return "redirect:/simulation";
         }
 
-        // 로그인 체크
+        // =================================================================
+        // 1. 회원 정보 확보 (Service에 넘겨주기 위해 객체화)
+        // =================================================================
         Object loginMemberObj = session.getAttribute("loginMember");
-        Long memberIdx = 1L; // 기본값 (비회원 등)
+        MemberDto member;
+
         if (loginMemberObj != null) {
-            MemberDto loginMember = (MemberDto) loginMemberObj;
-            memberIdx = loginMember.getMemberIdx();
+            member = (MemberDto) loginMemberObj;
+        } else {
+            // 비회원일 경우, 임시 Member객체 생성 (DB 저장을 위해 memberIdx=1 등 기본값 필요)
+            member = new MemberDto();
+            member.setMemberIdx(1L); // 비회원 공용 ID (DB에 1번 회원이 존재해야 함)
         }
 
         PolicySearchCondition condition = (PolicySearchCondition) model.asMap().get("condition");
@@ -81,31 +83,29 @@ public class SimulationController {
         }
 
         // =================================================================
-        // ★ [핵심 수정] 정책 번호(ID) 확보 로직 강화
+        // 2. 정책 번호(ID) 확보
         // =================================================================
         String policyId = (String) model.asMap().get("policyId");
 
-        // 1. Model에 없으면 DTO(condition)에서 꺼내옵니다. (이게 있어야 DB 에러 방지!)
         if (policyId == null || policyId.isBlank()) {
             policyId = condition.getPlcyNo();
         }
 
-        // 2. 정책 정보 조회
         if (policyId != null && !policyId.isBlank()) {
             PolicyDto policy = policyService.getPolicyById(policyId);
             model.addAttribute("policy", policy);
             condition.setPolicyTitle(policy.getTitle());
         } else {
-            // ID가 끝까지 없으면 로그를 남겨 디버깅을 돕습니다.
-            log.warn("⚠️ 정책 ID(plcyNo)가 누락되었습니다. DB 저장 시 에러가 발생할 수 있습니다.");
+            log.warn("⚠️ 정책 ID(plcyNo)가 누락되었습니다.");
         }
 
         // =================================================================
-        // AI 분석 호출
+        // 3. AI 분석 호출 (파라미터 3개로 변경!)
+        // ★ Service 내부에서 DB 저장(JSON 통째로)까지 자동으로 수행함
         // =================================================================
-        AiResponseDto aiResponseDto = aiSimulationService.getPolicyRecommendation(condition);
+        AiResponseDto aiResponseDto = aiSimulationService.getPolicyRecommendation(condition, member, policyId);
 
-        // 기본값 설정
+        // 기본값 설정 (화면 표시용)
         String content = "분석 결과 없음";
         String suitability = "N";
         String basis = "분석 근거 정보가 없습니다.";
@@ -125,54 +125,9 @@ public class SimulationController {
         model.addAttribute("basis", basis);
         model.addAttribute("answer", answer);
 
-        // DB 저장 (RecordDto)
-        try {
-            RecordDto newRecord = RecordDto.builder()
-                    .memberIdx(memberIdx)
-                    .plcyNo(policyId) // 위에서 확보한 policyId 사용
-                    .province(condition.getRegionSi())
-                    .city(condition.getRegionGu())
-                    .birthDate(parseDate(condition.getBirthDate()))
-                    .gender(convertGender(condition.getGender()))
-                    .personalIncome(condition.getIncome())
-                    .familyIncome(condition.getHouseholdIncome())
-                    .familySize(condition.getFamilySize())
-                    .eduLevelCode(convertEducation(condition.getEducationLevel()))
-                    .empStatusCode(convertEmployment(condition.getEmploymentStatus()))
-                    .married("Y".equals(condition.getMarry()))
-                    .child(condition.getChildCount())
-                    .home("Y".equals(condition.getHouse()))
-                    .prompt(condition.getUserPrompt())
-                    .content(content)
-                    .build();
-
-            recordService.saveRecord(newRecord);
-        } catch (Exception e) {
-            log.error("Failed to save simulation record", e);
-        }
+        // ★ [삭제됨] Controller에서의 수동 DB 저장 로직 삭제
+        // AiSimulationService가 이미 저장했으므로 또 저장하면 중복됨.
 
         return "result";
-    }
-
-    // 유틸리티 메서드들 (기존 유지)
-    private LocalDate parseDate(String dateStr) {
-        if (dateStr == null || dateStr.length() != 8) return null;
-        try { return LocalDate.parse(dateStr, DateTimeFormatter.ofPattern("yyyyMMdd")); }
-        catch (Exception e) { return null; }
-    }
-    private String convertGender(String gender) { return "male".equalsIgnoreCase(gender) ? "M" : "female".equalsIgnoreCase(gender) ? "F" : null; }
-    private Integer convertEducation(List<String> eduList) {
-        if (eduList == null || eduList.isEmpty()) return null;
-        String code = eduList.get(0);
-        if (code.endsWith("001")) return 1; if (code.endsWith("002")) return 2; if (code.endsWith("003")) return 3;
-        if (code.endsWith("004")) return 4; if (code.endsWith("005")) return 5; if (code.endsWith("006")) return 6;
-        if (code.endsWith("007")) return 7; if (code.endsWith("008")) return 8; return 0;
-    }
-    private Integer convertEmployment(List<String> empList) {
-        if (empList == null || empList.isEmpty()) return null;
-        String status = empList.get(0);
-        if ("UNEMPLOYED".equals(status)) return 1; if ("EMPLOYED".equals(status)) return 2;
-        if ("SELF_EMPLOYED".equals(status)) return 3; if ("FREELANCER".equals(status)) return 4;
-        if ("FOUNDER".equals(status)) return 5; return 0;
     }
 }

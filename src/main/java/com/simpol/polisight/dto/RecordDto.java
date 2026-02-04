@@ -41,7 +41,7 @@ public class RecordDto {
 
     // 내용
     private String prompt;       // 사용자 프롬프트
-    private String content;      // AI 결과 내용
+    private String content;      // AI 결과 내용 (JSON 전체)
     private LocalDateTime createdAt; // 생성일시
 
     // ==========================================
@@ -53,8 +53,12 @@ public class RecordDto {
     // ==========================================
     // 3. 화면 표시용 가공 데이터
     // ==========================================
-    private int resultScore;     // 결과 점수 (임시 98점 등)
+    private int resultScore;     // 결과 점수
     private String regionText;   // "서울 강남구"
     private int userAge;         // 만 나이
     private String jobName;      // 직업 한글명 (코드 변환)
+
+    // ★ [추가] 적합 여부 (Y/N)
+    // DB에는 없지만 Service에서 JSON을 파싱해서 채워넣는 필드입니다.
+    private String suitability;
 }

@@ -22,8 +22,9 @@
     <select id="selectRecords" resultType="com.simpol.polisight.dto.RecordDto">
         SELECT
         s.simIdx, s.memberIdx, s.plcyNo,
-        s.province, s.city, s.birthDate,
-        s.eduLevelCode, s.empStatusCode,
+        s.province, s.city, s.gender, s.birthDate,
+        s.personalIncome, s.familyIncome, s.familySize,
+        s.eduLevelCode, s.empStatusCode, s.married, s.child, s.home,
         s.prompt, s.content, s.createdAt,
         p.plcyNm AS policyName,
         p.plcyExplnCn AS policyIntro

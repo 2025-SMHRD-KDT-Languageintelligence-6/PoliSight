@@ -10,20 +10,27 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { slate: { 900: '#070F22', 800: '#162133', 700: '#2B394D', 600: '#3F4D61', 500: '#57677E', 400: '#8796AB' } } } }
+        }
+    </script>
+
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <style>
         body { font-family: 'Noto Sans KR', sans-serif; }
+        /* 커스텀 스크롤바 */
         .custom-scroll::-webkit-scrollbar { width: 6px; }
-        .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
-        .custom-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
         .hidden { display: none; }
 
-        .scenario-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            border-color: #93C5FD;
-        }
+        /* 마크다운 스타일 (result.html과 통일) */
+        .prose ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 1em; }
+        .prose strong { color: #1e293b; font-weight: 700; }
+        .prose p { margin-bottom: 0.8em; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen">
@@ -37,16 +44,13 @@
             <h2 class="text-3xl font-bold text-slate-900 mb-2">시뮬레이션 기록 보관소</h2>
             <p class="text-slate-500">지금까지 진행한 AI 정책 시뮬레이션 결과를 확인하고 관리하세요.</p>
         </div>
-
-        <div class="flex gap-3">
-            <div class="px-5 py-3 bg-white rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
-                    <i class="fa-solid fa-file-invoice"></i>
-                </div>
-                <div>
-                    <p class="text-xs text-slate-400 font-bold uppercase">저장된 기록</p>
-                    <p class="text-lg font-bold text-slate-800" th:text="${totalCount} + '건'">0건</p>
-                </div>
+        <div class="px-5 py-3 bg-white rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+                <i class="fa-solid fa-file-invoice"></i>
+            </div>
+            <div>
+                <p class="text-xs text-slate-400 font-bold uppercase">저장된 기록</p>
+                <p class="text-lg font-bold text-slate-800" th:text="${totalCount} + '건'">0건</p>
             </div>
         </div>
     </div>
@@ -58,18 +62,9 @@
         </form>
 
         <div class="flex gap-2">
-            <button onclick="selectAll()" type="button"
-                    class="px-3 py-1.5 border border-slate-200 bg-white rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition flex items-center gap-1">
-                <i class="fa-solid fa-check"></i> 전체선택
-            </button>
-            <button onclick="deselectAll()" type="button"
-                    class="px-3 py-1.5 border border-slate-200 bg-white rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition flex items-center gap-1">
-                <i class="fa-solid fa-xmark"></i> 선택해제
-            </button>
-            <button onclick="openDeleteModal()" type="button"
-                    class="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-red-50 hover:text-red-500 transition flex items-center gap-1">
-                <i class="fa-solid fa-trash-can"></i> 삭제
-            </button>
+            <button onclick="selectAll()" type="button" class="px-3 py-1.5 border border-slate-200 bg-white rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition flex items-center gap-1">전체선택</button>
+            <button onclick="deselectAll()" type="button" class="px-3 py-1.5 border border-slate-200 bg-white rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition flex items-center gap-1">선택해제</button>
+            <button onclick="openDeleteModal()" type="button" class="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-red-50 hover:text-red-500 transition flex items-center gap-1">삭제</button>
         </div>
     </div>
 
@@ -79,64 +74,54 @@
         </div>
 
         <div th:each="record : ${recordList}"
-             class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all relative overflow-hidden flex items-stretch"
-             th:classappend="${record.resultScore >= 80} ? 'hover:border-blue-300' : 'hover:border-slate-300'">
+             class="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all relative overflow-hidden flex items-stretch">
 
-            <div class="absolute top-0 left-0 w-1.5 h-full"
-                 th:classappend="${record.resultScore >= 80} ? 'bg-blue-500' : 'bg-slate-300'"></div>
+            <div class="absolute top-0 left-0 w-1.5 h-full" th:classappend="${record.suitability == 'Y'} ? 'bg-blue-500' : 'bg-slate-300'"></div>
 
             <div class="flex items-center pl-5">
-                <input type="checkbox" name="recordChk" th:value="${record.simIdx}" class="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
+                <input type="checkbox" name="recordChk" th:value="${record.simIdx}" class="w-5 h-5 rounded border-slate-300 text-blue-600 cursor-pointer">
             </div>
 
             <div class="flex-1 p-6 flex flex-col md:flex-row justify-between gap-6">
                 <div class="flex-1">
                     <div class="flex items-center gap-2 mb-2">
-                            <span class="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded"
-                                  th:text="${#temporals.format(record.createdAt, 'yyyy.MM.dd')}">2026.01.23</span>
+                        <span class="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded" th:text="${#temporals.format(record.createdAt, 'yyyy.MM.dd')}">2026.01.23</span>
 
-                        <span th:if="${record.resultScore >= 80}" class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100"
-                              th:text="|조건 충족 (${record.resultScore}점)|">조건 충족</span>
-                        <span th:unless="${record.resultScore >= 80}" class="text-xs font-bold text-slate-500 bg-slate-50 px-2 py-0.5 rounded border border-slate-200"
-                              th:text="|조건 불충족 (${record.resultScore}점)|">조건 불충족</span>
+                        <span th:if="${record.suitability == 'Y'}" class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">조건 충족</span>
+                        <span th:unless="${record.suitability == 'Y'}" class="text-xs font-bold text-slate-500 bg-slate-50 px-2 py-0.5 rounded border border-slate-200">조건 불충족</span>
                     </div>
 
-                    <h3 class="text-xl font-bold text-slate-800 mb-2 group-hover:text-blue-600 transition"
-                        th:text="${record.policyName}">청년 일자리 도약 장려금</h3>
-                    <p class="text-sm text-slate-500 mb-4 line-clamp-1"
-                       th:text="${record.policyIntro}">정책 한줄 소개 내용...</p>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2 group-hover:text-blue-600 transition" th:text="${record.policyName}">정책 이름</h3>
+                    <p class="text-sm text-slate-500 mb-4 line-clamp-1" th:text="${record.policyIntro}">정책 소개</p>
 
                     <div class="flex items-center gap-6 text-sm text-slate-600">
-                        <div class="flex items-center gap-1.5">
-                            <i class="fa-solid fa-location-dot text-slate-400"></i>
-                            <span th:text="${record.regionText}">서울 강남구</span>
-                        </div>
-                        <div class="flex items-center gap-1.5">
-                            <i class="fa-solid fa-user text-slate-400"></i>
-                            <span th:text="|만 ${record.userAge}세 / ${record.jobName}|">만 26세 / 미취업</span>
-                        </div>
+                        <div class="flex items-center gap-1.5"><i class="fa-solid fa-location-dot text-slate-400"></i><span th:text="${record.regionText}">지역</span></div>
+                        <div class="flex items-center gap-1.5"><i class="fa-solid fa-user text-slate-400"></i><span th:text="|만 ${record.userAge}세 / ${record.jobName}|">나이/직업</span></div>
                     </div>
                 </div>
 
                 <div class="flex md:flex-col justify-end gap-2 min-w-[120px]">
                     <button type="button"
                             th:data-title="${record.policyName}"
-                            th:data-date="${#temporals.format(record.createdAt, 'yyyy.MM.dd')}"
-                            th:data-score="${record.resultScore}"
                             th:data-content="${record.content}"
-                            th:data-region="${record.regionText}"
+                            th:data-suitability="${record.suitability}"
+                            th:data-gender="${record.gender}"
                             th:data-age="${record.userAge}"
-                            th:data-job="${record.jobName}"
+                            th:data-region="${record.regionText}"
+                            th:data-edu="${record.eduLevelCode}"
+                            th:data-emp="${record.empStatusCode}"
+                            th:data-marry="${record.married}"
+                            th:data-family="${record.familySize}"
+                            th:data-child="${record.child}"
+                            th:data-p-income="${record.personalIncome}"
+                            th:data-f-income="${record.familyIncome}"
+                            th:data-prompt="${record.prompt}"
                             onclick="openDetailModal(this)"
                             class="w-full px-4 py-2.5 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-black transition flex items-center justify-center gap-2 shadow-md">
                         <span>결과 다시보기</span>
                         <i class="fa-solid fa-chevron-right text-xs"></i>
                     </button>
-                    <button type="button"
-                            th:onclick="|deleteSingle(${record.simIdx})|"
-                            class="w-full px-4 py-2.5 bg-white border border-slate-200 text-slate-500 text-sm font-bold rounded-xl hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition flex items-center justify-center gap-2">
-                        삭제
-                    </button>
+                    <button type="button" th:onclick="|deleteSingle(${record.simIdx})|" class="w-full px-4 py-2.5 bg-white border border-slate-200 text-slate-500 text-sm font-bold rounded-xl hover:bg-red-50 hover:text-red-500 transition">삭제</button>
                 </div>
             </div>
         </div>
@@ -144,26 +129,11 @@
 
     <div class="flex justify-center mt-12" th:if="${totalPages > 0}">
         <nav class="flex gap-1">
-            <a th:href="@{/record(page=${currentPage - 1})}"
-               th:classappend="${currentPage == 1} ? 'pointer-events-none opacity-50' : ''"
-               class="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50">
-                <i class="fa-solid fa-chevron-left text-xs"></i>
-            </a>
-
+            <a th:href="@{/record(page=${currentPage - 1}, keyword=${param.keyword})}" th:classappend="${currentPage == 1} ? 'pointer-events-none opacity-50' : ''" class="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500"><i class="fa-solid fa-chevron-left text-xs"></i></a>
             <th:block th:each="page : ${#numbers.sequence(startPage, endPage)}">
-                <a th:href="@{/record(page=${page})}"
-                   th:text="${page}"
-                   th:classappend="${page == currentPage} ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'"
-                   class="w-10 h-10 flex items-center justify-center rounded-lg border font-bold transition">
-                    1
-                </a>
+                <a th:href="@{/record(page=${page}, keyword=${param.keyword})}" th:text="${page}" th:classappend="${page == currentPage} ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-600'" class="w-10 h-10 flex items-center justify-center rounded-lg border font-bold transition">1</a>
             </th:block>
-
-            <a th:href="@{/record(page=${currentPage + 1})}"
-               th:classappend="${currentPage == totalPages} ? 'pointer-events-none opacity-50' : ''"
-               class="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50">
-                <i class="fa-solid fa-chevron-right text-xs"></i>
-            </a>
+            <a th:href="@{/record(page=${currentPage + 1}, keyword=${param.keyword})}" th:classappend="${currentPage == totalPages} ? 'pointer-events-none opacity-50' : ''" class="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500"><i class="fa-solid fa-chevron-right text-xs"></i></a>
         </nav>
     </div>
 
@@ -171,100 +141,135 @@
 
 <th:block th:replace="~{HF :: footer}"></th:block>
 
-<div id="detail-modal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm transition-opacity" onclick="closeDetailModal()"></div>
-    <div class="fixed inset-0 z-10 overflow-y-auto">
-        <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-            <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all w-full max-w-5xl my-8">
+<div id="detail-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center" role="dialog" aria-modal="true">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeDetailModal()"></div>
+    <div class="relative bg-white w-full max-w-7xl h-[90vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col transform transition-all">
 
-                <div class="bg-white px-6 py-4 border-b border-slate-100 flex justify-between items-center sticky top-0 z-20">
-                    <div class="flex items-center gap-2">
-                        <span class="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded">RECORD</span>
-                        <h3 id="modal-policy-title" class="text-lg font-bold text-slate-900">정책 제목</h3>
-                    </div>
-                    <button type="button" class="text-slate-400 hover:text-slate-600 transition" onclick="closeDetailModal()">
-                        <i class="fa-solid fa-xmark text-2xl"></i>
-                    </button>
-                </div>
-
-                <div class="p-6 bg-slate-50 max-h-[85vh] overflow-y-auto custom-scroll">
-                    <div class="grid lg:grid-cols-12 gap-6">
-                        <aside class="lg:col-span-4 space-y-5">
-                            <div class="bg-white rounded-2xl border border-blue-100 p-5 shadow-sm">
-                                <div class="flex items-center gap-3 mb-2">
-                                    <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600">
-                                        <i class="fa-solid fa-landmark"></i>
-                                    </div>
-                                    <div>
-                                        <span class="text-[10px] font-bold text-blue-500">TARGET POLICY</span>
-                                        <h4 id="modal-policy-name" class="font-bold text-slate-800 text-sm">정책 이름</h4>
-                                    </div>
-                                </div>
-                                <div class="space-y-1 mt-3 pl-1 text-xs">
-                                    <p class="text-slate-500 flex justify-between">
-                                        <span>시뮬레이션 날짜</span> <span id="modal-date" class="font-bold text-slate-700">-</span>
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-                                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-4">Input Conditions</h3>
-                                <div class="space-y-4 divide-y divide-slate-100">
-                                    <div class="pt-0">
-                                        <h4 class="text-xs font-bold text-slate-400 mb-2">기본 정보</h4>
-                                        <ul class="space-y-1">
-                                            <li class="flex justify-between text-xs"><span class="text-slate-500">나이</span> <span id="modal-age" class="font-bold text-blue-600">-</span></li>
-                                            <li class="flex justify-between text-xs"><span class="text-slate-500">거주지</span> <span id="modal-region" class="font-bold text-slate-800">-</span></li>
-                                            <li class="flex justify-between text-xs"><span class="text-slate-500">직업</span> <span id="modal-job" class="font-bold text-slate-800">-</span></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </aside>
-
-                        <section class="lg:col-span-8 space-y-6">
-                            <div class="bg-white rounded-2xl border border-blue-100 shadow-lg shadow-blue-50/50 overflow-hidden">
-                                <div class="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white relative">
-                                    <div class="absolute right-0 top-0 w-48 h-48 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
-                                    <div class="relative z-10">
-                                        <div class="flex items-center gap-2 mb-2 opacity-90 text-xs font-medium">
-                                            <i class="fa-solid fa-robot"></i> AI Policy Analyst
-                                        </div>
-                                        <h2 class="text-2xl font-bold mb-4">분석이 완료되었습니다.</h2>
-                                        <div class="flex items-end gap-3">
-                                            <div class="flex-grow">
-                                                <div class="flex justify-between text-xs mb-1">
-                                                    <span class="font-bold text-blue-100">매칭 적합도</span>
-                                                    <span id="modal-score-text" class="font-bold text-white">0 / 100</span>
-                                                </div>
-                                                <div class="w-full bg-black/20 rounded-full h-2">
-                                                    <div id="modal-score-bar" class="bg-yellow-400 h-2 rounded-full shadow-[0_0_10px_rgba(250,204,21,0.5)]" style="width: 0%"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="p-6">
-                                    <h3 class="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
-                                        <i class="fa-solid fa-quote-left text-blue-500"></i> AI 상담사의 맞춤형 가이드
-                                    </h3>
-                                    <div id="modal-content" class="bg-slate-50 rounded-xl p-5 border border-slate-200 text-slate-700 leading-relaxed text-sm whitespace-pre-wrap">결과 내용...</div>
-                                </div>
-                            </div>
-                        </section>
-                    </div>
-                </div>
-
-                <div class="bg-slate-50 px-6 py-4 flex justify-end gap-3 border-t border-slate-100 sticky bottom-0 z-20">
-                    <button type="button" class="px-5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-700 font-bold text-sm hover:bg-slate-50 transition" onclick="closeDetailModal()">
-                        닫기
-                    </button>
-                </div>
+        <div class="px-8 py-6 border-b border-slate-100 flex-shrink-0 bg-white z-10 flex justify-between items-center">
+            <div>
+                <span class="text-sm font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100 mb-1 inline-block">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> AI Analysis Report (History)
+                </span>
+                <h2 class="text-2xl font-bold text-slate-900">시뮬레이션 분석 결과</h2>
             </div>
+            <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-700 transition p-2 rounded-full hover:bg-slate-100">
+                <i class="fa-solid fa-xmark text-2xl"></i>
+            </button>
+        </div>
+
+        <div class="flex-grow overflow-y-auto custom-scroll p-8 bg-slate-50">
+            <div class="grid lg:grid-cols-12 gap-8">
+
+                <aside class="lg:col-span-4 space-y-6">
+                    <div class="bg-white rounded-2xl border border-blue-100 shadow-sm p-6 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-4 -mt-4 z-0"></div>
+                        <div class="relative z-10">
+                            <div class="flex items-center gap-2 text-sm text-blue-600 font-bold mb-4">
+                                <i class="fa-solid fa-crosshairs"></i> 분석 대상 정책
+                            </div>
+                            <h4 id="modal-policy-name" class="font-bold text-xl text-slate-900 leading-tight">-</h4>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                        <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wide mb-6">분석 조건</h3>
+                        <div class="space-y-6 divide-y divide-slate-100">
+                            <div class="pt-0">
+                                <h4 class="text-xs font-bold text-slate-400 mb-3">기본 인적 사항</h4>
+                                <ul class="space-y-2 text-sm">
+                                    <li class="flex justify-between"><span class="text-slate-500">성별</span><span id="cond-gender" class="font-bold text-slate-800">-</span></li>
+                                    <li class="flex justify-between"><span class="text-slate-500">나이</span><span id="cond-age" class="font-bold text-blue-600">-</span></li>
+                                    <li class="flex justify-between"><span class="text-slate-500">거주지</span><span id="cond-region" class="font-bold text-slate-800">-</span></li>
+                                </ul>
+                            </div>
+                            <div class="pt-4">
+                                <h4 class="text-xs font-bold text-slate-400 mb-3">사회적 상태</h4>
+                                <ul class="space-y-2 text-sm">
+                                    <li class="flex justify-between"><span class="text-slate-500">학력</span><span id="cond-edu" class="font-bold text-slate-800">-</span></li>
+                                    <li class="flex justify-between"><span class="text-slate-500">고용</span><span id="cond-emp" class="font-bold text-blue-600">-</span></li>
+                                </ul>
+                            </div>
+                            <div class="pt-4">
+                                <h4 class="text-xs font-bold text-slate-400 mb-3">가구 및 경제</h4>
+                                <ul class="space-y-2 text-sm">
+                                    <li class="flex justify-between"><span class="text-slate-500">결혼</span><span id="cond-marry" class="font-bold text-slate-800">-</span></li>
+                                    <li class="flex justify-between"><span class="text-slate-500">자녀</span><span id="cond-child" class="font-bold text-slate-800">-</span></li>
+                                    <li class="flex justify-between"><span class="text-slate-500">본인소득</span><span id="cond-p-income" class="font-bold text-slate-800">-</span></li>
+                                    <li class="flex justify-between"><span class="text-slate-500">가구소득</span><span id="cond-f-income" class="font-bold text-slate-800">-</span></li>
+                                </ul>
+                            </div>
+                            <div class="pt-6">
+                                <h4 class="font-bold text-sm text-slate-800 mb-3 flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 bg-indigo-600 rounded-full"></span> AI 정밀 분석 요청사항
+                                </h4>
+                                <div class="bg-indigo-50/60 rounded-xl p-3 border border-indigo-100">
+                                    <p id="cond-prompt" class="text-sm text-indigo-900 leading-relaxed font-medium break-keep">-</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+
+                <section class="lg:col-span-8 space-y-8">
+                    <div id="modal-result-card" class="rounded-2xl border shadow-lg overflow-hidden transition-all duration-500">
+                        <div id="modal-header-bg" class="p-8 text-white relative overflow-hidden">
+                            <div class="absolute right-0 top-0 w-64 h-64 bg-white/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+                            <div class="relative z-10 flex items-center justify-between">
+                                <div>
+                                    <div class="flex items-center gap-2 mb-2 opacity-90 text-sm font-medium">AI Policy Analyst</div>
+                                    <h2 id="modal-suitability-text" class="text-3xl font-bold leading-normal">-</h2>
+                                </div>
+                                <div id="modal-status-badge" class="bg-white/20 px-4 py-2 rounded-full text-lg font-bold border border-white/30 backdrop-blur-sm">-</div>
+                            </div>
+                        </div>
+                        <div class="p-8 bg-white">
+                            <h3 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
+                                <i id="modal-quote-icon" class="fa-solid fa-quote-left"></i> AI 상담사의 맞춤형 가이드
+                            </h3>
+                            <div id="modal-ai-guide" class="bg-slate-50 rounded-xl p-6 border border-slate-200 text-slate-700 leading-relaxed text-sm shadow-inner prose prose-sm max-w-none">
+                                <div class="flex flex-col items-center justify-center py-10 text-slate-400">
+                                    <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><span>데이터 로딩 중...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                        <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600 text-sm"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                            미래 시뮬레이션 시나리오
+                        </h3>
+                        <div id="modal-scenarios" class="space-y-3"></div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                        <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 text-sm"><i class="fa-solid fa-thumbs-up"></i></div>
+                            추천 및 관련 정책
+                        </h3>
+                        <div class="bg-slate-50 rounded-xl p-5 border border-slate-200 shadow-inner">
+                            <ul id="modal-recommendations" class="space-y-3"></ul>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                        <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 text-sm"><i class="fa-solid fa-scale-balanced"></i></div>
+                            AI 분석 근거 데이터
+                        </h3>
+                        <div id="modal-evidence" class="space-y-3"></div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <div class="border-t border-slate-100 p-6 bg-white flex justify-end flex-shrink-0 z-10">
+            <button onclick="closeDetailModal()" class="px-6 py-3 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-900 transition shadow-lg">확인 및 닫기</button>
         </div>
     </div>
 </div>
 
-<div id="delete-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center" aria-modal="true">
+<div id="delete-modal" class="fixed inset-0 z-[120] hidden flex items-center justify-center" aria-modal="true">
     <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="closeDeleteModal()"></div>
     <div class="relative bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center transform scale-95 opacity-0 transition-all duration-200" id="delete-content">
         <div class="w-12 h-12 rounded-full bg-red-100 text-red-500 flex items-center justify-center mx-auto mb-4 text-xl">
@@ -280,50 +285,160 @@
 </div>
 
 <script th:inline="javascript">
-    // 전체 선택
-    function selectAll() {
-        const checkboxes = document.querySelectorAll('input[name="recordChk"]');
-        checkboxes.forEach(cb => cb.checked = true);
-    }
+    // --- 유틸리티 맵핑 ---
+    const eduMap = { "001": "중졸 이하", "004": "고졸", "007": "대졸", "default": "기타" };
+    const empMap = { "UNEMPLOYED": "미취업", "EMPLOYED": "재직중", "default": "기타" };
 
-    // 선택 해제
-    function deselectAll() {
-        const checkboxes = document.querySelectorAll('input[name="recordChk"]');
-        checkboxes.forEach(cb => cb.checked = false);
-    }
+    // --- 기본 기능 ---
+    function selectAll() { document.querySelectorAll('input[name="recordChk"]').forEach(cb => cb.checked = true); }
+    function deselectAll() { document.querySelectorAll('input[name="recordChk"]').forEach(cb => cb.checked = false); }
+    function closeDetailModal() { document.getElementById('detail-modal').classList.add('hidden'); }
 
-    // 상세 모달 열기
+    // --- ★ 상세 모달 열기 ---
     function openDetailModal(btn) {
-        const title = btn.getAttribute('data-title');
-        const date = btn.getAttribute('data-date');
-        const score = btn.getAttribute('data-score');
-        const content = btn.getAttribute('data-content');
-        const region = btn.getAttribute('data-region');
-        const age = btn.getAttribute('data-age');
-        const job = btn.getAttribute('data-job');
+        // (1) 조건 데이터 채우기
+        document.getElementById('modal-policy-name').innerText = btn.getAttribute('data-title');
 
-        document.getElementById('modal-policy-title').innerText = title;
-        document.getElementById('modal-policy-name').innerText = title;
-        document.getElementById('modal-date').innerText = date;
-        document.getElementById('modal-region').innerText = region;
-        document.getElementById('modal-age').innerText = '만 ' + age + '세';
-        document.getElementById('modal-job').innerText = job;
+        document.getElementById('cond-gender').innerText = (btn.getAttribute('data-gender') === 'male' || btn.getAttribute('data-gender') === 'M') ? '남성' : '여성';
+        document.getElementById('cond-age').innerText = btn.getAttribute('data-age') + '세';
+        document.getElementById('cond-region').innerText = btn.getAttribute('data-region') || '-';
 
-        document.getElementById('modal-score-text').innerText = score + ' / 100';
-        document.getElementById('modal-score-bar').style.width = score + '%';
-        document.getElementById('modal-content').innerText = content;
+        const eduCode = btn.getAttribute('data-edu');
+        document.getElementById('cond-edu').innerText = eduMap[eduCode] || eduMap.default;
 
-        const modal = document.getElementById('detail-modal');
-        modal.classList.remove('hidden');
+        const empCode = btn.getAttribute('data-emp');
+        let empText = '기타';
+        if(empCode === '1' || empCode === 'UNEMPLOYED') empText = '미취업';
+        else if(empCode === '2' || empCode === 'EMPLOYED') empText = '재직중';
+        document.getElementById('cond-emp').innerText = empText;
+
+        document.getElementById('cond-marry').innerText = (btn.getAttribute('data-marry') === 'true' || btn.getAttribute('data-marry') === '1') ? '기혼' : '미혼';
+        document.getElementById('cond-child').innerText = (btn.getAttribute('data-child') || '0') + '명';
+
+        const pIncome = parseInt(btn.getAttribute('data-p-income')) || 0;
+        const fIncome = parseInt(btn.getAttribute('data-f-income')) || 0;
+        document.getElementById('cond-p-income').innerText = pIncome.toLocaleString() + ' 만원';
+        document.getElementById('cond-f-income').innerText = fIncome.toLocaleString() + ' 만원';
+
+        document.getElementById('cond-prompt').innerText = btn.getAttribute('data-prompt') || '추가 요청사항 없음';
+
+        // (2) AI 결과 렌더링
+        const rawContent = btn.getAttribute('data-content');
+        const suitability = btn.getAttribute('data-suitability');
+
+        try {
+            const data = JSON.parse(rawContent);
+            const isPass = (suitability === 'Y');
+
+            renderHeaderAndGuide(data, isPass);
+            toggleSection('modal-scenarios', data.scenarios, renderScenarios);
+            toggleSection('modal-recommendations', data.recommendations, renderRecommendations);
+            toggleSection('modal-evidence', data.evidence, renderEvidence);
+
+        } catch (e) {
+            // 구버전 데이터 처리
+            fallbackToTextMode(rawContent);
+        }
+        document.getElementById('detail-modal').classList.remove('hidden');
     }
 
-    function closeDetailModal() {
-        const modal = document.getElementById('detail-modal');
-        modal.classList.add('hidden');
+    // 헤더 스타일링 및 가이드 렌더링
+    function renderHeaderAndGuide(data, isPass) {
+        const bg = document.getElementById('modal-header-bg');
+        const text = document.getElementById('modal-suitability-text');
+        const badge = document.getElementById('modal-status-badge');
+        const icon = document.getElementById('modal-quote-icon');
+
+        if (isPass) {
+            bg.className = "p-8 text-white relative overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-600";
+            text.innerText = "축하합니다! 신청 가능합니다.";
+            badge.innerHTML = '<i class="fa-solid fa-check-circle mr-2"></i>PASS';
+            icon.className = "fa-solid fa-quote-left text-blue-500";
+        } else {
+            bg.className = "p-8 text-white relative overflow-hidden bg-gradient-to-r from-red-500 to-orange-500";
+            text.innerText = "아쉽지만 신청이 어렵습니다.";
+            badge.innerHTML = '<i class="fa-solid fa-circle-exclamation mr-2"></i>FAIL';
+            icon.className = "fa-solid fa-quote-left text-red-500";
+        }
+
+        let guide = data.content || "";
+        if (data.answer) guide += "\n\n" + data.answer;
+        document.getElementById('modal-ai-guide').innerHTML = marked.parse(guide);
     }
 
+    // 섹션 토글
+    function toggleSection(elementId, data, renderFunc) {
+        const container = document.getElementById(elementId);
+        const parentCard = container.parentElement;
+        if (!data || data.length === 0) {
+            parentCard.classList.add('hidden');
+        } else {
+            parentCard.classList.remove('hidden');
+            renderFunc(data);
+        }
+    }
+
+    // 시나리오 렌더링
+    function renderScenarios(scenarios) {
+        const container = document.getElementById('modal-scenarios');
+        container.innerHTML = '';
+        scenarios.forEach(s => {
+            const styles = {
+                'risk': { bg: 'bg-amber-50', border: 'border-amber-200', icon: 'fa-triangle-exclamation text-amber-500' },
+                'benefit': { bg: 'bg-blue-50', border: 'border-blue-200', icon: 'fa-rocket text-blue-500' },
+                'solution': { bg: 'bg-emerald-50', border: 'border-emerald-200', icon: 'fa-lightbulb text-emerald-500' },
+                'roadmap': { bg: 'bg-purple-50', border: 'border-purple-200', icon: 'fa-map-location-dot text-purple-500' }
+            };
+            const style = styles[s.type] || { bg: 'bg-slate-50', border: 'border-slate-200', icon: 'fa-info-circle text-slate-400' };
+            const div = document.createElement('div');
+            div.className = `rounded-xl p-4 border transition-all ${style.bg} ${style.border}`;
+            div.innerHTML = `<div class="flex items-start gap-3"><div class="mt-0.5 text-lg"><i class="fa-solid ${style.icon}"></i></div><div class="flex-1"><h4 class="font-bold text-sm mb-1 text-slate-900">${s.title}</h4><p class="text-sm text-slate-700 leading-relaxed">${s.content}</p></div></div>`;
+            container.appendChild(div);
+        });
+    }
+
+    // 추천 정책 렌더링
+    function renderRecommendations(recs) {
+        const container = document.getElementById('modal-recommendations');
+        container.innerHTML = '';
+        recs.forEach(r => {
+            const li = document.createElement('li');
+            li.className = "flex flex-col p-3 bg-white rounded-lg border border-slate-100 hover:border-blue-200 transition";
+            li.innerHTML = `<div class="flex justify-between items-center mb-1"><strong class="text-slate-800 text-sm">🔗 ${r.name}</strong></div><p class="text-xs text-slate-500 pl-4">${r.reason}</p>`;
+            container.appendChild(li);
+        });
+    }
+
+    // 근거 데이터 렌더링
+    function renderEvidence(evidence) {
+        const container = document.getElementById('modal-evidence');
+        container.innerHTML = '';
+        evidence.forEach(e => {
+            let badgeClass = e.type === '법령' ? "bg-blue-100 text-blue-700" : "bg-orange-100 text-orange-700";
+            const div = document.createElement('div');
+            div.className = "bg-white border border-slate-200 rounded-xl p-4 shadow-sm";
+            div.innerHTML = `<div class="flex items-center gap-2 mb-2"><span class="${badgeClass} px-2 py-1 rounded text-xs font-bold">${e.type}</span><span class="font-bold text-slate-700 text-sm">${e.title}</span></div><div class="bg-slate-50 p-2 rounded text-xs text-slate-600"><span class="text-blue-600 font-bold mr-1">✔</span><span>${e.matchInfo}</span></div>`;
+            container.appendChild(div);
+        });
+    }
+
+    function fallbackToTextMode(text) {
+        const bg = document.getElementById('modal-header-bg');
+        bg.className = "p-8 text-white relative overflow-hidden bg-gradient-to-r from-slate-500 to-slate-600";
+        document.getElementById('modal-suitability-text').innerText = "분석 결과 (구버전)";
+        document.getElementById('modal-status-badge').innerText = "RECORD";
+        document.getElementById('modal-ai-guide').innerText = text;
+        document.getElementById('modal-scenarios').parentElement.classList.add('hidden');
+        document.getElementById('modal-recommendations').parentElement.classList.add('hidden');
+        document.getElementById('modal-evidence').parentElement.classList.add('hidden');
+    }
+
+    // ==========================================
+    // 4. ★ 삭제 기능 (복구됨!)
+    // ==========================================
     let deleteTargetIds = [];
 
+    // [삭제] 버튼 클릭 시 (체크박스 확인)
     function openDeleteModal() {
         const checkedBoxes = document.querySelectorAll('input[name="recordChk"]:checked');
         deleteTargetIds = Array.from(checkedBoxes).map(cb => cb.value);
@@ -332,18 +447,17 @@
             alert("삭제할 항목을 선택해주세요.");
             return;
         }
-
-        const modal = document.getElementById('delete-modal');
-        const content = document.getElementById('delete-content');
-        modal.classList.remove('hidden');
-        setTimeout(() => {
-            content.classList.remove('scale-95', 'opacity-0');
-            content.classList.add('scale-100', 'opacity-100');
-        }, 10);
+        showDeleteModal();
     }
 
+    // 개별 [삭제] 버튼 클릭 시
     function deleteSingle(id) {
         deleteTargetIds = [id];
+        showDeleteModal();
+    }
+
+    // 삭제 모달 띄우기 (애니메이션)
+    function showDeleteModal() {
         const modal = document.getElementById('delete-modal');
         const content = document.getElementById('delete-content');
         modal.classList.remove('hidden');
@@ -353,14 +467,18 @@
         }, 10);
     }
 
+    // 삭제 모달 닫기
     function closeDeleteModal() {
         const modal = document.getElementById('delete-modal');
         const content = document.getElementById('delete-content');
         content.classList.remove('scale-100', 'opacity-100');
         content.classList.add('scale-95', 'opacity-0');
-        setTimeout(() => modal.classList.add('hidden'), 200);
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 200);
     }
 
+    // 최종 삭제 실행 (서버 통신)
     function confirmDelete() {
         if(deleteTargetIds.length === 0) return;
 
@@ -388,6 +506,7 @@
         });
     }
 
+    // ESC 키로 모달 닫기
     document.addEventListener('keydown', function(event) {
         if (event.key === "Escape") {
             closeDetailModal();
