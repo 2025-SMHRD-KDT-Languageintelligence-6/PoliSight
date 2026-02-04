@@ -92,6 +92,9 @@
                 let initialized = false;
                 let isLoading = false;
 
+                // [추가됨] 애니메이션 중복 방지용 플래그 (Lock)
+                let isMotionPlaying = false;
+
                 // 마우스 추적 제어용 플래그
                 let isTrackingSuspended = false;
 
@@ -115,7 +118,7 @@
                             initialized = true;
                             isLoading = false;
 
-                            // 처음 로딩 시 0.2초 딜레이 후 HelloMotion 실행
+                            // 로딩 직후 모션 실행
                             setTimeout(() => {
                                 playHelloMotion();
                             }, 200);
@@ -123,7 +126,7 @@
                         } else if (initialized) {
                             setTimeout(() => resizeLive2D(), 50);
 
-                            // 다시 열 때마다 0.2초 딜레이 후 HelloMotion 실행
+                            // 창을 다시 열었을 때도 모션 실행
                             setTimeout(() => {
                                 playHelloMotion();
                             }, 200);
@@ -155,7 +158,8 @@
                             const data = await response.json();
                             addMessage(data.answer, 'bot-message');
 
-                            if (model) {
+                            // 답변 시에도 모션이 겹치지 않게 처리
+                            if (model && !isMotionPlaying) {
                                 try { model.motion('Tap'); } catch(e){}
                             }
                         } else {
@@ -181,28 +185,36 @@
                     messages.scrollTop = messages.scrollHeight;
                 }
 
-                // HelloMotion 실행 및 3초간 마우스 추적 중단 함수
+                // HelloMotion 실행 함수
                 function playHelloMotion() {
                     if (!model) return;
+
+                    // [핵심] 이미 모션이 재생 중이라면 실행하지 않음 (중복 방지)
+                    if (isMotionPlaying) return;
+
                     try {
-                        // 1. 마우스 추적 기능 끄기
+                        // 상태 잠금
+                        isMotionPlaying = true;
                         isTrackingSuspended = true;
 
-                        // 2. 모션 시작 전 시선 정면 고정 (선택사항)
+                        // 시선 정면 고정
                         if (model.internalModel && model.internalModel.focusController) {
                             model.internalModel.focusController.focus(0, 0);
                         }
 
-                        // 3. HelloMotion ('Start') 실행
+                        // 모션 실행
                         model.motion('Start', 0, 3);
 
-                        // 4. 3초 뒤에 마우스 추적 기능 다시 켜기
+                        // 3초 후 잠금 해제
                         setTimeout(() => {
+                            isMotionPlaying = false;
                             isTrackingSuspended = false;
                         }, 3000);
 
                     } catch (e) {
                         console.warn(e);
+                        // 에러 발생 시 즉시 잠금 해제
+                        isMotionPlaying = false;
                         isTrackingSuspended = false;
                     }
                 }
@@ -234,46 +246,49 @@
                         fitModel();
 
                         model.interactive = true;
-
-                        // 자동 추적 끄기 (수동 제어 필수)
                         model.autoInteract = false;
-
                         model.buttonMode = true;
 
-                        // [수정됨] 클릭 시: 추적 끄기 + 정면 보기 + 모션 재생
+                        // [수정됨] 클릭 이벤트 리스너
                         model.on('pointertap', (e) => {
+                            // [핵심] 이미 모션이 재생 중이면 클릭 무시! (팔 멈춤 방지)
+                            if (isMotionPlaying) {
+                                console.log("모션 재생 중이라 클릭 무시됨");
+                                return;
+                            }
+
                             const point = e.data.global;
 
-                            // HitAreas Id가 "HeatArea" 인지 확인
                             if (model.hitTest('HeatArea', point.x, point.y)) {
 
-                                // 1. 마우스 추적 일시 중단
+                                // 상태 잠금
+                                isMotionPlaying = true;
                                 isTrackingSuspended = true;
 
-                                // 2. 시선 강제 정면 고정 (0, 0)
+                                // 시선 정면 고정
                                 if (model.internalModel && model.internalModel.focusController) {
                                     model.internalModel.focusController.focus(0, 0);
                                 }
 
                                 try {
-                                    // 3. 모션 실행 (3초 정도 유지되는 모션)
+                                    // 모션 실행
                                     model.motion('TapBody', 0, 3);
                                 } catch(err) {
                                     console.warn("Motion play failed:", err);
                                 }
 
-                                // 4. 3초 후 추적 재개 (모션 Duration에 맞춤)
+                                // 3초 후 잠금 해제 (애니메이션 길이만큼 대기)
                                 setTimeout(() => {
+                                    isMotionPlaying = false;
                                     isTrackingSuspended = false;
                                 }, 3000);
                             }
                         });
 
-                        // [기존유지] stage 대신 window 전체에 이벤트를 걸어 멀리서도 추적되게 변경
                         window.addEventListener('mousemove', (e) => {
                             if (!model) return;
 
-                            // 추적 중단 상태(3초간)이면 마우스 이벤트 무시
+                            // 모션 재생 중이면 시선 추적 중지
                             if (isTrackingSuspended) return;
 
                             const rect = live2dCanvas.getBoundingClientRect();
