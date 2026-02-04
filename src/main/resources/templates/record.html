@@ -283,7 +283,7 @@
         6: "대졸 예정",
         7: "대졸",
         8: "석/박사",
-        0: "정보 없음" // [수정1] 0일 경우(데이터 없음) "정보 없음"으로 표기
+        0: "정보 없음"
     };
 
     const empMap = { "UNEMPLOYED": "미취업", "EMPLOYED": "재직중", "default": "기타" };
@@ -297,7 +297,6 @@
         const desc = btn.getAttribute('data-desc');
         document.getElementById('modal-policy-desc').innerText = (desc && desc !== 'null') ? desc : '정책 상세 설명이 없습니다.';
 
-        // [수정1] 성별 정보 없음 처리
         const gender = btn.getAttribute('data-gender');
         if (!gender || gender === 'null') {
             document.getElementById('cond-gender').innerText = '정보 없음';
@@ -305,27 +304,23 @@
             document.getElementById('cond-gender').innerText = (gender === 'male' || gender === 'M') ? '남성' : '여성';
         }
 
-        // [수정1] 나이 정보 없음 처리
         const age = btn.getAttribute('data-age');
         document.getElementById('cond-age').innerText = (age && age !== 'null' && age !== '0') ? age + '세' : '정보 없음';
 
-        // [수정1] 거주지 정보 없음 처리
         const region = btn.getAttribute('data-region');
         document.getElementById('cond-region').innerText = (region && region !== 'null') ? region : '정보 없음';
 
-        // 학력 처리 (0 또는 NaN일 경우 맵핑된 '정보 없음' 출력)
         const eduCode = parseInt(btn.getAttribute('data-edu')) || 0;
         document.getElementById('cond-edu').innerText = eduMap[eduCode] || eduMap[0];
 
-        // 고용 상태 처리
         const empCode = parseInt(btn.getAttribute('data-emp')) || 0;
-        let empText = '정보 없음'; // 기본값 정보 없음
+        let empText = '정보 없음';
         if(empCode === 1) empText = '미취업';
         else if(empCode === 2) empText = '재직중';
         else if(empCode === 3) empText = '자영업';
         else if(empCode === 4) empText = '프리랜서';
         else if(empCode === 5) empText = '창업자';
-        else if(empCode === 0) empText = '정보 없음'; // 0일 경우
+        else if(empCode === 0) empText = '정보 없음';
         else empText = '기타';
 
         document.getElementById('cond-emp').innerText = empText;
@@ -334,8 +329,6 @@
         document.getElementById('cond-family').innerText = (btn.getAttribute('data-family') || '1') + '명';
         document.getElementById('cond-child').innerText = (btn.getAttribute('data-child') || '0') + '명';
 
-        // [수정1] 소득 정보 없음 처리 (null이거나 0이거나 NaN일 경우)
-        // 소득은 0원일 수도 있으나, 데이터 미입력(null)과 구분하기 위해 원본 속성 확인
         const pIncomeAttr = btn.getAttribute('data-p-income');
         if (!pIncomeAttr || pIncomeAttr === 'null') {
             document.getElementById('cond-p-income').innerText = '정보 없음';
@@ -440,7 +433,8 @@
             let badgeClass = e.type === '법령' ? "bg-blue-100 text-blue-700" : "bg-orange-100 text-orange-700";
             const div = document.createElement('div');
             div.className = "bg-white border border-slate-200 rounded-xl p-4 shadow-sm";
-            div.innerHTML = `<div class="flex items-center gap-2 mb-2"><span class="${badgeClass} px-2 py-1 rounded text-xs font-bold">${e.type}</span><span class="font-bold text-slate-700 text-sm">${e.title}</span></div><div class="bg-slate-50 p-2 rounded text-xs text-slate-600"><span class="text-blue-600 font-bold mr-1">✔</span><span>${e.matchInfo}</span></div>`;
+            // [수정] e.matchInfo -> e.match_info (서버에서 @SerializedName("match_info")로 보내기 때문)
+            div.innerHTML = `<div class="flex items-center gap-2 mb-2"><span class="${badgeClass} px-2 py-1 rounded text-xs font-bold">${e.type}</span><span class="font-bold text-slate-700 text-sm">${e.title}</span></div><div class="bg-slate-50 p-2 rounded text-xs text-slate-600"><span class="text-blue-600 font-bold mr-1">✔</span><span>${e.match_info}</span></div>`;
             container.appendChild(div);
         });
     }
