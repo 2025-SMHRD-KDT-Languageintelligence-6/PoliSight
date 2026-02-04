@@ -282,10 +282,10 @@
                                     <div class="flex justify-between items-center mb-1">
                                         <div class="flex items-center gap-2">
                                             <span class="text-blue-500 text-xs group-hover:scale-110 transition-transform">🔗</span>
-                                            <strong class="text-slate-800 text-sm" th:text="${item.plcyNm}">정책 이름</strong>
+                                            <strong class="text-slate-800 text-sm" th:text="${item.name}">정책 이름</strong>
                                         </div>
 
-                                        <button th:onclick="openDetailById([[${item.plcyNo}]])"
+                                        <button th:onclick="openDetailById([[${item.id}]])"
                                                 class="flex-shrink-0 ml-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-[11px] px-3 py-1 rounded-lg transition flex items-center gap-1">
                                             <span>자세히</span>
                                             <i class="fa-solid fa-chevron-right text-[9px]"></i>
@@ -343,7 +343,6 @@
                         </th:block>
                     </div>
                 </div>
-            </th:block>
         </section>
     </div>
 </main>
