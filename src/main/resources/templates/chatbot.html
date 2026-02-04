@@ -239,11 +239,37 @@
                         model.autoInteract = false;
 
                         model.buttonMode = true;
-                        model.on('pointertap', () => {
-                            try { model.motion('Tap'); } catch(e) {}
+
+                        // [수정됨] 클릭 시: 추적 끄기 + 정면 보기 + 모션 재생
+                        model.on('pointertap', (e) => {
+                            const point = e.data.global;
+
+                            // HitAreas Id가 "HeatArea" 인지 확인
+                            if (model.hitTest('HeatArea', point.x, point.y)) {
+
+                                // 1. 마우스 추적 일시 중단
+                                isTrackingSuspended = true;
+
+                                // 2. 시선 강제 정면 고정 (0, 0)
+                                if (model.internalModel && model.internalModel.focusController) {
+                                    model.internalModel.focusController.focus(0, 0);
+                                }
+
+                                try {
+                                    // 3. 모션 실행 (3초 정도 유지되는 모션)
+                                    model.motion('TapBody', 0, 3);
+                                } catch(err) {
+                                    console.warn("Motion play failed:", err);
+                                }
+
+                                // 4. 3초 후 추적 재개 (모션 Duration에 맞춤)
+                                setTimeout(() => {
+                                    isTrackingSuspended = false;
+                                }, 3000);
+                            }
                         });
 
-                        // [수정됨] stage 대신 window 전체에 이벤트를 걸어 멀리서도 추적되게 변경
+                        // [기존유지] stage 대신 window 전체에 이벤트를 걸어 멀리서도 추적되게 변경
                         window.addEventListener('mousemove', (e) => {
                             if (!model) return;
 

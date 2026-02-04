@@ -19,6 +19,13 @@
           "FadeInTime": 0.5,
           "FadeOutTime": 0.5
         }
+      ],
+      "TapBody": [
+        {
+          "File": "TouchMotion.json",
+          "FadeInTime": 0.5,
+          "FadeOutTime": 0.5
+        }
       ]
     }
   },
@@ -32,6 +39,12 @@
       "Target": "Parameter",
       "Name": "LipSync",
       "Ids": []
+    }
+  ],
+  "HitAreas": [
+    {
+      "Id": "HeatArea",
+      "Name": "Body"
     }
   ]
 }
