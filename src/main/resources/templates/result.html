@@ -45,9 +45,6 @@
 
 <main class="flex-grow max-w-7xl mx-auto px-4 py-12 w-full">
     <div class="mb-8 border-b border-slate-200 pb-8">
-        <span class="text-sm font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100 mb-2 inline-block">
-            <i class="fa-solid fa-wand-magic-sparkles"></i> AI Analysis Report
-        </span>
         <h1 class="text-3xl font-bold text-slate-900">시뮬레이션 분석 결과</h1>
         <p class="text-slate-500 mt-2">입력하신 조건과 최신 정책 데이터를 기반으로 AI가 도출한 맞춤형 결과입니다.</p>
     </div>
@@ -217,7 +214,7 @@
                                 다른 정책 시뮬레이션 해보기 <i class="fa-solid fa-rotate-right ml-1"></i>
                             </a>
                             <button class="px-4 py-3 border border-slate-200 rounded-xl hover:bg-slate-50 transition text-slate-600" onclick="window.print()">
-                                <i class="fa-solid fa-print"></i> 저장
+                                <i class="fa-solid fa-print"></i> PDF
                             </button>
                         </div>
                     </div>
@@ -277,24 +274,24 @@
                         <div th:if="${result.recommendations != null and !result.recommendations.isEmpty()}">
                             <ul class="space-y-3">
                                 <li th:each="item : ${result.recommendations}"
-                                    class="flex flex-col p-3 bg-white rounded-lg border border-slate-100 hover:border-blue-200 hover:shadow-md transition group">
+                                    class="flex items-center justify-between p-3 bg-white rounded-lg border border-slate-100 hover:border-blue-200 hover:shadow-md transition group">
 
-                                    <div class="flex justify-between items-center mb-1">
-                                        <div class="flex items-center gap-2">
+                                    <div class="flex flex-col flex-1 pr-3">
+                                        <div class="flex items-center gap-2 mb-1">
                                             <span class="text-blue-500 text-xs group-hover:scale-110 transition-transform">🔗</span>
                                             <strong class="text-slate-800 text-sm" th:text="${item.name}">정책 이름</strong>
                                         </div>
 
-                                        <button th:onclick="openDetailById([[${item.id}]])"
-                                                class="flex-shrink-0 ml-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-[11px] px-3 py-1 rounded-lg transition flex items-center gap-1">
-                                            <span>자세히</span>
-                                            <i class="fa-solid fa-chevron-right text-[9px]"></i>
-                                        </button>
+                                        <p class="text-xs text-slate-500 pl-6 leading-relaxed" th:text="${item.reason}">
+                                            추천 사유 내용
+                                        </p>
                                     </div>
 
-                                    <p class="text-xs text-slate-500 pl-6 leading-relaxed" th:text="${item.reason}">
-                                        추천 사유 내용
-                                    </p>
+                                    <button th:onclick="openDetailById([[${item.id}]])"
+                                            class="flex-shrink-0 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-[11px] px-3 py-1 rounded-lg transition flex items-center gap-1">
+                                        <span>자세히</span>
+                                        <i class="fa-solid fa-chevron-right text-[9px]"></i>
+                                    </button>
                                 </li>
                             </ul>
                         </div>
