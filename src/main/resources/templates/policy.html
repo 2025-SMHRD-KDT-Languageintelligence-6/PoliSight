@@ -1205,6 +1205,17 @@
         }
 
         document.addEventListener("DOMContentLoaded", function() {
+            // [수정] 생년월일 캘린더 선택 시 입력창에 반영되도록 이벤트 리스너 추가
+            const hiddenDatePicker = document.getElementById('hiddenDatePicker');
+            const birthDateInput = document.getElementById('birthDate');
+            if (hiddenDatePicker && birthDateInput) {
+                hiddenDatePicker.addEventListener('change', function() {
+                    if (this.value) {
+                        birthDateInput.value = this.value.replace(/-/g, '');
+                    }
+                });
+            }
+
             const siSelect = document.getElementById("regionSi");
             for (const si in areaData) {
                 const option = document.createElement("option");
