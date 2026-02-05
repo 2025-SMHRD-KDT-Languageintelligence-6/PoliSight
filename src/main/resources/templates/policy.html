@@ -546,12 +546,15 @@
         </div>
 
         <div class="border-t border-slate-100 p-5 bg-white flex flex-col sm:flex-row gap-3 items-center justify-between flex-shrink-0 z-10">
-            <button id="btn-easy-toggle" onclick="toggleEasyMode()" class="w-full sm:w-auto px-5 py-3 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 hover:border-slate-300 transition flex items-center justify-center gap-2 text-sm">
-                <i class="fa-regular fa-face-smile"></i>
-                <span>쉬운 말로 보기</span>
+            <button id="btn-consult-lia" onclick="startLiaConsultation()"
+                    th:if="${session.loginMember != null}"
+                    class="w-full sm:flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-200 text-center flex items-center justify-center gap-2 text-sm">
+                <i class="fa-solid fa-comments"></i>
+                <span>리아와 상담하기</span>
             </button>
 
-            <a id="modal-apply-url" href="#" target="_blank" class="w-full sm:flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-200 text-center flex items-center justify-center gap-2 text-sm">
+            <a id="modal-apply-url" href="#" target="_blank"
+               class="w-full sm:flex-1 py-3 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 hover:border-slate-300 transition flex items-center justify-center gap-2 text-sm">
                 <span>신청 홈페이지 바로가기</span>
                 <i class="fa-solid fa-arrow-up-right-from-square"></i>
             </a>
@@ -1191,6 +1194,16 @@
             .catch(err => { console.error(err); closeSaveModal(); alert("저장 실패"); });
         }
 
+        // [추가] 챗봇 상담 시작 함수
+        function startLiaConsultation() {
+            const chatbotBtn = document.getElementById('chatbot-toggle-btn');
+            if (chatbotBtn) {
+                chatbotBtn.click();
+            } else {
+                alert("챗봇 기능을 불러올 수 없습니다.");
+            }
+        }
+
         document.addEventListener("DOMContentLoaded", function() {
             const siSelect = document.getElementById("regionSi");
             for (const si in areaData) {
@@ -1230,7 +1243,7 @@
     /*]]>*/
 </script>
 
-<div th:replace="~{chatbot :: chatbot}"></div>
+<div th:if="${session.loginMember != null}" th:replace="~{chatbot :: chatbot}"></div>
 
 </body>
 </html>
