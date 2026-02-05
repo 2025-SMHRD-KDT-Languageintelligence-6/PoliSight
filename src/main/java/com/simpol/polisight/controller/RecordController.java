@@ -2,6 +2,7 @@ package com.simpol.polisight.controller;
 
 import com.simpol.polisight.dto.MemberDto;
 import com.simpol.polisight.dto.RecordDto;
+import com.simpol.polisight.service.PolicyService; // ★ 추가
 import com.simpol.polisight.service.RecordService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import java.util.List;
 public class RecordController {
 
     private final RecordService recordService;
+    private final PolicyService policyService; // ★ 추가: 정책 상세 정보를 위해 필요
 
     // 기록 페이지 조회
     @GetMapping("/record")
@@ -34,16 +36,15 @@ public class RecordController {
             return "redirect:/login";
         }
 
-        // 2. 세션 객체를 MemberDto로 캐스팅하여 memberIdx 추출 (핵심 수정 부분)
+        // 2. 세션 객체를 MemberDto로 캐스팅하여 memberIdx 추출
         MemberDto loginMember = (MemberDto) loginMemberObj;
         Long memberIdx = loginMember.getMemberIdx();
 
-        // 디버깅용 로그 (확인 후 삭제 가능)
         log.info("기록 조회 요청 - 회원ID: {}, 키워드: {}", memberIdx, keyword);
 
         int pageSize = 5;
 
-        // 3. Service 호출 (memberIdx 전달)
+        // 3. Service 호출
         List<RecordDto> recordList = recordService.getRecords(memberIdx, page, pageSize, keyword);
         int totalCount = recordService.getTotalCount(memberIdx, keyword);
 
@@ -65,6 +66,9 @@ public class RecordController {
         model.addAttribute("totalPages", totalPages);
         model.addAttribute("startPage", startPage);
         model.addAttribute("endPage", endPage);
+
+        // ★ 추가: 정책 상세 모달에서 지역 코드를 한글로 변환하기 위해 필요
+        model.addAttribute("regionMapping", policyService.getRegionMapping());
 
         return "record";
     }

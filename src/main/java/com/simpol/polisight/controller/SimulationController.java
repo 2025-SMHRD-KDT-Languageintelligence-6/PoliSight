@@ -125,6 +125,9 @@ public class SimulationController {
         model.addAttribute("basis", basis);
         model.addAttribute("answer", answer);
 
+        // ★ [추가] 지역 코드 매핑 데이터 추가 (이 부분이 빠져있어서 JS에서 zipMap이 비어있었음)
+        model.addAttribute("regionMapping", policyService.getRegionMapping());
+
         // ★ [삭제됨] Controller에서의 수동 DB 저장 로직 삭제
         // AiSimulationService가 이미 저장했으므로 또 저장하면 중복됨.
 

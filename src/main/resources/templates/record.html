@@ -133,6 +133,7 @@
 </main>
 
 <th:block th:replace="~{HF :: footer}"></th:block>
+<div th:replace="~{chatbot :: chatbot}"></div>
 
 <div id="detail-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center" role="dialog" aria-modal="true">
     <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeDetailModal()"></div>
@@ -258,6 +259,79 @@
     </div>
 </div>
 
+<div id="policy-modal" class="fixed inset-0 z-[150] hidden flex items-center justify-center" role="dialog" aria-modal="true">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeDetail()"></div>
+    <div class="relative bg-white w-full max-w-5xl h-[85vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col transform transition-all">
+        <div class="px-8 py-6 border-b border-slate-100 flex-shrink-0 bg-white z-10 flex justify-between items-start">
+            <div class="pr-10">
+                <h2 id="modal-title" class="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug break-keep">정책 제목</h2>
+                <p id="modal-keywords" class="text-sm text-slate-500 font-medium mt-2">#키워드</p>
+            </div>
+            <button onclick="closeDetail()" class="text-slate-400 hover:text-slate-700 transition p-2 rounded-full hover:bg-slate-100">
+                <i class="fa-solid fa-xmark text-2xl"></i>
+            </button>
+        </div>
+        <div class="flex-grow overflow-y-auto custom-scroll p-6 md:p-8 bg-white">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div class="lg:col-span-8 space-y-10">
+                    <section>
+                        <h4 class="flex items-center text-lg font-bold text-slate-800 mb-3">
+                            <span class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center mr-2 text-sm"><i class="fa-solid fa-circle-info"></i></span>정책 설명
+                        </h4>
+                        <div id="modal-desc-original" class="bg-slate-50 p-6 rounded-2xl text-[15px] leading-relaxed text-slate-700 border border-slate-200 whitespace-pre-wrap"></div>
+                        <div id="modal-desc-easy" class="hidden bg-yellow-50 p-6 rounded-2xl text-[15px] leading-relaxed text-slate-700 border border-yellow-100">(쉬운 말) 아직 변환된 내용이 없습니다.</div>
+                    </section>
+                    <section>
+                        <h4 class="flex items-center text-lg font-bold text-slate-800 mb-3">
+                            <span class="w-8 h-8 rounded-lg bg-pink-100 text-pink-500 flex items-center justify-center mr-2 text-sm"><i class="fa-solid fa-gift"></i></span>지원 내용
+                        </h4>
+                        <div id="modal-support" class="bg-slate-50 p-6 rounded-2xl text-[15px] leading-relaxed text-slate-700 border border-slate-200 whitespace-pre-wrap"></div>
+                    </section>
+                    <section>
+                        <h4 class="flex items-center text-lg font-bold text-slate-800 mb-3">
+                            <span class="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center mr-2 text-sm"><i class="fa-solid fa-file-invoice"></i></span>신청 절차 및 서류
+                        </h4>
+                        <div id="modal-documents" class="bg-slate-50 p-6 rounded-2xl text-[15px] leading-relaxed text-slate-700 border border-slate-200 whitespace-pre-wrap"></div>
+                    </section>
+                    <section>
+                        <h4 class="flex items-center text-sm font-bold text-slate-500 mb-2"><i class="fa-solid fa-circle-exclamation mr-2"></i>기타 유의사항</h4>
+                        <p id="modal-etc" class="text-xs text-slate-400 leading-5"></p>
+                    </section>
+                </div>
+                <div class="lg:col-span-4 space-y-5">
+                    <div class="bg-blue-50/50 border border-blue-100 rounded-2xl p-5">
+                        <h5 class="text-blue-800 font-bold text-sm mb-4 flex items-center"><i class="fa-regular fa-calendar-check mr-2"></i>신청 및 사업 기간</h5>
+                        <div class="space-y-3">
+                            <div><p class="text-xs text-slate-500 mb-1">신청 기간</p><p id="modal-apply-prd" class="text-slate-800 font-bold text-sm"></p></div>
+                            <div class="w-full h-px bg-blue-100"></div>
+                            <div><p class="text-xs text-slate-500 mb-1">사업 운영 기간</p><p id="modal-biz-prd" class="text-slate-800 font-medium text-sm"></p></div>
+                        </div>
+                    </div>
+                    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                        <h5 class="text-slate-800 font-bold text-sm mb-4 flex items-center"><i class="fa-solid fa-user-check mr-2 text-slate-400"></i>신청 자격 요건</h5>
+                        <ul class="space-y-4 text-sm">
+                            <li class="flex justify-between items-start"><span class="text-slate-700 font-bold flex-shrink-0">나이</span><span id="modal-age" class="font-medium text-slate-600 text-right"></span></li>
+                            <li class="flex justify-between items-start"><span class="text-slate-700 font-bold flex-shrink-0">소득</span><div class="text-right"><span id="modal-income" class="font-medium text-slate-600 block"></span><span id="modal-earn-etc" class="text-[10px] text-slate-400 block mt-0.5"></span></div></li>
+                            <li class="flex justify-between items-start"><span class="text-slate-700 font-bold flex-shrink-0">거주지</span><span id="modal-zip" class="font-medium text-slate-600 text-right"></span></li>
+                            <li class="flex justify-between items-start"><span class="text-slate-700 font-bold flex-shrink-0">학력</span><span id="modal-school" class="font-medium text-slate-600 text-right"></span></li>
+                            <li class="flex justify-between items-start"><span class="text-slate-700 font-bold flex-shrink-0">전공</span><span id="modal-major" class="font-medium text-slate-600 text-right"></span></li>
+                            <li class="flex justify-between items-start"><span class="text-slate-700 font-bold flex-shrink-0">취업상태</span><span id="modal-job" class="font-medium text-slate-600 text-right"></span></li>
+                        </ul>
+                    </div>
+                    <div class="pt-2">
+                        <a id="modal-ref1-url" href="#" target="_blank" class="block w-full text-center py-2 text-xs text-slate-900 hover:text-blue-600 hover:underline transition"><i class="fa-solid fa-link mr-1"></i> 참고 사이트 바로가기 1</a>
+                        <a id="modal-ref2-url" href="#" target="_blank" class="block w-full text-center py-1 text-xs text-slate-900 hover:text-blue-600 hover:underline transition"><i class="fa-solid fa-link mr-1"></i> 참고 사이트 바로가기 2</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="border-t border-slate-100 p-5 bg-white flex flex-col sm:flex-row gap-3 items-center justify-between flex-shrink-0 z-10">
+            <button id="btn-easy-toggle" onclick="toggleEasyMode()" class="w-full sm:w-auto px-5 py-3 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 hover:border-slate-300 transition flex items-center justify-center gap-2 text-sm"><i class="fa-regular fa-face-smile"></i><span>쉬운 말로 보기</span></button>
+            <a id="modal-apply-url" href="#" target="_blank" class="w-full sm:flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-200 text-center flex items-center justify-center gap-2 text-sm"><span>신청 홈페이지 바로가기</span><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+        </div>
+    </div>
+</div>
+
 <div id="delete-modal" class="fixed inset-0 z-[120] hidden flex items-center justify-center" aria-modal="true">
     <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="closeDeleteModal()"></div>
     <div class="relative bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center transform scale-95 opacity-0 transition-all duration-200" id="delete-content">
@@ -274,23 +348,143 @@
 </div>
 
 <script th:inline="javascript">
-    const eduMap = {
-        1: "중졸 이하",
-        2: "고교 재학",
-        3: "고졸 예정",
-        4: "고졸",
-        5: "대학 재학",
-        6: "대졸 예정",
-        7: "대졸",
-        8: "석/박사",
-        0: "정보 없음"
-    };
-
+    const eduMap = { 1: "중졸 이하", 2: "고교 재학", 3: "고졸 예정", 4: "고졸", 5: "대학 재학", 6: "대졸 예정", 7: "대졸", 8: "석/박사", 0: "정보 없음" };
     const empMap = { "UNEMPLOYED": "미취업", "EMPLOYED": "재직중", "default": "기타" };
+
+    // [추가] result.html과 동일한 매핑 데이터
+    const rawZipData = /*[[${regionMapping}]]*/ {} || {};
+    const zipMap = Object.assign({ "NONE": "제한없음", "null": "제한없음" }, rawZipData);
+
+    const majorMap = { "HUMANITIES": "인문계열", "SOCIAL": "사회계열", "COMMERCE": "상경계열", "SCIENCE": "이학계열", "ENGINEERING": "공학계열", "ARTS_SPORTS": "예체능계열", "AGRICULTURE": "농산업계열", "ETC": "기타", "NONE": "제한없음" };
+    const schoolMap = { "UNDER_HIGH_SCHOOL": "고졸 미만", "HIGH_SCHOOL_ATTENDING": "고교 재학", "HIGH_SCHOOL_GRADUATING": "고졸 예정", "HIGH_SCHOOL_GRADUATE": "고교 졸업", "UNIV_ATTENDING": "대학 재학", "UNIV_GRADUATING": "대졸 예정", "UNIV_GRADUATE": "대학 졸업", "MASTER_DOCTOR": "석·박사", "ETC": "기타", "NONE": "제한없음" };
+    const jobMap = { "WORKER": "재직자", "SELF_EMPLOYED": "자영업자", "UNEMPLOYED": "미취업자", "FREELANCER": "프리랜서", "DAILY_WORKER": "일용근로자", "ENTREPRENEUR": "(예비)창업자", "SHORT_TERM_WORKER": "단기근로자", "FARMER": "영농종사자", "ETC": "기타", "NONE": "제한없음" };
+    const incomeMap = { "IRRELEVANT": "무관", "ANNUAL_INCOME": "연소득", "ETC": "기타" };
 
     function selectAll() { document.querySelectorAll('input[name="recordChk"]').forEach(cb => cb.checked = true); }
     function deselectAll() { document.querySelectorAll('input[name="recordChk"]').forEach(cb => cb.checked = false); }
     function closeDetailModal() { document.getElementById('detail-modal').classList.add('hidden'); }
+
+    // [추가] 정책 상세 모달 관련 함수 (result.html과 동일)
+    function formatDateStr(str) {
+        if (!str) return str;
+        return str.replace(/(\d{4})(\d{2})(\d{2})/g, '$1-$2-$3');
+    }
+
+    function cleanAndFormatText(text) {
+        if (!text) return "";
+        const lines = text.split('\n');
+        const processed = lines.map(line => {
+            let trimmed = line.trim();
+            if (!trimmed) return "";
+            const isIndented = /^\s+([-ㅇ○□❍•·*]|\d+\.)/.test(line);
+            let cleanContent = trimmed.replace(/^([-ㅇ○□❍•·*]|\d+\.)\s*/, '').trim();
+            if (!cleanContent) return line;
+            if (isIndented) return `    - ${cleanContent}`;
+            if (/^([-ㅇ○□❍•·*]|\d+\.)/.test(trimmed)) return `• ${cleanContent}`;
+            return line;
+        });
+        return processed.join('\n');
+    }
+
+    let easyMode = false;
+    function closeDetail() {
+        const modal = document.getElementById('policy-modal');
+        if (modal) {
+            modal.classList.remove('opacity-100');
+            setTimeout(() => { modal.classList.add('hidden'); }, 200);
+        }
+    }
+
+    function toggleEasyMode() {
+        easyMode = !easyMode;
+        document.getElementById('modal-desc-original').classList.toggle('hidden', easyMode);
+        document.getElementById('modal-desc-easy').classList.toggle('hidden', !easyMode);
+        document.getElementById('btn-easy-toggle').querySelector('span').innerText = easyMode ? "원문 보기" : "쉬운 말로 보기";
+    }
+
+    // [추가] 추천 정책 상세보기 함수
+    function openDetailById(plcyNo) {
+        if (!plcyNo) {
+            alert("해당 정책의 상세 정보를 찾을 수 없습니다.");
+            return;
+        }
+
+        fetch(`/api/policy/${plcyNo}`)
+            .then(res => res.json())
+            .then(d => {
+                const set = (id, val) => {
+                    const el = document.getElementById(id);
+                    if (el) el.innerText = (val && val !== 'null') ? val : '정보 없음';
+                };
+                const parseArr = (data, mapObj) => {
+                        if (!data || (Array.isArray(data) && data.length === 0) || data === 'null' || data === 'NONE') return '제한 없음';
+                        const nationwideList = ["11110","11140","11170","11200","11215","11230","11260","11290","11305","11320","11350","11380","11410","11440","11470","11500","11530","11545","11560","11590","11620","11650","11680","11710","11740","26110","26140","26170","26200","26230","26260","26290","26320","26350","26380","26410","26440","26470","26500","26530","26710","27110","27140","27170","27200","27230","27260","27290","27710","27720","28110","28140","28177","28185","28200","28237","28245","28260","28710","28720","29110","29140","29155","29170","29200","30110","30140","30170","30200","30230","31110","31140","31170","31200","31710","36110","41111","41113","41115","41117","41131","41133","41135","41150","41171","41173","41192","41194","41196","41210","41220","41250","41271","41273","41281","41285","41287","41290","41310","41360","41370","41390","41410","41430","41450","41461","41463","41465","41480","41500","41550","41570","41590","41610","41630","41650","41670","41800","41820","41830","43111","43112","43113","43114","43130","43150","43720","43730","43740","43745","43750","43760","43770","43800","44131","44133","44150","44180","44200","44210","44230","44250","44270","44710","44760","44770","44790","44800","44810","44825","46110","46130","46150","46170","46230","46710","46720","46730","46770","46780","46790","46800","46810","46820","46830","46840","46860","46870","46880","46890","46900","46910","47111","47113","47130","47150","47170","47190","47210","47230","47250","47280","47290","47730","47750","47760","47770","47820","47830","47840","47850","47900","47920","47930","47940","48121","48123","48125","48127","48129","48170","48220","48240","48250","48270","48310","48330","48720","48730","48740","48820","48840","48850","48860","48870","48880","48890","50110","50130","51110","51130","51150","51170","51190","51210","51230","51720","51730","51750","51760","51770","51780","51790","51800","51810","51820","51830","52111","52113","52130","52140","52180","52190","52210","52710","52720","52730","52740","52750","52770","52790","52800"];
+                        try {
+                            if (Array.isArray(data)) {
+                                if (data.length === nationwideList.length) {
+                                    if (data.every(code => nationwideList.includes(String(code)))) return "전국";
+                                }
+                                return data.map(item => { const key = String(item).trim(); return (mapObj && mapObj[key]) ? mapObj[key] : key; }).join(', ');
+                            }
+                            let parsed = (typeof data === 'string' && data.startsWith('[')) ? JSON.parse(data) : data;
+                            if (Array.isArray(parsed)) {
+                                if (parsed.length === nationwideList.length) {
+                                    if (parsed.every(code => nationwideList.includes(String(code)))) return "전국";
+                                }
+                                return parsed.map(item => (mapObj && mapObj[String(item).trim()]) ? mapObj[String(item).trim()] : item).join(', ');
+                            }
+                            return (mapObj && mapObj[data]) ? mapObj[data] : data;
+                        } catch(e) { return (mapObj && mapObj[data]) ? mapObj[data] : data; }
+                    };
+
+                set('modal-title', d.plcyNm);
+
+                let formattedKeywords = "";
+                if (d.plcyKywdNm && d.plcyKywdNm !== 'null') {
+                    formattedKeywords = d.plcyKywdNm.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0).map(tag => tag.startsWith('#') ? tag : '#' + tag).join(' ');
+                }
+                if(document.getElementById('modal-keywords')) document.getElementById('modal-keywords').innerText = formattedKeywords;
+
+                set('modal-desc-original', cleanAndFormatText(d.plcyExplnCn));
+                set('modal-support', cleanAndFormatText(d.plcySprtCn));
+                set('modal-age', `만 ${d.sprtTrgtMinAge || 0}세 ~ ${d.sprtTrgtMaxAge || 99}세`);
+                const incomeText = (d.earnCndSeCd === 'IRRELEVANT') ? '무관' : `[${parseArr(d.earnCndSeCd, incomeMap)}] ${d.earnMinAmt || 0}만원 ~ ${(!d.earnMaxAmt || d.earnMaxAmt === 0) ? '무제한' : d.earnMaxAmt + '만원'}`;
+                set('modal-income', incomeText);
+                set('modal-earn-etc', d.earnEtcCn);
+                set('modal-zip', parseArr(d.zipCd, zipMap));
+                set('modal-school', parseArr(d.schoolCd, schoolMap));
+                set('modal-major', parseArr(d.plcyMajorCd, majorMap));
+                set('modal-job', parseArr(d.jobCd, jobMap));
+                set('modal-apply-prd', formatDateStr(d.aplyYmd));
+                const bizDates = (d.bizPrdBgngYmd && d.bizPrdEndYmd) ? `${d.bizPrdBgngYmd} ~ ${d.bizPrdEndYmd}` : '정보 없음';
+                set('modal-biz-prd', bizDates);
+                set('modal-documents', cleanAndFormatText(d.sbmsnDcmntCn));
+
+                let etcText = d.etcMttrCn;
+                if (!etcText || etcText === 'null' || etcText.trim() === '') {
+                    etcText = "정책 내용은 정부 및 지자체의 사정에 따라 사전 예고 없이 변경되거나 종료될 수 있습니다.";
+                }
+                if(document.getElementById('modal-etc')) document.getElementById('modal-etc').innerText = etcText;
+
+                const setLink = (id, url) => {
+                    const el = document.getElementById(id);
+                    if(el) {
+                        el.href = url || '#';
+                        el.style.display = (url && url !== 'null' && url.trim() !== '') ? 'flex' : 'none';
+                    }
+                };
+                setLink('modal-apply-url', d.aplyUrlAddr);
+                setLink('modal-ref1-url', d.refUrlAddr1);
+                setLink('modal-ref2-url', d.refUrlAddr2);
+
+                const modal = document.getElementById('policy-modal');
+                if (modal) {
+                    modal.classList.remove('hidden');
+                    setTimeout(() => modal.classList.add('opacity-100'), 10);
+                }
+            })
+            .catch(err => console.error("데이터 로드 실패:", err));
+    }
 
     function openDetailModal(btn) {
         document.getElementById('modal-policy-name').innerText = btn.getAttribute('data-title');
@@ -415,13 +609,26 @@
         });
     }
 
+    // [수정] 자세히 버튼 추가
     function renderRecommendations(recs) {
         const container = document.getElementById('modal-recommendations');
         container.innerHTML = '';
         recs.forEach(r => {
             const li = document.createElement('li');
-            li.className = "flex flex-col p-3 bg-white rounded-lg border border-slate-100 hover:border-blue-200 transition";
-            li.innerHTML = `<div class="flex justify-between items-center mb-1"><strong class="text-slate-800 text-sm">🔗 ${r.name}</strong></div><p class="text-xs text-slate-500 pl-4">${r.reason}</p>`;
+            li.className = "flex items-center justify-between p-3 bg-white rounded-lg border border-slate-100 hover:border-blue-200 hover:shadow-md transition group";
+            li.innerHTML = `
+                <div class="flex flex-col flex-1 pr-3">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="text-blue-500 text-xs group-hover:scale-110 transition-transform">🔗</span>
+                        <strong class="text-slate-800 text-sm">${r.name}</strong>
+                    </div>
+                    <p class="text-xs text-slate-500 pl-6 leading-relaxed">${r.reason}</p>
+                </div>
+                <button onclick="openDetailById('${r.id}')" class="flex-shrink-0 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-[11px] px-3 py-1 rounded-lg transition flex items-center gap-1">
+                    <span>자세히</span>
+                    <i class="fa-solid fa-chevron-right text-[9px]"></i>
+                </button>
+            `;
             container.appendChild(li);
         });
     }
@@ -433,7 +640,6 @@
             let badgeClass = e.type === '법령' ? "bg-blue-100 text-blue-700" : "bg-orange-100 text-orange-700";
             const div = document.createElement('div');
             div.className = "bg-white border border-slate-200 rounded-xl p-4 shadow-sm";
-            // [수정] e.matchInfo -> e.match_info (서버에서 @SerializedName("match_info")로 보내기 때문)
             div.innerHTML = `<div class="flex items-center gap-2 mb-2"><span class="${badgeClass} px-2 py-1 rounded text-xs font-bold">${e.type}</span><span class="font-bold text-slate-700 text-sm">${e.title}</span></div><div class="bg-slate-50 p-2 rounded text-xs text-slate-600"><span class="text-blue-600 font-bold mr-1">✔</span><span>${e.match_info}</span></div>`;
             container.appendChild(div);
         });
