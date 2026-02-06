@@ -53,14 +53,14 @@
 
                 <div id="chatbot-right-panel">
                     <div class="chatbot-header">
-                        <span>PoliSight AI</span>
+                        <span>AI 상담원 리아</span>
                         <button id="chatbot-close-btn">&times;</button>
                     </div>
 
                     <div id="chatbot-messages">
                         <div class="message bot-message">
                             안녕하세요! 😊<br>
-                            정책 시뮬레이션에 대해<br>
+                            정책 상담원 리아입니다!<br>
                             궁금한 점을 물어봐 주세요.
                         </div>
                     </div>
@@ -158,17 +158,37 @@
                             const data = await response.json();
                             addMessage(data.answer, 'bot-message');
 
-                            // 답변 시에도 모션이 겹치지 않게 처리
+                            // 부정적/사과 키워드 정의
+                            const negativeKeywords = [
+                                "죄송", "미안", "오류", "실패", "찾지 못했", "결과가 없",
+                                "알 수 없", "지원하지 않", "곤란", "어려울 것 같", "어려워",
+                                "부족", "다시 한번 말씀해 주시겠어요?", "아직 제가 공부 중이에요"
+                            ];
+
+                            // 답변에 키워드가 포함되어 있는지 확인
+                            const isNegativeResponse = negativeKeywords.some(keyword => data.answer.includes(keyword));
+
+                            // 답변 시 모션 처리
                             if (model && !isMotionPlaying) {
-                                try { model.motion('Tap'); } catch(e){}
+                                if (isNegativeResponse) {
+                                    // 부정적 답변일 경우 Fail 모션 실행 (마우스 추적 정지 포함)
+                                    playFailMotion();
+                                } else {
+                                    // 일반 답변일 경우 기존 로직 유지
+                                    try { model.motion('Tap'); } catch(e){}
+                                }
                             }
                         } else {
                             addMessage("죄송해요, 연결이 원활하지 않아요 😥", 'bot-message');
+                            // 통신 오류 시에도 Fail 모션 실행
+                            playFailMotion();
                         }
 
                     } catch (error) {
                         console.error('Chat Error:', error);
                         addMessage("오류가 발생했습니다.", 'bot-message');
+                        // 에러 발생 시에도 Fail 모션 실행
+                        playFailMotion();
                     }
                 }
 
@@ -213,6 +233,40 @@
 
                     } catch (e) {
                         console.warn(e);
+                        // 에러 발생 시 즉시 잠금 해제
+                        isMotionPlaying = false;
+                        isTrackingSuspended = false;
+                    }
+                }
+
+                // [신규 추가] FailMotion 실행 함수 (HelloMotion과 동일한 방식 적용)
+                function playFailMotion() {
+                    if (!model) return;
+
+                    // 이미 모션이 재생 중이라면 실행하지 않음
+                    if (isMotionPlaying) return;
+
+                    try {
+                        // 상태 잠금 (마우스 추적 방지)
+                        isMotionPlaying = true;
+                        isTrackingSuspended = true;
+
+                        // 시선 정면 고정
+                        if (model.internalModel && model.internalModel.focusController) {
+                            model.internalModel.focusController.focus(0, 0);
+                        }
+
+                        // Fail 모션 실행 (model3.json의 Motions 그룹명 'Fail')
+                        model.motion('Fail', 0, 3);
+
+                        // FailMotion의 Duration이 약 2.967초이므로 3초 대기 후 잠금 해제
+                        setTimeout(() => {
+                            isMotionPlaying = false;
+                            isTrackingSuspended = false;
+                        }, 3000);
+
+                    } catch (e) {
+                        console.warn("FailMotion play failed:", e);
                         // 에러 발생 시 즉시 잠금 해제
                         isMotionPlaying = false;
                         isTrackingSuspended = false;

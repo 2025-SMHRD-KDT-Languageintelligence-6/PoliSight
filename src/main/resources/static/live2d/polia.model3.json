@@ -26,6 +26,13 @@
           "FadeInTime": 0.5,
           "FadeOutTime": 0.5
         }
+      ],
+      "Fail": [
+        {
+          "File": "FailMotion.json",
+          "FadeInTime": 0.1,
+          "FadeOutTime": 0.5
+        }
       ]
     }
   },
