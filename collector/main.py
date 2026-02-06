@@ -141,34 +141,51 @@ def save_to_mysql(df):
         return
 
     db_url = f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-    
-    try:
-        engine = create_engine(db_url)
-        with engine.connect() as conn:
-            print(f"▶ DB({DB_NAME}) 연결 성공. 데이터 동기화 시작...")
-            
-            # [수정된 부분] 
-            # 기존: 수집된 ID만 골라서 삭제 (사라진 데이터가 남음)
-            # 변경: 테이블의 모든 데이터를 삭제 (사라진 데이터도 제거됨)
-            
-            # 방법 1: TRUNCATE (가장 빠름, 단 외래키 제약조건이 있으면 에러 가능성 있음)
-            try:
-                conn.execute(text("TRUNCATE TABLE policy"))
-            except:
-                # TRUNCATE 실패 시 (권한 부족이나 FK 문제 등) DELETE 사용
-                conn.execute(text("DELETE FROM policy"))
-            
-            conn.commit() # 삭제 확정
+    engine = create_engine(db_url)
 
-            # 새 데이터 입력
-            # chunksize를 설정하면 데이터가 많을 때 메모리 에러를 방지합니다 (선택사항)
-            df.to_sql(name='policy', con=conn, if_exists='append', index=False, chunksize=1000)
-            
+    try:
+        with engine.connect() as conn:
+            print(f"▶ DB({DB_NAME}) 연결 성공. 안전한 동기화(Sync) 시작...")
+
+            # [Step 1] 임시 테이블(policy_temp)에 API 데이터 전체 업로드
+            # 기존 테이블(policy)은 건드리지 않음 -> 시뮬레이션 데이터 안전함
+            df.to_sql(name='policy_temp', con=conn, if_exists='replace', index=False, chunksize=1000)
+
+            # [Step 2] UPSERT: 존재하는 정책은 내용 갱신, 없는 건 추가
+            # 이 과정에서는 DELETE가 발생하지 않으므로 시뮬레이션 데이터가 절대 지워지지 않음
+            columns = df.columns.tolist()
+            # plcyNo를 제외한 나머지 컬럼들에 대해 "기존 값 = 새 값" 구문 만들기
+            update_stmt = ", ".join([f"{col}=VALUES({col})" for col in columns if col != 'plcyNo'])
+            cols_str = ", ".join(columns)
+
+            upsert_sql = f"""
+            INSERT INTO policy ({cols_str})
+            SELECT {cols_str} FROM policy_temp
+            ON DUPLICATE KEY UPDATE
+            {update_stmt};
+            """
+            conn.execute(text(upsert_sql))
             conn.commit()
-            print(f"🎉 성공! 기존 데이터를 모두 비우고, 총 {len(df)}건을 새로 저장했습니다.")
-        
+            print("  - 기존 정책 업데이트 및 신규 정책 추가 완료")
+
+            # [Step 3] DELETE: API에 없는 정책만 골라서 삭제 (핵심!)
+            # 여기서 삭제되는 정책은 실제로 사라진 것이므로, 연결된 시뮬레이션 기록도 같이 지워지는 게 맞음(Cascade)
+            delete_sql = """
+            DELETE FROM policy
+            WHERE plcyNo NOT IN (SELECT plcyNo FROM policy_temp);
+            """
+            result = conn.execute(text(delete_sql))
+            conn.commit()
+            print(f"  - API에서 사라진 정책 {result.rowcount}건 삭제 완료 (관련 시뮬레이션 기록도 자동 정리됨)")
+
+            # [Step 4] 뒷정리
+            conn.execute(text("DROP TABLE policy_temp"))
+            conn.commit()
+
+            print(f"🎉 동기화 완료! 총 {len(df)}건의 정책이 최신 상태입니다.")
+
     except Exception as e:
-        print(f"❌ DB 저장 실패: {e}")
+        print(f"❌ DB 작업 실패: {e}")
         
 # =============================================================================
 # 메인 실행부
