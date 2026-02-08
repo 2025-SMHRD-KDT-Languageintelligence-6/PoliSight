@@ -66,6 +66,7 @@
                     </div>
 
                     <div class="chatbot-input-area">
+                        <input type="hidden" id="hidden-user-name" th:value="${session.loginMember.memberName}">
                         <input type="text" id="chatbot-input" placeholder="질문을 입력하세요...">
                         <button id="chatbot-send-btn">전송</button>
                     </div>
@@ -142,16 +143,24 @@
                     const text = input.value.trim();
                     if (!text) return;
 
+                    // 1. 내가 쓴 메시지 화면에 표시
                     addMessage(text, 'user-message');
                     input.value = '';
 
+                    // [추가됨] 아까 숨겨둔 태그에서 이름(memberName) 꺼내오기!
+                    const userNameInput = document.getElementById('hidden-user-name');
+                    const userName = userNameInput ? userNameInput.value : "방문자";
+
                     try {
-                        const response = await fetch('/api/chat', {
+                        const response = await fetch('/api/ai/chat', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                             },
-                            body: JSON.stringify({ user_input: text })
+                            body: JSON.stringify({
+                                user_input: text,   // 질문
+                                user_name: userName // [추가됨] 이름도 같이 전송!
+                            })
                         });
 
                         if (response.ok) {

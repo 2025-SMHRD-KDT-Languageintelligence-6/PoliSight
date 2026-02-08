@@ -28,7 +28,9 @@ public class AiSimulationService {
     private final PolicyMapper policyMapper;
     private final RecordMapper recordMapper;
 
-    private static final String AI_SERVER_URL = "https://lanelle-bottlelike-everett.ngrok-free.dev/simulate";
+    // [수정] application.properties에서 주소 가져오기
+    @org.springframework.beans.factory.annotation.Value("${ai.server.url}")
+    private String aiServerUrl;
 
     private final OkHttpClient client = new OkHttpClient.Builder()
             .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
@@ -68,8 +70,11 @@ public class AiSimulationService {
             log.info("📤 [자바가 보내는 JSON]: " + jsonBody);
 
             RequestBody body = RequestBody.create(jsonBody, MediaType.get("application/json; charset=utf-8"));
+            // [수정] 기본 주소 뒤에 "/simulate"를 직접 붙여줍니다.
+            String simUrl = this.aiServerUrl + "/simulate";
+
             Request request = new Request.Builder()
-                    .url(AI_SERVER_URL)
+                    .url(simUrl)
                     .post(body)
                     .build();
 
@@ -249,22 +254,39 @@ public class AiSimulationService {
     }
 
     private String safeString(String input) { return (input != null) ? input : ""; }
+    /**
+     * [챗봇 기능] 리아와 대화하기
+     * 수정됨: userName 파라미터 추가
+     */
+    public com.simpol.polisight.dto.ChatDto.Response chatWithRia(String userMessage,String userName) {
+        // simulate 주소에서 chat 주소로 변환
+        String chatUrl = this.aiServerUrl + "/chat";
 
-    public com.simpol.polisight.dto.ChatDto.Response chatWithRia(String userMessage) {
-        String baseUrl = AI_SERVER_URL.replace("/simulate", "");
-        String chatUrl = baseUrl + "/chat";
         try {
-            java.util.Map<String, String> data = new java.util.HashMap<>();
+            // 보낼 데이터 포장 (Map 사용)
+            Map<String, String> data = new HashMap<>();
             data.put("user_input", userMessage);
+            data.put("user_name", userName); // ★ 추가됨: 이름도 같이 보내야 함!
+
             String jsonBody = gson.toJson(data);
+            log.info("🤖 챗봇 요청: {} (이름: {})", userMessage, userName);
+
             RequestBody body = RequestBody.create(jsonBody, MediaType.get("application/json; charset=utf-8"));
             Request request = new Request.Builder().url(chatUrl).post(body).build();
+
             try (Response response = client.newCall(request).execute()) {
                 if (response.isSuccessful() && response.body() != null) {
-                    return gson.fromJson(response.body().string(), com.simpol.polisight.dto.ChatDto.Response.class);
+                    String resString = response.body().string();
+                    log.info("✅ 챗봇 응답: {}", resString);
+                    return gson.fromJson(resString, com.simpol.polisight.dto.ChatDto.Response.class);
                 }
             }
-        } catch (Exception e) { log.error("채팅 오류", e); }
-        return new com.simpol.polisight.dto.ChatDto.Response();
+        } catch (Exception e){
+            log.error("채팅 오류", e);
+        }
+        // 에러 시 빈 응답 대신 에러 메시지 담아서 리턴
+        com.simpol.polisight.dto.ChatDto.Response errorRes = new com.simpol.polisight.dto.ChatDto.Response();
+        errorRes.setAnswer("죄송해요, 리아와 연결이 안 돼요 😢");
+        return errorRes;
     }
 }

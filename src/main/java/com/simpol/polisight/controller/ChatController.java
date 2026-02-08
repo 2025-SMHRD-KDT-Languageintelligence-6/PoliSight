@@ -1,25 +1,27 @@
 package com.simpol.polisight.controller;
 
 import com.simpol.polisight.dto.ChatDto;
+// [수정] 없는 AiService 대신, 우리가 수정한 AiSimulationService를 가져옵니다.
 import com.simpol.polisight.service.AiSimulationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
-@RestController // ★ 중요: 화면(HTML)이 아니라 '데이터(JSON)'만 주고받는 컨트롤러입니다.
-@RequestMapping("/api/chat") // 웹(JS)에서 이 주소로 요청을 보냅니다.
+@RestController
+@RequestMapping("/api/ai")
 @RequiredArgsConstructor
 public class ChatController {
 
-    private final AiSimulationService aiService;
+    // [수정] 여기도 AiSimulationService로 변경!
+    private final AiSimulationService aiSimulationService;
 
-    // 프론트엔드(채팅창)에서 보낸 메시지를 받아서 -> Python 리아에게 전달 -> 결과를 반환
-    @PostMapping
+    @PostMapping("/chat")
     public ChatDto.Response chat(@RequestBody ChatDto.Request request) {
-        log.info("📨 [리아 채팅 요청] 사용자 입력: {}", request.getUser_input());
 
-        // Service에 추가했던 메서드 호출
-        return aiService.chatWithRia(request.getUser_input());
+        log.info("📨 [리아 채팅] 사용자: {}, 입력: {}", request.getUserName(), request.getUserInput());
+
+        // [수정] 서비스 이름이 바뀌었으니 호출하는 변수명도 변경
+        return aiSimulationService.chatWithRia(request.getUserInput(), request.getUserName());
     }
 }
