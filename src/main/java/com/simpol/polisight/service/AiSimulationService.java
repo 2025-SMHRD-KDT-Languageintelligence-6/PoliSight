@@ -254,39 +254,4 @@ public class AiSimulationService {
     }
 
     private String safeString(String input) { return (input != null) ? input : ""; }
-    /**
-     * [챗봇 기능] 리아와 대화하기
-     * 수정됨: userName 파라미터 추가
-     */
-    public com.simpol.polisight.dto.ChatDto.Response chatWithRia(String userMessage,String userName) {
-        // simulate 주소에서 chat 주소로 변환
-        String chatUrl = this.aiServerUrl + "/chat";
-
-        try {
-            // 보낼 데이터 포장 (Map 사용)
-            Map<String, String> data = new HashMap<>();
-            data.put("user_input", userMessage);
-            data.put("user_name", userName); // ★ 추가됨: 이름도 같이 보내야 함!
-
-            String jsonBody = gson.toJson(data);
-            log.info("🤖 챗봇 요청: {} (이름: {})", userMessage, userName);
-
-            RequestBody body = RequestBody.create(jsonBody, MediaType.get("application/json; charset=utf-8"));
-            Request request = new Request.Builder().url(chatUrl).post(body).build();
-
-            try (Response response = client.newCall(request).execute()) {
-                if (response.isSuccessful() && response.body() != null) {
-                    String resString = response.body().string();
-                    log.info("✅ 챗봇 응답: {}", resString);
-                    return gson.fromJson(resString, com.simpol.polisight.dto.ChatDto.Response.class);
-                }
-            }
-        } catch (Exception e){
-            log.error("채팅 오류", e);
-        }
-        // 에러 시 빈 응답 대신 에러 메시지 담아서 리턴
-        com.simpol.polisight.dto.ChatDto.Response errorRes = new com.simpol.polisight.dto.ChatDto.Response();
-        errorRes.setAnswer("죄송해요, 리아와 연결이 안 돼요 😢");
-        return errorRes;
-    }
 }

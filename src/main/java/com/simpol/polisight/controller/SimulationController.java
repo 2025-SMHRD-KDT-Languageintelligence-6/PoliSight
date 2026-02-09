@@ -3,7 +3,6 @@ package com.simpol.polisight.controller;
 import com.simpol.polisight.dto.*;
 import com.simpol.polisight.service.AiSimulationService;
 import com.simpol.polisight.service.PolicyService;
-// import com.simpol.polisight.service.RecordService; // 더 이상 여기서 직접 저장 안 함
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
