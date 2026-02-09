@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AiSimulationService {
+public class SimulationService {
 
     private final PolicyMapper policyMapper;
     private final RecordMapper recordMapper;

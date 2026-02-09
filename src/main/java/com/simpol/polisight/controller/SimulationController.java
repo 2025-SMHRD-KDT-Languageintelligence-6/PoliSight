@@ -1,7 +1,7 @@
 package com.simpol.polisight.controller;
 
 import com.simpol.polisight.dto.*;
-import com.simpol.polisight.service.AiSimulationService;
+import com.simpol.polisight.service.SimulationService;
 import com.simpol.polisight.service.PolicyService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class SimulationController {
 
     private final PolicyService policyService;
-    private final AiSimulationService aiSimulationService;
+    private final SimulationService SimulationService;
     // private final RecordService recordService; // 여기서 사용 안 함 (Service 내부로 이동됨)
 
     // 1. 시뮬레이션 입력 페이지 (기존 유지)
@@ -102,7 +102,7 @@ public class SimulationController {
         // 3. AI 분석 호출 (파라미터 3개로 변경!)
         // ★ Service 내부에서 DB 저장(JSON 통째로)까지 자동으로 수행함
         // =================================================================
-        AiResponseDto aiResponseDto = aiSimulationService.getPolicyRecommendation(condition, member, policyId);
+        AiResponseDto aiResponseDto = SimulationService.getPolicyRecommendation(condition, member, policyId);
 
         // 기본값 설정 (화면 표시용)
         String content = "분석 결과 없음";
