@@ -18,6 +18,9 @@ public class AiRequestDto {
     // 3. 정책 정보 (정책명, 지역) - 아래 내부 클래스 사용
     private PolicyInfo policy;
 
+    // [★추가됨] Python 서버가 'userPrompt'를 기다리고 있어서 이거 한 줄 추가해야 함!
+    private String userPrompt;
+
     // 4. 지역 코드 (Python 서버가 region_code로 인식함)
     @SerializedName("region_code")
     private String regionCode;

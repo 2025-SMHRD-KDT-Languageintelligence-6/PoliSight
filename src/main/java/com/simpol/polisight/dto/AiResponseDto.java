@@ -9,6 +9,10 @@ import java.util.List;
 @NoArgsConstructor
 public class AiResponseDto {
 
+    // [★추가됨] 0. 응답 타입 (SIMULATION 또는 ERROR)
+    @SerializedName("responseType")
+    private String responseType;
+
     // 1. 적합 여부
     @SerializedName("suitability")
     private String suitability;
@@ -60,8 +64,11 @@ public class AiResponseDto {
     public static class RecommendationItem {
         @SerializedName("name") private String name;
         @SerializedName("reason") private String reason;
-        // DB에서 조회한 정책 ID를 담을 필드 (JSON에는 없지만 Java에서 채워넣음)
+
+        // [★수정됨] 안전하게 어노테이션 추가
+        @SerializedName("id")
         private String id;
+
     } // <--- ★★★ 여기서 닫는 괄호(})가 반드시 있어야 합니다!!! ★★★
 
     // ==========================================
