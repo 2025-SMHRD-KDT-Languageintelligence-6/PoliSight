@@ -5,14 +5,12 @@ import com.simpol.polisight.dto.PolicyDto;
 import com.simpol.polisight.dto.PolicySearchCondition;
 import com.simpol.polisight.mapper.FavoriteMapper;
 import com.simpol.polisight.service.PolicyService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +32,9 @@ public class PolicyController {
     @GetMapping("/policy")
     public String showPolicySearch(
             @ModelAttribute PolicySearchCondition condition,
-            Model model, HttpSession session) {
+            Model model, HttpSession session,
+            @RequestHeader(value = "X-Requested-With", required = false) String requestedWith,
+            HttpServletResponse response) {
 
         // ✅ [수정] 로그인 정보를 가져와서 검색 조건(condition)에 추가
         // 이렇게 해야 DB(XML)에서 "누가" 즐겨찾기 했는지 알 수 있음
@@ -56,6 +56,12 @@ public class PolicyController {
         model.addAttribute("condition", condition);
         model.addAttribute("favIds", favIds);
         model.addAttribute("regionMapping", policyService.getRegionMapping());
+
+        if ("XMLHttpRequest".equals(requestedWith)) {
+            int count = (policies != null) ? policies.size() : 0;
+            response.setHeader("X-Total-Count", String.valueOf(count)); // 👈 핵심: 건수 정보 전송
+            return "policy :: policyListFragment";
+        }
 
         return "policy";
     }

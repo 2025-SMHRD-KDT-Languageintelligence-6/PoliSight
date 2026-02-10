@@ -304,7 +304,7 @@
 
             <h3 class="font-extrabold text-lg flex items-center gap-2">
                 정책 검색 결과
-                <span class="text-blue-600 text-base"
+                <span id="total-count" class="text-blue-600 text-base"
                       th:text="${policyList != null ? #lists.size(policyList) + '건' : '0건'}">0건</span>
             </h3>
 
@@ -314,7 +314,7 @@
                     <div class="relative">
                         <input type="checkbox" id="hideExpired" name="hideExpired" value="true"
                                form="filter-form"
-                               onchange="document.getElementById('filter-form').submit()"
+                               onchange="reloadPolicyList()"
                                th:checked="${param.hideExpired != null and #strings.toString(param.hideExpired) == 'true'}"
                                class="peer sr-only">
 
@@ -327,7 +327,7 @@
 
                 <select id="sortOrder" name="sortOrder"
                         form="filter-form"
-                        onchange="document.getElementById('filter-form').submit()"
+                        onchange="reloadPolicyList()"
                         class="text-xs font-bold text-slate-700 bg-transparent border-none outline-none cursor-pointer p-0 pr-4 focus:ring-0 hover:text-blue-600 transition appearance-none bg-no-repeat bg-[right_center]"
                         style="background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' stroke=\'%23334155\' viewBox=\'0 0 24 24\' stroke-width=\'3\'%3e%3cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' d=\'M19 9l-7 7-7-7\'/%3e%3c/svg%3e'); background-size: 10px;">
 
@@ -343,7 +343,8 @@
             </div>
         </div>
 
-        <div class="space-y-3 custom-scroll md:overflow-y-auto md:pr-2 h-auto md:h-[850px] w-full min-w-0">
+        <div id="policy-list-container" th:fragment="policyListFragment"
+             class="space-y-3 custom-scroll md:overflow-y-auto md:pr-2 h-auto md:h-[850px] w-full min-w-0">
 
             <div th:if="${policyList == null or #lists.isEmpty(policyList)}"
                  class="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50">
@@ -699,6 +700,53 @@
             const keyword = document.getElementById('visual-keyword').value;
             document.getElementById('hidden-keyword').value = keyword;
             document.getElementById('filter-form').submit();
+        }
+
+        function reloadPolicyList() {
+            const form = document.getElementById('filter-form');
+            const formData = new FormData(form);
+
+            // 정렬과 마감제외 값 강제 주입
+            const sortVal = document.getElementById('sortOrder').value;
+            const hideVal = document.getElementById('hideExpired').checked;
+
+            formData.set('sortOrder', sortVal);
+            formData.set('hideExpired', hideVal);
+
+            const params = new URLSearchParams(formData);
+            const container = document.getElementById('policy-list-container');
+
+            // 로딩 중 효과 (반투명)
+            container.style.opacity = '0.5';
+
+            // AJAX 요청
+            fetch('/policy?' + params.toString(), {
+                method: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error("Network response was not ok");
+
+                // ▼ [추가됨] 서버가 보낸 건수(Header)를 읽어서 화면 숫자 업데이트
+                const totalCount = response.headers.get("X-Total-Count");
+                if (totalCount !== null) {
+                    const countSpan = document.getElementById("total-count");
+                    if (countSpan) countSpan.innerText = totalCount + "건";
+                }
+
+                return response.text();
+            })
+            .then(html => {
+                // (이후 코드는 기존과 동일)
+                container.innerHTML = html;
+                container.style.opacity = '1';
+                // window.history.pushState... (삭제하셨으면 없음)
+            })
+            .catch(err => {
+                console.error(err);
+                container.style.opacity = '1';
+                alert("리스트를 불러오지 못했습니다.");
+            });
         }
 
         function forceClearAllInputs() {
