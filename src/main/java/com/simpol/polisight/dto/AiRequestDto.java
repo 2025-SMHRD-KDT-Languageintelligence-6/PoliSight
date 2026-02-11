@@ -38,5 +38,9 @@ public class AiRequestDto {
 
         @SerializedName("지역") // Python 서버가 "지역"이라는 한글 키를 원함
         private String region;
+
+        // ★ [여기가 핵심] ID 필드 추가! (이게 없어서 그동안 못 받은 겁니다)
+        @SerializedName("id") // Python에게 "id"라는 이름으로 보냅니다.
+        private String id;
     }
 }

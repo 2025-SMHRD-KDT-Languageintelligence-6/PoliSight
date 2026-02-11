@@ -63,6 +63,7 @@ public class SimulationService {
 
         Map<String, String> policyInfo = new HashMap<>();
         policyInfo.put("정책명", pName);
+        policyInfo.put("id", plcyNo);
         requestData.put("policy", policyInfo);
 
         try {
