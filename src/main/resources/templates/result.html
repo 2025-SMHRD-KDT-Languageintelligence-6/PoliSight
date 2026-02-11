@@ -33,27 +33,87 @@
         .prose ol { list-style-type: decimal; padding-left: 1.5em; margin-bottom: 1em; }
         .prose strong { color: #1e293b; font-weight: 700; }
         .prose p { margin-bottom: 0.8em; }
+
+        /* [수정0] @media print 추가 및 PDF 스타일 정의 */
+        @media print {
+            @page {
+                margin: 10mm;
+                size: A4;
+            }
+            body {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                background-color: white !important;
+            }
+            /* [수정1] 불필요한 요소 제거 (헤더, 푸터, 챗봇 등) */
+            nav, footer, .no-print, button, .chatbot-wrapper {
+                display: none !important;
+            }
+            /* 링크 URL 텍스트 출력 방지 */
+            a[href]:after {
+                content: none !important;
+            }
+            /* 레이아웃 구조 변경 (Grid -> Block) */
+            main {
+                width: 100% !important;
+                max-width: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .grid {
+                display: block !important;
+            }
+            aside, section {
+                width: 100% !important;
+                margin-bottom: 20px !important;
+            }
+            /* 그림자 제거로 잉크 절약 및 깔끔한 출력 */
+            .shadow-lg, .shadow-md, .shadow-sm {
+                box-shadow: none !important;
+                border: 1px solid #e2e8f0 !important;
+            }
+            /* [수정3] 덩어리 유지 클래스 정의 (중간에 잘리지 않음) */
+            .break-inside-avoid {
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+            /* 텍스트 내용 모두 펼치기 */
+            .line-clamp-3 {
+                -webkit-line-clamp: unset !important;
+                display: block !important;
+            }
+            .overflow-y-auto, .overflow-hidden {
+                overflow: visible !important;
+                max-height: none !important;
+            }
+            /* 애니메이션 제거 */
+            .animate-fade-in {
+                opacity: 1 !important;
+                transform: none !important;
+                animation: none !important;
+            }
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen">
 
-<nav th:replace="~{HF :: nav}" class="sticky top-0 z-40 bg-white/90 border-b border-slate-200 backdrop-blur-md">
+<nav th:replace="~{HF :: nav}" class="sticky top-0 z-40 bg-white/90 border-b border-slate-200 backdrop-blur-md print:hidden">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-14 items-center"><span>PoliSight</span></div>
     </div>
 </nav>
 
-<main class="flex-grow max-w-7xl mx-auto px-4 py-12 w-full">
-    <div class="mb-8 border-b border-slate-200 pb-8">
+<main class="flex-grow max-w-7xl mx-auto px-4 py-12 w-full print:py-4">
+    <div class="mb-8 border-b border-slate-200 pb-8 print:pb-4 print:mb-4">
         <h1 class="text-3xl font-bold text-slate-900">시뮬레이션 분석 결과</h1>
         <p class="text-slate-500 mt-2">입력하신 조건과 최신 정책 데이터를 기반으로 AI가 도출한 맞춤형 결과입니다.</p>
     </div>
 
-    <div class="grid lg:grid-cols-12 gap-8">
-        <aside class="lg:col-span-4 space-y-6">
+    <div class="grid lg:grid-cols-12 gap-8 print:block print:space-y-6">
+        <aside class="lg:col-span-4 space-y-6 print:w-full">
 
             <div class="bg-white rounded-2xl border border-blue-100 shadow-lg shadow-blue-50/50 p-6 relative overflow-hidden animate-fade-in" th:if="${policy != null}">
-                <div class="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-4 -mt-4 z-0"></div>
+                <div class="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-4 -mt-4 z-0 print:hidden"></div>
                 <div class="relative z-10">
                     <div class="flex items-center gap-2 text-sm text-blue-600 font-bold mb-4">
                         <i class="fa-solid fa-crosshairs"></i> 분석 대상 정책
@@ -66,7 +126,7 @@
                             <span class="text-slate-400 text-xs font-bold">지원 내용</span>
                             <div class="relative">
                                 <p id="policyDescription" class="font-medium text-slate-700 leading-relaxed line-clamp-3 break-keep" th:text="${policy.description}">-</p>
-                                <button id="moreBtn" type="button" onclick="toggleDescription()" class="hidden w-full justify-end text-xs text-blue-600 font-bold mt-1 hover:underline focus:outline-none flex items-center gap-1">
+                                <button id="moreBtn" type="button" onclick="toggleDescription()" class="hidden w-full justify-end text-xs text-blue-600 font-bold mt-1 hover:underline focus:outline-none flex items-center gap-1 print:hidden">
                                     더보기 <i class="fa-solid fa-chevron-down text-[10px]"></i>
                                 </button>
                             </div>
@@ -152,7 +212,7 @@
                             </li>
                         </ul>
                     </div>
-                    <div class="pt-6 mt-2 border-t border-slate-50">
+                    <div class="pt-6 mt-2 border-t border-slate-50 break-inside-avoid">
                         <h4 class="font-bold text-sm text-slate-800 mb-3 flex items-center gap-2">
                             <span class="w-2.5 h-2.5 bg-indigo-600 rounded-full"></span>
                             AI 정밀 분석 요청사항
@@ -166,8 +226,8 @@
             </div>
         </aside>
 
-        <section class="lg:col-span-8 space-y-8">
-            <div th:if="${result == null}" class="bg-red-50 border border-red-200 rounded-2xl p-10 text-center animate-fade-in">
+        <section class="lg:col-span-8 space-y-8 print:w-full print:space-y-6">
+            <div th:if="${result == null}" class="bg-red-50 border border-red-200 rounded-2xl p-10 text-center animate-fade-in no-print">
                 <div class="text-red-500 text-6xl mb-4"><i class="fa-solid fa-triangle-exclamation"></i></div>
                 <h2 class="text-2xl font-bold text-slate-800 mb-2">분석 결과를 불러오지 못했습니다.</h2>
                 <p class="text-slate-600 mb-6 leading-relaxed">
@@ -197,7 +257,7 @@
                         </div>
                     </div>
                     <div class="p-8">
-                        <div class="mb-6">
+                        <div class="mb-6 break-inside-avoid">
                             <h3 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
                                 <i class="fa-solid fa-quote-left" th:classappend="${result.suitability == 'Y'} ? 'text-blue-500' : 'text-red-500'"></i> AI 상담사의 맞춤형 가이드
                             </h3>
@@ -209,7 +269,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="flex gap-3">
+                        <div class="flex gap-3 print:hidden">
                             <a href="/policy" class="flex-1 text-white py-3 rounded-xl font-bold text-center transition shadow-lg bg-slate-800 hover:bg-slate-900 shadow-slate-200">
                                 다른 정책 시뮬레이션 해보기 <i class="fa-solid fa-rotate-right ml-1"></i>
                             </a>
@@ -220,7 +280,7 @@
                     </div>
                 </div>
 
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 animate-fade-in delay-500">
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 animate-fade-in delay-500 break-inside-avoid">
                     <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
                         <div class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600 text-sm">
                             <i class="fa-solid fa-arrow-trend-up"></i>
@@ -262,7 +322,7 @@
                     </div>
                 </div>
 
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 animate-fade-in delay-700">
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 animate-fade-in delay-700 break-inside-avoid">
                     <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
                         <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 text-sm">
                             <i class="fa-solid fa-thumbs-up"></i>
@@ -288,7 +348,7 @@
                                     </div>
 
                                     <button th:onclick="openDetailById([[${item.id}]])"
-                                            class="flex-shrink-0 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-[11px] px-3 py-1 rounded-lg transition flex items-center gap-1">
+                                            class="flex-shrink-0 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-[11px] px-3 py-1 rounded-lg transition flex items-center gap-1 print:hidden">
                                         <span>자세히</span>
                                         <i class="fa-solid fa-chevron-right text-[9px]"></i>
                                     </button>
@@ -302,7 +362,7 @@
                     </div>
                 </div>
 
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 animate-fade-in delay-1000">
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 animate-fade-in delay-1000 print:hidden">
                     <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
                         <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 text-sm">
                             <i class="fa-solid fa-scale-balanced"></i>
@@ -343,10 +403,10 @@
         </section>
     </div>
 </main>
-<footer th:replace="~{HF :: footer}"></footer>
-<div th:if="${session.loginMember != null}" th:replace="~{chatbot :: chatbot}"></div>
+<footer th:replace="~{HF :: footer}" class="print:hidden"></footer>
+<div class="chatbot-wrapper print:hidden" th:if="${session.loginMember != null}" th:replace="~{chatbot :: chatbot}"></div>
 
-<div id="policy-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center" role="dialog" aria-modal="true">
+<div id="policy-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center no-print" role="dialog" aria-modal="true">
     <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeDetail()"></div>
     <div class="relative bg-white w-full max-w-5xl h-[85vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col transform transition-all">
         <div class="px-8 py-6 border-b border-slate-100 flex-shrink-0 bg-white z-10 flex justify-between items-start">
