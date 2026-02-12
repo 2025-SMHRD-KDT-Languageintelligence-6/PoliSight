@@ -139,64 +139,121 @@
                     chatWindow.classList.remove('visible');
                 });
 
-                async function sendMessage() {
+               async function sendMessage() {
                     const text = input.value.trim();
                     if (!text) return;
 
-                    // 1. 내가 쓴 메시지 화면에 표시
+                    // 1. 내 메시지 표시
                     addMessage(text, 'user-message');
                     input.value = '';
 
-                    // [추가됨] 아까 숨겨둔 태그에서 이름(memberName) 꺼내오기!
                     const userNameInput = document.getElementById('hidden-user-name');
                     const userName = userNameInput ? userNameInput.value : "방문자";
+
+                    // 2. 리아의 답변용 말풍선 선행 생성
+                    const botMessageDiv = document.createElement('div');
+                    botMessageDiv.className = 'message bot-message';
+                    botMessageDiv.innerHTML = "리아가 생각 중이에요... ✨";
+                    messages.appendChild(botMessageDiv);
+                    messages.scrollTop = messages.scrollHeight;
 
                     try {
                         const response = await fetch('/api/ai/chat', {
                             method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
+                            headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
-                                user_input: text,   // 질문
-                                user_name: userName // [추가됨] 이름도 같이 전송!
+                                user_input: text,
+                                user_name: userName
                             })
                         });
 
                         if (response.ok) {
-                            const data = await response.json();
-                            addMessage(data.answer, 'bot-message');
+                            // 3. 스트리밍 데이터 수신 및 타이핑 로직
+                            const reader = response.body.getReader();
+                            const decoder = new TextDecoder("utf-8");
 
-                            // 부정적/사과 키워드 정의
-                            const negativeKeywords = [
-                                "죄송", "미안", "오류", "실패", "찾지 못했", "결과가 없",
-                                "알 수 없", "지원하지 않", "곤란", "어려울 것 같", "어려워",
-                                "부족", "다시 한번 말씀해 주시겠어요?", "아직 제가 공부 중이에요"
-                            ];
+                            let fullAnswer = "";      // 전체 텍스트 저장용 (키워드 체크용)
+                            let displayQueue = [];    // 출력 대기열
+                            let isFirstChunk = true;
+                            let isStreamDone = false; // 스트림 종료 확인용
 
-                            // 답변에 키워드가 포함되어 있는지 확인
-                            const isNegativeResponse = negativeKeywords.some(keyword => data.answer.includes(keyword));
+                            botMessageDiv.innerHTML = ""; // 로딩 문구 제거
 
-                            // 답변 시 모션 처리
-                            if (model && !isMotionPlaying) {
-                                if (isNegativeResponse) {
-                                    // 부정적 답변일 경우 Fail 모션 실행 (마우스 추적 정지 포함)
-                                    playFailMotion();
-                                } else {
-                                    // 일반 답변일 경우 기존 로직 유지
-                                    try { model.motion('Tap'); } catch(e){}
+                            // --- [핵심: 타이핑 속도 조절기] ---
+                            // 30~50 사이의 숫자로 속도를 조절하세요. (작을수록 빠름)
+                            const typingSpeed = 35;
+
+                            const typingInterval = setInterval(() => {
+                                if (displayQueue.length > 0) {
+                                    const char = displayQueue.shift(); // 대기열에서 한 글자 꺼냄
+                                    fullAnswer += char;
+                                    botMessageDiv.innerHTML = fullAnswer.replace(/\n/g, '<br>');
+                                    messages.scrollTop = messages.scrollHeight;
+                                } else if (isStreamDone) {
+                                    // 데이터 수신이 끝났고 대기열도 비었으면 종료
+                                    clearInterval(typingInterval);
+                                    finalizeChat();
+                                }
+                            }, typingSpeed);
+
+                            while (true) {
+                                const { done, value } = await reader.read();
+                                if (done) {
+                                    isStreamDone = true;
+                                    break;
+                                }
+
+                                const chunk = decoder.decode(value, { stream: true });
+                                const lines = chunk.split("\n");
+
+                                for (const line of lines) {
+                                    let cleanLine = line.trim();
+                                    if (cleanLine) {
+                                        try {
+                                            const jsonStartIndex = cleanLine.indexOf('{');
+                                            if (jsonStartIndex === -1) continue;
+
+                                            const jsonStr = cleanLine.substring(jsonStartIndex);
+                                            const data = JSON.parse(jsonStr);
+
+                                            if (data.answer) {
+                                                // 첫 글자 등장 시 리아 모션 실행
+                                                if (isFirstChunk && model && !isMotionPlaying) {
+                                                    try { model.motion('Tap'); } catch(e) {}
+                                                    isFirstChunk = false;
+                                                }
+                                                // 데이터를 글자 단위로 쪼개서 대기열에 넣음
+                                                displayQueue.push(...data.answer.split(""));
+                                            }
+                                        } catch (e) {
+                                            continue;
+                                        }
+                                    }
                                 }
                             }
+
+                            // 4. 답변 완료 후 최종 처리 (기존 로직 유지)
+                            function finalizeChat() {
+                                const negativeKeywords = ["죄송", "미안", "오류", "실패", "찾지 못했", "결과가 없", "알 수 없", "지원하지 않", "곤란", "어려워", "부족"];
+                                const isNegativeResponse = negativeKeywords.some(keyword => fullAnswer.includes(keyword));
+
+                                if (model && !isMotionPlaying && isNegativeResponse) {
+                                    playFailMotion();
+                                }
+                            }
+
                         } else {
-                            addMessage("죄송해요, 연결이 원활하지 않아요 😥", 'bot-message');
-                            // 통신 오류 시에도 Fail 모션 실행
+                            botMessageDiv.innerHTML = "죄송해요, 연결이 원활하지 않아요 😥";
                             playFailMotion();
                         }
 
                     } catch (error) {
                         console.error('Chat Error:', error);
-                        addMessage("오류가 발생했습니다.", 'bot-message');
-                        // 에러 발생 시에도 Fail 모션 실행
+                        if (botMessageDiv) {
+                            botMessageDiv.innerHTML = "오류가 발생했습니다.";
+                        } else {
+                            addMessage("오류가 발생했습니다.", 'bot-message');
+                        }
                         playFailMotion();
                     }
                 }
