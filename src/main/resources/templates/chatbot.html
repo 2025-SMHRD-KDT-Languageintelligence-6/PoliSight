@@ -95,6 +95,8 @@
 
                 // [추가됨] 애니메이션 중복 방지용 플래그 (Lock)
                 let isMotionPlaying = false;
+                // [추가됨] TalkMotion 반복 제어용 변수
+                let talkInterval = null;
 
                 // 마우스 추적 제어용 플래그
                 let isTrackingSuspended = false;
@@ -217,9 +219,9 @@
                                             const data = JSON.parse(jsonStr);
 
                                             if (data.answer) {
-                                                // 첫 글자 등장 시 리아 모션 실행
+                                                // 첫 글자 등장 시 리아 모션 실행 (TalkMotion으로 변경)
                                                 if (isFirstChunk && model && !isMotionPlaying) {
-                                                    try { model.motion('Tap'); } catch(e) {}
+                                                    playTalkMotion();
                                                     isFirstChunk = false;
                                                 }
                                                 // 데이터를 글자 단위로 쪼개서 대기열에 넣음
@@ -234,6 +236,9 @@
 
                             // 4. 답변 완료 후 최종 처리 (기존 로직 유지)
                             function finalizeChat() {
+                                // 대답이 끝나면 TalkMotion 강제 종료
+                                stopTalkMotion();
+
                                 const negativeKeywords = ["죄송", "미안", "오류", "실패", "찾지 못했", "결과가 없", "알 수 없", "지원하지 않", "곤란", "어려워", "부족"];
                                 const isNegativeResponse = negativeKeywords.some(keyword => fullAnswer.includes(keyword));
 
@@ -244,6 +249,7 @@
 
                         } else {
                             botMessageDiv.innerHTML = "죄송해요, 연결이 원활하지 않아요 😥";
+                            stopTalkMotion(); // 에러 시 동작 중지
                             playFailMotion();
                         }
 
@@ -254,6 +260,7 @@
                         } else {
                             addMessage("오류가 발생했습니다.", 'bot-message');
                         }
+                        stopTalkMotion(); // 에러 시 동작 중지
                         playFailMotion();
                     }
                 }
@@ -337,6 +344,55 @@
                         isMotionPlaying = false;
                         isTrackingSuspended = false;
                     }
+                }
+
+                // [신규 추가] TalkMotion 실행 함수 (반복 재생 및 강제 종료 구조로 변경)
+                function playTalkMotion() {
+                    if (!model) return;
+
+                    // 이미 Talk 모션이 반복 중이라면 중복 실행 방지
+                    if (isMotionPlaying && talkInterval) return;
+
+                    try {
+                        // 상태 잠금 (마우스 추적 방지)
+                        isMotionPlaying = true;
+                        isTrackingSuspended = true;
+
+                        // 시선 정면 고정
+                        if (model.internalModel && model.internalModel.focusController) {
+                            model.internalModel.focusController.focus(0, 0);
+                        }
+
+                        // 최초 실행
+                        model.motion('Talk', 0, 3);
+
+                        // 1.9초마다 반복 실행 (TalkMotion Duration 2초 가정하여 자연스럽게 연결)
+                        talkInterval = setInterval(() => {
+                            model.motion('Talk', 0, 3);
+                        }, 1900);
+
+                    } catch (e) {
+                        console.warn("TalkMotion play failed:", e);
+                        // 에러 발생 시 즉시 잠금 해제
+                        stopTalkMotion();
+                    }
+                }
+
+                // [신규 추가] TalkMotion 강제 종료 함수
+                function stopTalkMotion() {
+                    if (talkInterval) {
+                        clearInterval(talkInterval);
+                        talkInterval = null;
+                    }
+
+                    // 현재 재생 중인 모션 강제 정지
+                    if (model && model.internalModel && model.internalModel.motionManager) {
+                        model.internalModel.motionManager.stopAllMotions();
+                    }
+
+                    // 상태 잠금 해제
+                    isMotionPlaying = false;
+                    isTrackingSuspended = false;
                 }
 
                 // ================= Live2D 로직 =================
