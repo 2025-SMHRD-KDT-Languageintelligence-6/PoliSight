@@ -96,7 +96,8 @@
                 // [추가됨] 애니메이션 중복 방지용 플래그 (Lock)
                 let isMotionPlaying = false;
                 // [추가됨] TalkMotion 반복 제어용 변수
-                let talkInterval = null;
+                // let talkInterval = null;
+                let isTalking = false; // (추가)
 
                 // 마우스 추적 제어용 플래그
                 let isTrackingSuspended = false;
@@ -347,50 +348,62 @@
                 }
 
                 // [신규 추가] TalkMotion 실행 함수 (반복 재생 및 강제 종료 구조로 변경)
+                // [변경] TalkMotion 실행 함수 (재귀 호출 방식)
+                // [수정됨] TalkMotion 실행 함수 (안전장치 추가)
                 function playTalkMotion() {
                     if (!model) return;
+                    if (isTalking) return; // 이미 말하는 중이면 중복 실행 방지
 
-                    // 이미 Talk 모션이 반복 중이라면 중복 실행 방지
-                    if (isMotionPlaying && talkInterval) return;
+                    isTalking = true;
+                    isMotionPlaying = true;
+                    isTrackingSuspended = true;
 
-                    try {
-                        // 상태 잠금 (마우스 추적 방지)
-                        isMotionPlaying = true;
-                        isTrackingSuspended = true;
+                    if (model.internalModel && model.internalModel.focusController) {
+                        model.internalModel.focusController.focus(0, 0);
+                    }
 
-                        // 시선 정면 고정
-                        if (model.internalModel && model.internalModel.focusController) {
-                            model.internalModel.focusController.focus(0, 0);
+                    const playLoop = () => {
+                        // 멈춤 신호가 들어왔으면 종료
+                        if (!isTalking || !model) {
+                            isMotionPlaying = false;
+                            isTrackingSuspended = false;
+                            return;
                         }
 
-                        // 최초 실행
-                        model.motion('Talk', 0, 3);
+                        model.motion('Talk', 0, 3)
+                            .then(() => {
+                                if (isTalking) {
+                                    // [핵심 수정] 바로 playLoop()를 부르지 말고,
+                                    // 0.1초 정도 쉬었다가 부르게 하여 무한 루프(브라우저 멈춤) 방지
+                                    setTimeout(playLoop, 100);
+                                } else {
+                                    isMotionPlaying = false;
+                                    isTrackingSuspended = false;
+                                }
+                            })
+                            .catch((e) => {
+                                console.warn("Talk loop failed:", e);
+                                isTalking = false;
+                                isMotionPlaying = false;
+                                isTrackingSuspended = false;
+                            });
+                    };
 
-                        // 1.9초마다 반복 실행 (TalkMotion Duration 2초 가정하여 자연스럽게 연결)
-                        talkInterval = setInterval(() => {
-                            model.motion('Talk', 0, 3);
-                        }, 1900);
-
-                    } catch (e) {
-                        console.warn("TalkMotion play failed:", e);
-                        // 에러 발생 시 즉시 잠금 해제
-                        stopTalkMotion();
-                    }
+                    playLoop();
                 }
 
                 // [신규 추가] TalkMotion 강제 종료 함수
+                // [변경] TalkMotion 강제 종료 함수
                 function stopTalkMotion() {
-                    if (talkInterval) {
-                        clearInterval(talkInterval);
-                        talkInterval = null;
-                    }
+                    // 1. 반복 루프 끊기 (다음 모션이 실행되지 않게 함)
+                    isTalking = false;
 
-                    // 현재 재생 중인 모션 강제 정지
+                    // 2. 현재 재생 중인 모션 즉시 정지
                     if (model && model.internalModel && model.internalModel.motionManager) {
                         model.internalModel.motionManager.stopAllMotions();
                     }
 
-                    // 상태 잠금 해제
+                    // 3. 상태 잠금 즉시 해제
                     isMotionPlaying = false;
                     isTrackingSuspended = false;
                 }
