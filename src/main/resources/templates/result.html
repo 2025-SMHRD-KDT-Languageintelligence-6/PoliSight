@@ -479,8 +479,18 @@
         return str.replace(/(\d{4})(\d{2})(\d{2})/g, '$1-$2-$3');
     }
 
+    // [추가] HTML 특수문자(&quot;, &middot; 등)를 원래 문자로 바꿔주는 함수
+    function decodeHtml(str) {
+        if (!str) return str;
+        const txt = document.createElement('textarea');
+        txt.innerHTML = str;
+        return txt.value;
+    }
+
     function cleanAndFormatText(text) {
         if (!text) return "";
+
+        text = decodeHtml(text);
         const lines = text.split('\n');
         const processed = lines.map(line => {
             let trimmed = line.trim();

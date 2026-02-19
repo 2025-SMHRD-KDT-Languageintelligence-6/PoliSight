@@ -347,9 +347,7 @@
                     }
                 }
 
-                // [신규 추가] TalkMotion 실행 함수 (반복 재생 및 강제 종료 구조로 변경)
                 // [변경] TalkMotion 실행 함수 (재귀 호출 방식)
-                // [수정됨] TalkMotion 실행 함수 (안전장치 추가)
                 function playTalkMotion() {
                     if (!model) return;
                     if (isTalking) return; // 이미 말하는 중이면 중복 실행 방지
