@@ -49,15 +49,15 @@
         </div>
     </div>
 
-    <div class="flex justify-between items-center mb-6">
-        <form action="/record" method="get" class="relative">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
+        <form action="/record" method="get" class="relative w-full sm:w-auto">
             <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-            <input type="text" name="keyword" th:value="${param.keyword}" placeholder="정책명 검색..." class="pl-9 pr-4 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-blue-500 w-64 bg-white">
+            <input type="text" name="keyword" th:value="${param.keyword}" placeholder="정책명 검색..." class="pl-9 pr-4 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-blue-500 w-full sm:w-64 bg-white">
         </form>
-        <div class="flex gap-2">
-            <button onclick="selectAll()" type="button" class="px-3 py-1.5 border border-slate-200 bg-white rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition flex items-center gap-1">전체선택</button>
-            <button onclick="deselectAll()" type="button" class="px-3 py-1.5 border border-slate-200 bg-white rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition flex items-center gap-1">선택해제</button>
-            <button onclick="openDeleteModal()" type="button" class="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-red-50 hover:text-red-500 transition flex items-center gap-1">삭제</button>
+        <div class="flex gap-2 w-full sm:w-auto justify-between sm:justify-end">
+            <button onclick="selectAll()" type="button" class="px-3 py-1.5 border border-slate-200 bg-white rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition flex items-center justify-center gap-1 flex-1 sm:flex-none">전체선택</button>
+            <button onclick="deselectAll()" type="button" class="px-3 py-1.5 border border-slate-200 bg-white rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition flex items-center justify-center gap-1 flex-1 sm:flex-none">선택해제</button>
+            <button onclick="openDeleteModal()" type="button" class="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-red-50 hover:text-red-500 transition flex items-center justify-center gap-1 flex-1 sm:flex-none">삭제</button>
         </div>
     </div>
 
