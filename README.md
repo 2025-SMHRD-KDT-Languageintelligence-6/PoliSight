@@ -16,49 +16,70 @@
 ## 4. 화면 구성
 
 ## 5. 기술 스택
-### 5.1 Back-End
+### 5.1 Backend
 <table>
   <tr>
-    <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" width="45" height="45"><br>Java</td>
     <td align="center" width="110"><img src="https://cdn.simpleicons.org/springboot/6DB33F" width="45" height="45"><br>Spring Boot</td>
-    <td align="center" width="110"><img src="https://cdn.simpleicons.org/springsecurity/6DB33F" width="45" height="45"><br>Spring Security</td>
+    <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/fastapi/fastapi-original.svg" width="45" height="45"><br>FastAPI</td>
+    <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" width="45" height="45"><br>Java</td>
+    <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" width="45" height="45"><br>Python</td>
     <td align="center" width="110"><img src="https://raw.githubusercontent.com/mybatis/logo/master/logo-bird-ninja.svg" width="45" height="45"><br>MyBatis</td>
+    <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/gradle/gradle-original.svg" width="45" height="45"><br>Gradle</td>
     <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tomcat/tomcat-original.svg" width="45" height="45"><br>Tomcat</td>
   </tr>
 </table>
 
-### 5.2 Front-End
+### 5.2 AI & Database
 <table>
   <tr>
-    <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" width="45" height="45"><br>HTML5</td>
-    <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" width="45" height="45"><br>CSS3</td>
-    <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" width="45" height="45"><br>JavaScript</td>
-  </tr>
-</table>
-
-### 5.3 DB
-<table>
-  <tr>
+    <td align="center" width="110"><img src="https://cdn.simpleicons.org/openai/412991" width="45" height="45"><br>OpenAI</td>
+    <td align="center" width="110"><img src="https://cdn.simpleicons.org/chroma/FF4F00" width="45" height="45"><br>ChromaDB</td>
+    <td align="center" width="110"><img src="https://cdn.simpleicons.org/langchain/1C3C3C" width="45" height="45"><br>LangChain</td>
     <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mysql/mysql-original.svg" width="45" height="45"><br>MySQL</td>
   </tr>
 </table>
 
-### 5.4 Tools
+### 5.3 Web & Character
 <table>
   <tr>
-    <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" width="45" height="45"><br>GitHub</td>
-    <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg" width="45" height="45"><br>VS Code</td>
-    <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/intellij/intellij-original.svg" width="45" height="45"><br>IntelliJ IDEA</td>
-    <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/jupyter/jupyter-original.svg" width="45" height="45"><br>Jupyter Notebook</td>
+    <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" width="45" height="45"><br>JS</td>
+    <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" width="45" height="45"><br>HTML5</td>
+    <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" width="45" height="45"><br>CSS3</td>
+    <td align="center" width="110"><br><br>Live2D SDK</td>
+    <td align="center" width="110"><img src="https://cdn.simpleicons.org/thymeleaf/005F0F" width="45" height="45"><br>Thymeleaf</td>
   </tr>
 </table>
 
-### 5.5 AI&Model Serving
+### 5.4 Infra & Cloud
 <table>
   <tr>
-    <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" width="45" height="45"><br>Python</td>
-    <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/pandas/pandas-original.svg" width="45" height="45"><br>Pandas</td>
-    <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/scikitlearn/scikitlearn-original.svg" width="45" height="45"><br>Scikit-learn</td>
-    <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/fastapi/fastapi-original.svg" width="45" height="45"><br>FastAPI</td>
+    <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/googlecloud/googlecloud-original.svg" width="45" height="45"><br>GCP</td>
+    <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nginx/nginx-original.svg" width="45" height="45"><br>Nginx</td>
+    <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" width="45" height="45"><br>GitHub</td>
+    <td align="center" width="110"><img src="https://cdn.simpleicons.org/ngrok/1F1E37" width="45" height="45"><br>Ngrok</td>
+    <td align="center" width="110"><br><br>Gabia</td>
+  </tr>
+</table>
+
+### 5.5 Security & API
+<table>
+  <tr>
+    <td align="center" width="110"><img src="https://cdn.simpleicons.org/springsecurity/6DB33F" width="45" height="45"><br>Spring Security</td>
+    <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" width="45" height="45"><br>OAuth 2.0</td>
+    <td align="center" width="110"><img src="https://cdn.simpleicons.org/kakaotalk/FFCD00" width="45" height="45"><br>Kakao API</td>
+    <td align="center" width="110"><img src="https://cdn.simpleicons.org/gmail/EA4335" width="45" height="45"><br>SMTP</td>
+    <td align="center" width="110"><img src="https://cdn.simpleicons.org/letsencrypt/003A70" width="45" height="45"><br>SSL/TLS</td>
+  </tr>
+</table>
+
+### 5.6 Tools & DevOps
+<table>
+  <tr>
+    <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/intellij/intellij-original.svg" width="45" height="45"><br>IntelliJ</td>
+    <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg" width="45" height="45"><br>VS Code</td>
+    <td align="center" width="110"><img src="https://cdn.simpleicons.org/googlecolab/F9AB00" width="45" height="45"><br>Colab</td>
+    <td align="center" width="110"><img src="https://cdn.simpleicons.org/googlecloud/4285F4" width="45" height="45"><br>Cloud Log</td>
+    <td align="center" width="110"><br><br>Cubism</td>
+    <td align="center" width="110"><img src="https://cdn.simpleicons.org/githubactions/2088FF" width="45" height="45"><br>GitHub Actions</td>
   </tr>
 </table>
