@@ -24,6 +24,45 @@
 
 ## 4. 화면 구성
 
+<table width="100%">
+  <tr>
+    <th align="center">메인 화면</th>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="./images/1.png" width="80%">
+    </td>
+  </tr>
+
+  <tr>
+    <th align="center">정책 리스트</th>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="./images/2.png" width="80%">
+    </td>
+  </tr>
+
+  <tr>
+    <th align="center">시뮬레이션 결과</th>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="./images/3.png" width="80%">
+    </td>
+  </tr>
+
+  <tr>
+    <th align="center">챗봇</th>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="./images/4.png" width="80%">
+    </td>
+  </tr>
+
+</table>
+
 ## 5. 기술 스택
 
 ### 5.1 Backend
