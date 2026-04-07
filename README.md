@@ -89,7 +89,7 @@
     <td align="center" width="110"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg" width="45" height="45"><br>VS Code</td>
     <td align="center" width="110"><img src="https://cdn.simpleicons.org/googlecolab/F9AB00" width="45" height="45"><br>Colab</td>
     <td align="center" width="110"><img src="https://cdn.simpleicons.org/googlecloud/4285F4" width="45" height="45"><br>Cloud Log</td>
-    <td align="center" width="110"><br><br>Cubism</td>
+    <td align="center" width="110"><br><br>Live2D Cubism</td>
     <td align="center" width="110"><img src="https://cdn.simpleicons.org/githubactions/2088FF" width="45" height="45"><br>GitHub Actions</td>
   </tr>
 </table>
